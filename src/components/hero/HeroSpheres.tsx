@@ -228,17 +228,42 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     [],
   );
 
-  // 5 filaments — INCHANGÉS depuis CS-S6B/C (pas le cœur de ce sprint,
-  // prompt §8 : "très légers ajustements seulement si cela sert la
-  // composition orbitale" — jugé non nécessaire ici).
+  // 5 filaments — génération procédurale biaisée horizontale (micro-sprint
+  // "Hero filaments random avec biais horizontal"). Remplace les 5 courbes
+  // fixes CS-S6B/C (mêmes bornes d'espace x/y/z conservées à l'identique,
+  // seule la logique de génération change) : ~75% des lignes reçoivent une
+  // amplitude verticale fortement contrainte par rapport à leur étendue
+  // horizontale (lignes tendues, peu pentues, "extension latérale"), le
+  // reste garde une liberté verticale plus large pour préserver la variété
+  // et éviter un rendu mécanique. Toujours procédural (Math.random),
+  // calculé une seule fois par montage (déps `[]` inchangées) : le rendu
+  // change à chaque chargement sans aucun coût par frame — ni la couleur/
+  // opacité (JSX plus bas, inchangé) ni le reste du rig ne sont affectés.
+  const HORIZONTAL_BIAS_PROBABILITY = 0.75;
+  const rand = (min: number, max: number) => min + Math.random() * (max - min);
+
   const filamentPoints = useMemo(() => {
-    const defs: [number, number, number][][] = [
-      [[-4.6, 1.6, -3.4], [-1.4, 0.6, -2.8], [1.1, -0.5, -3.2], [4.3, -1.5, -3.8]],
-      [[-4.1, -1.9, -3], [-0.9, -0.5, -3.6], [1.6, 0.9, -2.8], [4.6, 1.7, -3.2]],
-      [[-3.7, 0.2, -4], [0, -1.3, -3.4], [3.7, 0.6, -3.8]],
-      [[-4.3, -0.7, -2.6], [-0.4, 1.5, -3.8], [3.9, -0.9, -3]],
-      [[-3.3, 1.3, -4.4], [0.6, 0.2, -3.6], [3.3, -1.7, -4.2]],
-    ];
+    const defs: [number, number, number][][] = Array.from({ length: 5 }, () => {
+      const horizontalBias = Math.random() < HORIZONTAL_BIAS_PROBABILITY;
+      const pointCount = Math.random() < 0.5 ? 3 : 4;
+      // Étendue horizontale large, façon "traverse tout le champ de vision" —
+      // mêmes bornes x que l'ancien jeu de courbes fixes (-4.6 à 4.6).
+      const xStart = rand(-4.6, -3.3);
+      const xEnd = rand(3.3, 4.6);
+      const z = rand(-4.4, -2.6);
+      const yCenter = rand(-1.7, 1.7);
+      // Amplitude verticale : contrainte (biais horizontal, ~70-80% des cas)
+      // ou libre (variété, comme les anciennes courbes les plus pentues).
+      const verticalSpread = horizontalBias ? rand(0.15, 0.55) : rand(0.9, 2.0);
+
+      return Array.from({ length: pointCount }, (_, p) => {
+        const t = p / (pointCount - 1);
+        const x = THREE.MathUtils.lerp(xStart, xEnd, t) + rand(-0.3, 0.3);
+        const y = yCenter + rand(-verticalSpread, verticalSpread);
+        const pz = z + rand(-0.3, 0.3);
+        return [x, y, pz] as [number, number, number];
+      });
+    });
     return defs.map((pts) => new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))).getPoints(48));
   }, []);
 
@@ -401,7 +426,8 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
         <Lightformer form="rect" color={IVORY} intensity={0.9} position={[0, -3.4, -2]} scale={[4, 2, 1]} />
       </Environment>
 
-      {/* Filaments — INCHANGÉS (CS-S6D §8 : pas le cœur du sprint). */}
+      {/* Filaments — géométrie générée ci-dessus (biais horizontal) ;
+          rendu (couleur/opacité alternée, rig, mouvement) INCHANGÉ. */}
       <group ref={filamentsRigRef}>
         {filamentPoints.map((points, i) => (
           <Line

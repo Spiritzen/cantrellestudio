@@ -547,6 +547,11 @@
 .home-capabilities__group {
   margin: 0;
   padding: var(--space-sm);
+  /* Micro-fix cartes Capacités — fond noir, réutilise le token le plus
+     sombre de la palette (--color-bg, déjà utilisé comme fond de base du
+     site) plutôt qu'une nouvelle valeur codée en dur. Bordure et
+     hover/focus (règle suivante) inchangés. */
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   transition: border-color 250ms ease, background-color 250ms ease;

@@ -33,19 +33,30 @@
   (si nécessaire) : supprimer ce fichier + le composant + son montage.
 
   Stacking (prompt §8, ne pas répéter l'erreur du tout premier essai V1) :
-  `.home-expertise` reçoit `isolation:isolate` pour forcer un vrai
-  stacking context (un `position:relative` seul, sans z-index explicite,
-  n'en crée PAS). Le décor est en z-index:0 (peint après le fond de
-  section, avant le contenu) ; `.home-expertise > .container` est promu
-  z-index:1 pour peindre au-dessus.
+  la section hôte reçoit `isolation:isolate` pour forcer un vrai stacking
+  context (un `position:relative` seul, sans z-index explicite, n'en crée
+  PAS). Le décor est en z-index:0 (peint après le fond de section, avant
+  le contenu) ; `> .container` est promu z-index:1 pour peindre au-dessus.
+
+  Micro-sprint "réutilisation dot wave Capacités" — UNE seule
+  implémentation, DEUX hôtes possibles : `.home-expertise` (Expertises,
+  usage d'origine) ET `.home-capabilities` (Capacités, même composant
+  ExpertiseDotWave.astro réutilisé tel quel, DOM identique — voir
+  index.astro). Seuls ces deux sélecteurs de stacking référencent
+  explicitement la section hôte ; tout le reste de ce fichier (grille,
+  patterns, keyframes) cible uniquement les classes `.home-expertise__
+  dot-wave*` du décor lui-même, indépendantes de la section qui
+  l'accueille — aucune duplication nécessaire pour ce second usage.
 */
 
-.home-expertise {
+.home-expertise,
+.home-capabilities {
   position: relative;
   isolation: isolate;
 }
 
-.home-expertise > .container {
+.home-expertise > .container,
+.home-capabilities > .container {
   position: relative;
   z-index: 1;
 }
