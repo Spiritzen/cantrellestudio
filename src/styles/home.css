@@ -685,7 +685,10 @@ main:has(.home-final-cta) + footer {
   max-width: 46rem;
   margin-inline: auto;
   padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem);
-  background: var(--color-surface-elevated);
+  /* Micro-fix CTA final — alpha 90% sur la couleur de fond existante
+     (token inchangé), via color-mix : jamais `opacity` sur la card
+     entière, donc texte/boutons/bordure restent à 100% d'opacité. */
+  background: color-mix(in srgb, var(--color-surface-elevated) 90%, transparent);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-lg);
 }
