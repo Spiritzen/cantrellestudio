@@ -1,0 +1,65 @@
+---
+// SectionHeading — motif éditorial micro-label + H2 + intro optionnelle,
+// factorisé depuis CS-S3 (CS-S4 §9). Ne produit JAMAIS de H1 : le H1
+// appartient au Hero (src/pages/index.astro), qui n'utilise pas ce
+// composant. `title`/`intro` sont toujours des chaînes locales au projet,
+// jamais de contenu externe — aucun set:html.
+//
+// Micro-sprint "AnimationCardBesoinWebAxp" (mise en évidence de mots dans
+// l'intro Expertises) — ajout d'un slot nommé `intro` optionnel : quand un
+// appelant fournit ce slot, son contenu (markup Astro/JSX local, jamais du
+// HTML externe) remplace le texte brut de la prop `intro` à l'intérieur du
+// même `<p>`/même `data-motion="intro"`, pour rester détecté par le reveal
+// existant de HomeMotion.astro (`setupSectionHeadings`, sélecteur
+// `[data-motion="intro"]` scopé à `.section-heading`). Rétrocompatible à
+// 100% : les 4 autres pages qui utilisent `intro` en chaîne simple ne
+// passent pas ce slot et gardent un rendu strictement identique.
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro?: string;
+  id?: string;
+  align?: "left" | "center";
+}
+
+const { eyebrow, title, intro, id, align = "left" } = Astro.props;
+const hasIntroSlot = Astro.slots.has("intro");
+---
+
+<div class="section-heading" data-align={align}>
+  <span class="section-heading__eyebrow" data-motion="eyebrow">{eyebrow}</span>
+  <h2 id={id} data-motion="title">{title}</h2>
+  {hasIntroSlot ? (
+    <p class="section-heading__intro" data-motion="intro">
+      <slot name="intro" />
+    </p>
+  ) : (
+    intro && <p class="section-heading__intro" data-motion="intro">{intro}</p>
+  )}
+</div>
+
+<style>
+  .section-heading[data-align="center"] {
+    text-align: center;
+  }
+
+  .section-heading__eyebrow {
+    display: block;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .section-heading__intro {
+    max-width: 62ch;
+    color: var(--color-text-secondary);
+    font-size: 1.0625rem;
+    margin: var(--space-sm) 0 0 0;
+  }
+
+  .section-heading[data-align="center"] .section-heading__intro {
+    margin-inline: auto;
+  }
+</style>

@@ -1,0 +1,30 @@
+---
+// Bloc <head> SEO minimal, réutilisé par BaseLayout.
+// CS-S0 : title/description/canonical/Open Graph minimal uniquement.
+interface Props {
+  title: string;
+  description: string;
+  /** CS-S2B : prop étroite pour les pages internes (ex. /design-lab/) à exclure
+   * de l'indexation. Défaut false — aucune page existante n'est affectée. */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+
+// Canonical construit à partir de `site` (astro.config.mjs) + URL courante.
+// `Astro.url.pathname` inclut déjà le `base` configuré (`/cantrellestudio`)
+// pour une page rendue à sa route finale réelle : aucune double gestion du
+// sous-chemin n'est nécessaire ici (vérifié dans le HTML buildé — voir
+// rapport_predeploiement_github_pages_*).
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+{noindex && <meta name="robots" content="noindex,nofollow" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />

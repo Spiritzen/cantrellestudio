@@ -1,0 +1,233 @@
+---
+// Développement sur mesure — CS-S9. Landing commerciale + SEO on-page.
+// Remplace le contenu provisoire CS-S0. BeatStudio / MyDashServ / GlassTrack
+// proviennent du Source Pack (src/data/serviceProofs.ts) : GlassTrack doit
+// toujours afficher explicitement "démonstrateur" et ne jamais être
+// présenté comme une mission Saverglass (prompt §24/§45). Signature
+// visuelle de cette page (prompt §31) : connexions / modules / existant /
+// intégration — diagramme "hub" (existant au centre, modules autour),
+// volontairement différent de la chaîne verticale de la page Applications.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import ServiceProofCard from "../components/services/ServiceProofCard.astro";
+import ServiceCta from "../components/services/ServiceCta.astro";
+import ServiceMotion from "../components/services/ServiceMotion.astro";
+import RelatedCaseStudy from "../components/relations/RelatedCaseStudy.astro";
+import { glasstrack } from "../data/serviceProofs";
+import { projectMedia } from "../data/projectMedia";
+import { withBase } from "../utils/paths";
+import { caseStudyContent } from "../data/caseStudyContent";
+import { getProofsForService } from "../data/serviceCaseStudyMap";
+import "../styles/services.css";
+
+// CS-S10B — preuve phare AgencyOS / secondaire Sereno (choix justifié dans
+// le rapport : AgencyOS démontre le mieux la modularité et l'intégration de
+// plusieurs domaines, l'angle même de cette page). BeatStudio/MyDashServ/
+// Ink Red Plumes retirés de cette page (test anti-surcharge §36 : 3 blocs
+// promotionnels maximum une fois les 2 études de cas ajoutées) ; GlassTrack
+// conservé seul, meilleur accord thématique avec "audit de l'existant /
+// intégration" — voir rapport, section arbitrages.
+const customProofs = getProofsForService("developpement-sur-mesure");
+
+const useCases = [
+  "Connecter une API",
+  "Créer une API",
+  "Automatiser un workflow",
+  "Moderniser un existant",
+  "Créer un outil interne",
+  "Construire une expérience web spécifique",
+];
+
+const hubNodes = ["API", "Automatisation", "Données", "Interface"];
+
+const collaborationSteps = [
+  { title: "Échange initial", text: "Comprendre le besoin réel, le contexte et les contraintes techniques existantes." },
+  { title: "Audit si existant", text: "Lire le code, les données et l'architecture déjà en place avant de proposer quoi que ce soit." },
+  { title: "Proposition d'architecture", text: "Choisir les briques techniques selon le besoin, pas l'inverse." },
+  { title: "Développement itératif", text: "Avancer par étapes courtes, avec un périmètre maîtrisé à chaque livraison." },
+  { title: "Livraison et suivi", text: "Mettre en production proprement et documenter ce qui doit évoluer." },
+];
+
+const matrix = [
+  { label: "Application métier", href: "/applications-metier-saas/", stack: "Spring Boot / Rails / React / PostgreSQL" },
+  { label: "Site de contenu", href: "/sites-professionnels/", stack: "Astro / TypeScript / CSS" },
+  { label: "Expérience interactive", stack: "React / Three.js / Web APIs" },
+  { label: "Intégration / héritage", stack: "API REST / SQL / stack existante" },
+];
+---
+
+<BaseLayout
+  title="Développement web sur mesure & intégrations | Cantrelle Studio"
+  description="API, automatisation, intégration, modernisation et outils web spécifiques : une architecture choisie selon votre besoin, votre existant et vos contraintes."
+>
+  <div class="service-page service-page--custom">
+    <Container>
+      <ServiceBreadcrumb current="Développement sur mesure" />
+    </Container>
+
+    <section class="service-page__section">
+      <Container>
+        <ServiceHero
+          eyebrow="Développement sur mesure"
+          title="Des solutions sur mesure quand le besoin ne rentre pas dans une case."
+          lead="API, automatisation, modernisation, intégration ou outil spécifique : le studio part de votre contexte technique au lieu d'imposer une stack."
+          secondaryHref="/methode/"
+          secondaryLabel="Découvrir la méthode"
+        />
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="custom-existing-title">
+      <Container>
+        <SectionHeading
+          id="custom-existing-title"
+          eyebrow="Point de départ"
+          title="Tout ne démarre pas sur une page blanche."
+          intro="Quand un existant est déjà en place, le studio commence par l'audit et la compréhension, pas par une réécriture complète."
+        />
+        <ul class="service-chips" data-motion="block">
+          <li>Audit de l'existant</li>
+          <li>Compréhension des contraintes</li>
+          <li>Architecture déjà en place</li>
+          <li>Données et compatibilité</li>
+          <li>Évolution progressive plutôt que rupture</li>
+        </ul>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="custom-usecases-title">
+      <Container>
+        <SectionHeading
+          id="custom-usecases-title"
+          eyebrow="Cas d'usage"
+          title="Des besoins qui sortent du cadre standard."
+          intro="Import/export, synchronisation, traitements ou intégration d'un service externe s'ajoutent souvent à ces familles."
+        />
+        <ul class="service-chips" data-motion="block">
+          {useCases.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+
+        <div
+          class="service-hub"
+          data-motion="block"
+          role="img"
+          aria-label="Schéma : votre existant au centre, connecté à l'API, l'automatisation, les données et l'interface."
+        >
+          <div class="service-hub__center">Votre existant</div>
+          {hubNodes.map((node) => (
+            <div class="service-hub__node">{node}</div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="custom-proofs-title">
+      <Container>
+        <SectionHeading id="custom-proofs-title" eyebrow="Preuves" title="Des besoins atypiques, déjà travaillés." />
+        <div class="related-case-study-pair">
+          {customProofs.map((proof) => (
+            <RelatedCaseStudy
+              role={proof.role}
+              title={proof.projectSlug === "agencyos" ? "AgencyOS" : "Sereno"}
+              category="Application métier / SaaS"
+              angle={proof.angle}
+              capabilities={caseStudyContent[proof.projectSlug].proves.slice(0, 3)}
+              image={projectMedia[proof.projectSlug].primary}
+              imageAlt={projectMedia[proof.projectSlug].primaryAlt}
+              href={`/realisations/${proof.projectSlug}/`}
+            />
+          ))}
+        </div>
+        <p class="service-architecture__note">Un besoin plus atypique a aussi été travaillé :</p>
+        <div class="service-proofs-grid">
+          <ServiceProofCard
+            title={glasstrack.title}
+            description={glasstrack.angle}
+            facts={glasstrack.facts}
+            isDemonstrator={glasstrack.isDemonstrator}
+          />
+        </div>
+        <p class="service-architecture__note">
+          D'autres projets sont présentés dans les <a href={withBase("/realisations/")}>réalisations</a>.
+        </p>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="custom-process-title">
+      <Container>
+        <SectionHeading
+          id="custom-process-title"
+          eyebrow="Mode de collaboration"
+          title="Comment se déroule un projet sur mesure."
+          intro="Les mêmes étapes que pour tout projet du studio, avec une attention particulière portée à l'existant."
+        />
+        <ol class="service-process" data-motion="block">
+          {collaborationSteps.map((step, i) => (
+            <li>
+              <span class="service-process__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="custom-matrix-title">
+      <Container>
+        <SectionHeading id="custom-matrix-title" eyebrow="Repères" title="Une matrice légère, pas une encyclopédie." />
+        <dl class="service-matrix" data-motion="block">
+          {matrix.map((row) => (
+            <div class="service-matrix__row">
+              <dt>{row.href ? <a href={withBase(row.href)}>{row.label}</a> : row.label}</dt>
+              <dd>{row.stack}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class="service-faq" data-motion="block">
+          <details>
+            <summary>Le studio peut-il intervenir sur un projet existant ?</summary>
+            <p>
+              Oui. Après un audit de l'existant (code, données, contraintes), le studio évalue ce qui peut être
+              conservé, adapté ou modernisé progressivement.
+            </p>
+          </details>
+          <details>
+            <summary>Peut-il connecter des API ou automatiser un workflow ?</summary>
+            <p>
+              Oui — connexion à des services externes, automatisation d'étapes répétitives, synchronisation de
+              données ou création d'une API dédiée font partie des besoins fréquemment traités.
+            </p>
+          </details>
+          <details>
+            <summary>Comment cadrer un besoin atypique avant de développer ?</summary>
+            <p>
+              En clarifiant d'abord le problème réel et les contraintes techniques existantes — voir
+              <a href={withBase("/methode/")}>la méthode</a> pour le déroulé complet du cadrage.
+            </p>
+          </details>
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="custom-cta-title">
+      <Container>
+        <ServiceCta
+          eyebrow="Un besoin qui sort du cadre ?"
+          title="Parlons de votre existant avant de parler solution."
+          text="API, automatisation, modernisation, intégration ou outil spécifique : commençons par votre contexte réel."
+          secondaryHref="/realisations/"
+          secondaryLabel="Voir les réalisations"
+        />
+      </Container>
+    </section>
+  </div>
+
+  <ServiceMotion />
+</BaseLayout>

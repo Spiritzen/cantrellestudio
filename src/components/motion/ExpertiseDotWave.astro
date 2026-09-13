@@ -1,0 +1,138 @@
+---
+// ExpertiseDotWave — micro-sprint V3 (prompt CS_EXPERTISES_DOT_WAVE_V3_CSS).
+// Remplace intégralement le moteur Canvas 2D de la V2 (constat humain
+// réel sur le poste de Sébastien : saccades perceptibles de la 3D tant
+// que la section Expertises restait visible). Aucun Canvas ici, aucun
+// `requestAnimationFrame`, aucun `ResizeObserver` : le rendu des 3
+// couches (base/medium/peak) est fait à 100% en CSS
+// (expertise-dot-wave.css, `radial-gradient` répété + `mask-image`),
+// jamais un point par élément DOM, jamais un calcul par point en JS.
+//
+// Le seul JS de ce composant est un IntersectionObserver minuscule dont
+// le RÔLE UNIQUE est de poser/reposer une classe (`is-wave-active`).
+// Toute la logique de durée/répétition (cycle de 8s, boucle infinie)
+// vit dans le CSS (`animation-iteration-count: infinite`) — ce script
+// ne fait jamais de `setInterval`/`requestAnimationFrame` pour gérer la
+// répétition (micro-sprint V3.1, prompt §3 : "le caractère répétitif
+// doit rester géré par CSS").
+//
+// Hystérésis à deux seuils (prompt §5) pour éviter les activations/
+// désactivations instables près d'une frontière unique : démarre
+// lorsque la section est visible à ≥30%, s'arrête seulement lorsqu'elle
+// repasse sous 5% — entre les deux, l'état actuel est conservé.
+//
+// Micro-sprint V3.2 (patterns) : une classe `pattern-*` est choisie au
+// hasard parmi 4, en excluant le dernier pattern joué (anti-répétition
+// immédiate), puis posée AVANT `is-wave-active`.
+//
+// Micro-sprint V3.2.1 (random par cycle) : le pattern ne reste plus figé
+// pour toute la durée de visibilité de la section — il change désormais
+// À CHAQUE CYCLE CSS de 8s, tant que la section reste visible. Technique
+// recommandée par le prompt : écouter l'événement CSS natif
+// `animationiteration` sur la couche `medium` (toujours animée, quel que
+// soit le pattern actif) plutôt qu'un `setInterval`/`rAF` — le JS ne
+// s'exécute donc que 3 types de moments : à l'entrée, une fois toutes
+// les 8s via `animationiteration`, et à la sortie. Remplacer uniquement
+// la classe de pattern (jamais `is-wave-active`) suffit à faire repartir
+// le cycle CSS depuis 0% : changer le NOM de l'animation appliquée à un
+// élément redémarre nativement l'animation, sans reflow forcé
+// nécessaire à cette étape (le reflow forcé de `startWave()` reste
+// nécessaire uniquement pour un redémarrage depuis un état ARRÊTÉ).
+import "../../styles/expertise-dot-wave.css";
+---
+
+<div class="home-expertise__dot-wave" aria-hidden="true">
+  <div class="home-expertise__dot-wave-layer home-expertise__dot-wave-base"></div>
+  <div class="home-expertise__dot-wave-layer home-expertise__dot-wave-medium"></div>
+  <div class="home-expertise__dot-wave-layer home-expertise__dot-wave-peak"></div>
+</div>
+
+<script>
+  const section = document.querySelector<HTMLElement>(".home-expertise");
+  const wave = document.querySelector<HTMLElement>(".home-expertise__dot-wave");
+  // Couche de référence pour détecter la fin d'un cycle CSS de 8s : elle
+  // porte toujours une animation `infinite`, quel que soit le pattern actif.
+  const mediumLayer = document.querySelector<HTMLElement>(".home-expertise__dot-wave-medium");
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Sous prefers-reduced-motion : aucun IntersectionObserver ni écouteur
+  // `animationiteration` créé, la classe `is-wave-active` n'est jamais
+  // posée — seule la grille de base (statique, non animée) reste visible
+  // (voir expertise-dot-wave.css).
+  if (section && wave && mediumLayer && !prefersReducedMotion) {
+    const START_THRESHOLD = 0.3; // démarre à ≥30% visible
+    const STOP_THRESHOLD = 0.05; // arrête seulement à <5% visible (hystérésis)
+
+    const PATTERNS = ["pattern-horizontal", "pattern-diagonal", "pattern-radial", "pattern-cross"];
+    let lastPattern: string | null = null;
+
+    function pickPattern(): string {
+      // Anti-répétition immédiate : retire le tirage tant que le résultat
+      // est identique au dernier pattern joué (sans effet si un seul
+      // pattern existait, garde-fou impossible à boucler ici vu PATTERNS.length > 1).
+      let candidate = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+      while (candidate === lastPattern) {
+        candidate = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+      }
+      return candidate;
+    }
+
+    // Choisit un nouveau pattern et remplace UNIQUEMENT la classe de
+    // pattern sur le wrapper — jamais `is-wave-active` ici. Utilisé à la
+    // fois au démarrage et à chaque `animationiteration`.
+    function applyNewPattern() {
+      const pattern = pickPattern();
+      lastPattern = pattern;
+      PATTERNS.forEach((p) => wave!.classList.remove(p));
+      wave!.classList.add(pattern);
+    }
+
+    function startWave() {
+      if (wave!.classList.contains("is-wave-active")) return; // déjà en cours, rien à faire
+      applyNewPattern();
+      // Reflow unique (jamais répété en boucle) avant d'ajouter la
+      // classe : garantit que le cycle CSS de 8s reparte bien depuis 0%
+      // à chaque vrai redémarrage depuis un état ARRÊTÉ.
+      void wave!.offsetWidth;
+      wave!.classList.add("is-wave-active");
+    }
+
+    function stopWave() {
+      // Retire la classe : coupe le cycle en cours, aucune animation CSS
+      // de l'onde ne continue à tourner hors champ (prompt §3), et plus
+      // aucun `animationiteration` ne peut se déclencher hors viewport.
+      wave!.classList.remove("is-wave-active");
+    }
+
+    // Micro-sprint V3.2.1 — cœur du changement : à chaque fin de cycle
+    // CSS de 8s de la couche `medium`, un nouveau pattern remplace
+    // l'actuel. Remplacer le nom de l'animation via une classe redémarre
+    // nativement le cycle à 0%, sans reflow forcé ni rAF/timer. Ignoré si
+    // l'onde a été arrêtée entre-temps (prompt §7).
+    mediumLayer.addEventListener("animationiteration", () => {
+      if (!wave!.classList.contains("is-wave-active")) return;
+      applyNewPattern();
+    });
+
+    // Seuils avec hystérésis (prompt §5) : `threshold: [STOP, START]` fait
+    // invoquer le callback uniquement quand le ratio de visibilité
+    // franchit l'une de ces deux valeurs (jamais à chaque pixel de
+    // scroll). Entre les deux seuils, l'état actuel (actif ou arrêté)
+    // est conservé tel quel — ni démarrage ni arrêt.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
+        const ratio = entry.intersectionRatio;
+        if (ratio >= START_THRESHOLD) {
+          startWave();
+        } else if (ratio < STOP_THRESHOLD) {
+          stopWave();
+        }
+        // Entre STOP_THRESHOLD et START_THRESHOLD : ne rien changer.
+      },
+      { threshold: [STOP_THRESHOLD, START_THRESHOLD] },
+    );
+    observer.observe(section);
+  }
+</script>

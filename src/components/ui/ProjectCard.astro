@@ -1,0 +1,300 @@
+---
+// ProjectCard — présentation d'une réalisation phare (CS-S3/CS-S4),
+// étendue en CS-S5 pour accepter de vrais médias (astro:assets). Props
+// alignées sur le schéma réel de la Content Collection `realisations`
+// (src/content.config.ts) — aucune propriété media inventée dans le
+// schéma : les images sont passées séparément (voir src/data/
+// projectMedia.ts). N'affiche `technologies` que si le tableau existe et
+// n'est pas vide. Média secondaire optionnel : la carte reste
+// compréhensible sans lui.
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import ActionLink from "./ActionLink.astro";
+
+interface Props {
+  slug: string;
+  title: string;
+  category: string;
+  summary: string;
+  technologies?: string[];
+  variant?: "featured" | "standard";
+  primaryImage?: ImageMetadata;
+  primaryAlt?: string;
+  secondaryImage?: ImageMetadata;
+  secondaryAlt?: string;
+}
+
+const {
+  slug,
+  title,
+  category,
+  summary,
+  technologies = [],
+  variant = "standard",
+  primaryImage,
+  primaryAlt,
+  secondaryImage,
+  secondaryAlt,
+} = Astro.props;
+---
+
+<article class:list={["project-card", variant === "featured" && "project-card--featured"]} data-motion="project">
+  <div class="project-card__media">
+    {primaryImage && primaryAlt ? (
+      <Picture
+        src={primaryImage}
+        alt={primaryAlt}
+        formats={["avif", "webp"]}
+        widths={[480, 768, 1024, 1440]}
+        sizes="(min-width: 900px) 55vw, 100vw"
+        loading="lazy"
+        decoding="async"
+        class="project-card__media-img"
+      />
+    ) : (
+      <div class="project-card__media-placeholder" aria-hidden="true"></div>
+    )}
+    {secondaryImage && secondaryAlt && (
+      <div class="project-card__inset">
+        <Picture
+          src={secondaryImage}
+          alt={secondaryAlt}
+          formats={["avif", "webp"]}
+          widths={[240, 360, 480]}
+          sizes="(min-width: 900px) 20vw, 60vw"
+          loading="lazy"
+          decoding="async"
+          class="project-card__inset-img"
+        />
+      </div>
+    )}
+  </div>
+  <p class="project-card__category">{category}</p>
+  <h3>{title}</h3>
+  <p class="project-card__summary">{summary}</p>
+  {technologies.length > 0 && (
+    <ul class="project-card__tech">
+      {technologies.map((tech) => <li>{tech}</li>)}
+    </ul>
+  )}
+  <ActionLink href={`/realisations/${slug}/`} variant="text" class="project-card__link">
+    Voir l'étude de cas
+  </ActionLink>
+</article>
+
+<style>
+  .project-card {
+    position: relative;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    height: 100%;
+    transition: border-color 180ms ease;
+  }
+
+  .project-card:hover,
+  .project-card:focus-within {
+    border-color: var(--color-border-strong);
+  }
+
+  /* CS-S8B §19 — "border light" : un léger highlight Ember sur 10-20% de
+     la bordure au hover/focus, jamais une bordure complète orange, jamais
+     un effet "spotlight" qui suit le curseur (CSS pur, aucun JS). */
+  .project-card::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 22%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-accent), rgba(228, 95, 54, 0));
+    opacity: 0;
+    transition: opacity 220ms ease;
+    pointer-events: none;
+  }
+
+  .project-card:hover::before,
+  .project-card:focus-within::before {
+    opacity: 1;
+  }
+
+  /*
+    CS-S5B — CAUSE RÉELLE DU GRAND VIDE AU-DESSUS DU MÉDIA SERENO (mesurée,
+    pas supposée : ~431px constatés en navigateur avant correction) :
+    `.home-projects__grid` est en CSS Grid ; par défaut (align-items:
+    normal → stretch), les deux colonnes (Sereno / colonne secondaire
+    empilant AgencyOS+Belkhir) sont étirées à la MÊME hauteur — celle de la
+    colonne secondaire, plus haute car elle contient deux cartes. `.project-
+    card` (règle de base, partagée) porte `height:100%`, qui fait
+    correspondre exactement la carte Sereno à cette hauteur de ligne
+    étirée — bien supérieure à son propre contenu. L'ancien `justify-
+    content: flex-end` pousse alors tout le contenu flex (média inclus) vers
+    le bas de cette boîte artificiellement trop haute : c'est le vide.
+    Correctif : `align-self: start` sort explicitement la carte featured du
+    stretch de la grille (elle garde sa hauteur naturelle, basée sur son
+    contenu) ; `height: auto` neutralise le `height:100%` hérité de la
+    règle de base UNIQUEMENT pour ce variant (AgencyOS/Belkhir, qui
+    utilisent la règle de base non modifiée, ne sont pas affectés). Le
+    `justify-content: flex-end` est retiré : sans stretch, il n'a plus de
+    raison d'être (le contenu commence naturellement en haut). L'espace
+    résiduel dû à une colonne secondaire plus haute existe désormais SOUS
+    la carte Sereno, dans la cellule de grille, jamais à l'intérieur.
+  */
+  .project-card--featured {
+    border-color: var(--color-border-strong);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    align-self: start;
+    height: auto;
+  }
+
+  .project-card__media {
+    position: relative;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-soft);
+    overflow: hidden;
+    /* CS-S8B §18 — séparation média/copy plus nette (espace légèrement
+       accru, ratio et média eux-mêmes strictement inchangés). */
+    margin-bottom: var(--space-md);
+    aspect-ratio: 16 / 9;
+  }
+
+  .project-card__media-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 8rem;
+  }
+
+  /* Contrairement à Container/ActionLink (composants utilisateur, cf. bug
+     CS-S4B/Footer), le <Picture> natif d'astro:assets propage bien le
+     data-astro-cid de ProjectCard.astro sur le <img> qu'il génère — vérifié
+     dans le HTML compilé (même attribut sur <article> et <img>). Ces règles
+     restent donc scopées normalement, sans :global(). */
+  /* CS-S8A — le micro-parallax vertical introduit par CS-S8 (translateY
+     ±6px) nécessitait un léger sur-cadrage (`position:absolute; inset:-8px
+     0;`) pour ne jamais révéler un bord vide sous l'`overflow:hidden` du
+     conteneur. Validation humaine CS-S8A : ce sur-cadrage, cumulé à
+     `object-fit:cover` sur un ratio 16/9, rendait les captures (Sereno,
+     AgencyOS, Belkhir) visiblement trop zoomées/recadrées — la lisibilité
+     de ces preuves produit passe avant l'effet de parallax (arbitrage
+     explicite du prompt CS-S8A §9). Le parallax média est donc supprimé et
+     le cadrage exact de CS-S5/CS-S5B est restauré (`width:100%;
+     height:100%`, plus de position absolute ni d'inset). */
+  .project-card__media-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 250ms ease;
+  }
+
+  .project-card:hover .project-card__media-img {
+    transform: scale(1.005);
+  }
+
+  /* Média secondaire — sous la primary en mobile (empilement simple),
+     inset partiellement superposé dès 700px (largeur du desktop grid,
+     cohérent avec le breakpoint déjà utilisé par home.css/Footer). */
+  .project-card__inset {
+    margin-top: var(--space-xs);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-surface);
+    max-width: 60%;
+  }
+
+  .project-card__inset-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 16 / 10;
+  }
+
+  @media (min-width: 700px) {
+    .project-card__inset {
+      position: absolute;
+      right: var(--space-sm);
+      bottom: var(--space-sm);
+      margin-top: 0;
+      width: 32%;
+      max-width: 32%;
+      box-shadow: none;
+      transition: border-color 180ms ease;
+    }
+
+    .project-card:hover .project-card__inset,
+    .project-card:focus-within .project-card__inset {
+      border-color: var(--color-accent-deep);
+    }
+  }
+
+  /* CS-S8B §18 — "label catégorie mieux posé" : micro-tiret graphite
+     devant le label, même texte, aucune nouvelle copy. */
+  .project-card__category {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .project-card__category::before {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 1px;
+    background: var(--color-accent-deep);
+    flex: none;
+  }
+
+  .project-card h3 {
+    font-size: 1.375rem;
+    margin: 0;
+  }
+
+  .project-card--featured h3 {
+    font-size: clamp(1.5rem, 2.5vw, 1.875rem);
+  }
+
+  .project-card__summary {
+    font-size: 0.9375rem;
+    margin: 0;
+  }
+
+  .project-card__tech {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin: var(--space-xs) 0 0 0;
+    padding: 0;
+  }
+
+  .project-card__tech li {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .project-card__link {
+    margin-top: var(--space-xs);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-card__media-img {
+      transition: none;
+    }
+  }
+</style>

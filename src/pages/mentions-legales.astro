@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Mentions légales — Cantrelle Studio"
+  description="Mentions légales de Cantrelle Studio — page à compléter avant mise en ligne."
+>
+  <section class="container">
+    <h1>Mentions légales</h1>
+    <p class="placeholder-legal">
+      Cette page est un placeholder. Aucune donnée juridique (statut, SIRET,
+      adresse, hébergeur) n'a été inventée. Ce contenu devra être complété
+      avec des informations réelles avant toute mise en ligne.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-block: var(--space-lg);
+  }
+  .placeholder-legal {
+    border: 1px dashed var(--color-border);
+    padding: var(--space-sm);
+    color: var(--color-text-muted);
+  }
+</style>

@@ -1,0 +1,42 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement concurrent : un push qui arrive pendant un déploiement
+# en cours n'annule pas ce dernier, seulement les runs en attente.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install, build and upload the Astro site
+        uses: withastro/action@v6
+        # Aucune option supplémentaire nécessaire : withastro/action@v6
+        # détecte automatiquement le gestionnaire de paquets via le lockfile
+        # présent (package-lock.json → npm ci), exécute `astro build`, et
+        # uploade `dist/` comme artifact Pages.
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

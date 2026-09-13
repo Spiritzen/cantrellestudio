@@ -1,0 +1,20 @@
+---
+// CaseStudyNext — CS-S10 §39. Bloc léger "Projet suivant", cycle Sereno →
+// AgencyOS → Belkhir → Sereno. Aucun carousel JS : un simple lien.
+// Micro-sprint pré-déploiement GitHub Pages.
+import { withBase } from "../../utils/paths";
+
+interface Props {
+  title: string;
+  category: string;
+  href: string;
+}
+
+const { title, category, href } = Astro.props;
+---
+
+<a class="case-study__next" href={withBase(href)}>
+  <span class="case-study__next-label">Projet suivant</span>
+  <span class="case-study__next-title">{title} <span aria-hidden="true">→</span></span>
+  <span class="case-study__next-category">{category}</span>
+</a>

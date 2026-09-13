@@ -1,0 +1,63 @@
+---
+// RelatedCaseStudy — CS-S10B. Bloc de preuve contextuelle sur les pages
+// Services, grammaire commune aux 3 pages (prompt §17) : label "ÉTUDE DE
+// CAS", cadre média fidèle (jamais un crop destructeur — prompt §18,
+// `object-fit: contain`, comme `CaseStudyMedia` en CS-S10), titre, phrase de
+// contexte courte, 2-4 capacités démontrées, CTA textuel avec ancre
+// descriptive ("Voir l'étude de cas <Titre>", prompt §20 — jamais "cliquez
+// ici"). Un variant `role="primary"` (preuve phare, plus grand) et
+// `role="secondary"` (plus discret) porte la hiérarchie visuelle imposée
+// entre 2 preuves sur une même page (prompt §7 : Sereno > AgencyOS).
+//
+// Design volontairement sobre (prompt §16) : bordure fine, surface sombre,
+// accent Ember réservé à un simple liseré sur le variant `primary` — jamais
+// de glow, de badge orange plein, de gradient ou de flèche géante.
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+// Micro-sprint pré-déploiement GitHub Pages — `href` (chemin canonique non
+// préfixé) passe par `withBase()` au rendu. `image`/`Picture` restent
+// inchangés : `astro:assets` gère déjà lui-même le sous-chemin.
+import { withBase } from "../../utils/paths";
+
+interface Props {
+  role: "primary" | "secondary";
+  title: string;
+  category: string;
+  angle: string;
+  capabilities: string[];
+  image: ImageMetadata;
+  imageAlt: string;
+  href: string;
+}
+
+const { role, title, category, angle, capabilities, image, imageAlt, href } = Astro.props;
+---
+
+<article class:list={["related-case-study", `related-case-study--${role}`]} data-motion="proof">
+  <span class="related-case-study__label">Étude de cas</span>
+  <div class="related-case-study__media">
+    <Picture
+      src={image}
+      alt={imageAlt}
+      formats={["avif", "webp"]}
+      widths={role === "primary" ? [400, 640, 900] : [320, 480, 640]}
+      sizes="(min-width: 900px) 40vw, 100vw"
+      loading="lazy"
+      decoding="async"
+      class="related-case-study__img"
+    />
+  </div>
+  <p class="related-case-study__category">{category}</p>
+  <h3 class="related-case-study__title">{title}</h3>
+  <p class="related-case-study__angle">{angle}</p>
+  {capabilities.length > 0 && (
+    <ul class="related-case-study__capabilities">
+      {capabilities.map((capability) => (
+        <li>{capability}</li>
+      ))}
+    </ul>
+  )}
+  <a class="related-case-study__cta" href={withBase(href)}>
+    Voir l'étude de cas {title} <span aria-hidden="true">→</span>
+  </a>
+</article>

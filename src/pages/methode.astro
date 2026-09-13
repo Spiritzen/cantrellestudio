@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const steps = ["Comprendre", "Concevoir", "Développer", "Tester", "Livrer"];
+---
+
+<BaseLayout
+  title="Méthode — Cantrelle Studio"
+  description="Méthode de travail du studio : comprendre, concevoir, développer, tester, livrer. Contenu provisoire (CS-S0)."
+>
+  <section class="container">
+    <h1>Méthode</h1>
+    <p class="provisional">Contenu provisoire (CS-S0), rédaction commerciale non définitive.</p>
+    <ol>
+      {steps.map((step) => <li>{step}</li>)}
+    </ol>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-block: var(--space-lg);
+  }
+  .provisional {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    border-left: 3px solid var(--color-border);
+    padding-left: var(--space-sm);
+  }
+</style>

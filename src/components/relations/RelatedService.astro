@@ -1,0 +1,32 @@
+---
+// RelatedService — CS-S10B. Bloc "Service associé" affiché sous le Hero de
+// chaque étude de cas (prompt §10) : label discret + lien réel vers la page
+// Service que ce projet illustre principalement. Un variant `role="connexe"`
+// (prompt §11), volontairement plus discret (texte plus petit, pas de
+// bordure), sert pour une relation secondaire réellement pertinente
+// (AgencyOS → Développement sur mesure) — jamais au même niveau visuel que
+// le Service principal, et jamais forcé (Belkhir n'en affiche aucun).
+// Micro-sprint pré-déploiement GitHub Pages — `serviceHref` provient de
+// `serviceCaseStudyMap.ts` (chemin canonique non préfixé, source de vérité
+// unique) : `withBase()` est appliqué ici, au point de rendu, jamais dans la
+// donnée elle-même.
+import { withBase } from "../../utils/paths";
+
+interface Props {
+  role: "principal" | "connexe";
+  serviceLabel: string;
+  serviceHref: string;
+  angle?: string;
+}
+
+const { role, serviceLabel, serviceHref, angle } = Astro.props;
+const label = role === "principal" ? "Service associé" : "Service connexe";
+---
+
+<div class:list={["case-study__related-service", `case-study__related-service--${role}`]}>
+  <span class="case-study__related-service-label">{label}</span>
+  <a class="case-study__related-service-link" href={withBase(serviceHref)}>
+    {serviceLabel} <span aria-hidden="true">→</span>
+  </a>
+  {angle && <p class="case-study__related-service-angle">{angle}</p>}
+</div>

@@ -1,0 +1,284 @@
+---
+// Home — wireframe premium de composition (CS-S3), refactorisée pour
+// utiliser les composants réutilisables extraits en CS-S4. Résultat visuel
+// quasiment identique à CS-S3 : même ordre de sections, même H1, même copy
+// V0, même sélection de réalisations. Voir rapport CS-S4 pour le détail des
+// ajustements CSS mineurs liés à l'extraction.
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ServiceItem from "../components/ui/ServiceItem.astro";
+import ProjectCard from "../components/ui/ProjectCard.astro";
+import { projectMedia } from "../data/projectMedia";
+import HeroScene from "../components/hero/HeroScene";
+import HomeMotion from "../components/motion/HomeMotion.astro";
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
+import "../styles/home.css";
+
+// --- D. Réalisations : sélection depuis la Content Collection ------------
+// Tri featured d'abord puis order, sans muter la collection source
+// (spread avant sort). Les 3 entrées actuelles sont toutes `featured: true`
+// avec order 1/2/3, donc ce tri donne naturellement Sereno → AgencyOS →
+// Belkhir Dépannage — exactement les 3 réalisations attendues.
+const allRealisations = await getCollection("realisations");
+const featuredRealisations = [...allRealisations]
+  .sort((a, b) => {
+    if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+    return a.data.order - b.data.order;
+  })
+  .slice(0, 3);
+const [primaryRealisation, ...secondaryRealisations] = featuredRealisations;
+
+// --- B. Expertises ---------------------------------------------------------
+const expertises = [
+  {
+    index: "01",
+    title: "Applications métier & SaaS",
+    text: "Outils internes, tableaux de bord, CRM, facturation, workflows, rôles et automatisations : des applications pensées pour votre façon de travailler.",
+    href: "/applications-metier-saas/",
+  },
+  {
+    index: "02",
+    title: "Sites professionnels",
+    text: "Des sites rapides, accessibles et orientés SEO, conçus pour présenter votre activité clairement et transformer l'intérêt en prise de contact.",
+    href: "/sites-professionnels/",
+  },
+  {
+    index: "03",
+    title: "Développement sur mesure",
+    text: "API, intégrations, automatisation, modernisation ou évolution d'un produit existant : le studio s'adapte à votre environnement technique.",
+    href: "/developpement-sur-mesure/",
+  },
+];
+
+// --- C. Approche -------------------------------------------------------
+const approachProofs = [
+  "Compréhension métier",
+  "Architecture adaptée",
+  "Interlocuteur responsable du projet",
+];
+
+// --- E. Méthode ----------------------------------------------------------
+const methodSteps = [
+  { index: "01", title: "Comprendre", text: "Clarifier le besoin, les utilisateurs, les contraintes et l'existant." },
+  { index: "02", title: "Concevoir", text: "Définir l'architecture, les parcours et le niveau de finition adapté." },
+  { index: "03", title: "Développer", text: "Construire par étapes courtes avec un périmètre maîtrisé." },
+  { index: "04", title: "Tester", text: "Vérifier comportement, responsive, accessibilité et qualité technique." },
+  { index: "05", title: "Livrer", text: "Mettre en production proprement et documenter ce qui doit évoluer." },
+];
+
+// --- F. Capacités techniques ---------------------------------------------
+const capabilityGroups = [
+  { title: "Frontend", items: "Astro, React, TypeScript" },
+  { title: "Backend", items: "Java / Spring Boot, Ruby on Rails, API REST" },
+  { title: "Data & livraison", items: "PostgreSQL, Docker, CI/CD" },
+  { title: "3D & expérience", items: "Three.js, React Three Fiber, GSAP" },
+];
+---
+
+<BaseLayout
+  title="Cantrelle Studio — Applications métier, SaaS & sites professionnels"
+  description="Cantrelle Studio conçoit des applications métier, SaaS, sites professionnels et développements sur mesure adaptés à votre activité."
+>
+  <!-- A. HERO -->
+  <section class="home-section home-hero">
+    <Container class="home-hero__grid">
+      <div class="home-hero__copy">
+        <span class="home-kicker home-kicker--accent" data-motion="hero-eyebrow">Studio de développement</span>
+        <h1 data-motion="hero-title">Des outils numériques conçus autour de votre activité.</h1>
+        <p class="home-hero__subtext" data-motion="hero-lead">
+          <strong class="home-hero__highlight">Applications métier</strong>, <strong class="home-hero__highlight">SaaS</strong> et <strong class="home-hero__highlight">sites professionnels</strong> : le studio
+          conçoit des solutions sur mesure, en choisissant la technologie
+          selon vos besoins, vos contraintes et votre existant.
+        </p>
+        <div class="home-hero__actions" data-motion="hero-cta">
+          <ActionLink href="/contact/" variant="primary">Parler de votre projet</ActionLink>
+          <ActionLink href="/realisations/" variant="secondary">Voir les réalisations</ActionLink>
+        </div>
+        <p class="home-hero__note" data-motion="hero-note">Applications métier · SaaS · Web professionnel</p>
+      </div>
+
+      <!-- Stage 3D — CS-S6B (refonte de direction). CS-S6 avait ici un
+           cadre + lignes + blocs CSS servant de fallback/wireframe : jugés
+           parasites par Sébastien ("à quoi servent les cadres derrière ?"),
+           ils sont supprimés. Seul reste un halo discret (fallback minimal
+           si JS/WebGL indisponible, ou <900px). La scène 3D elle-même n'est
+           plus confinée dans cette boîte : HeroScene rend un fond fixe
+           plein viewport (voir home.css .hero-scene), positionné ici
+           uniquement pour co-localiser le marquage avec le Hero. -->
+      <div class="home-hero__stage" aria-hidden="true">
+        <div class="home-hero__stage-glow"></div>
+        <HeroScene client:media="(min-width: 900px)" />
+      </div>
+    </Container>
+  </section>
+
+  <!-- B. EXPERTISES -->
+  <section class="home-section home-section--soft home-expertise" aria-labelledby="home-expertise-title">
+    <ExpertiseDotWave />
+    <Container>
+      <SectionHeading id="home-expertise-title" eyebrow="Expertises" title="Du besoin métier à l'expérience web.">
+        <Fragment slot="intro">Une même <strong class="home-expertise__highlight">méthode</strong>, trois types de <strong class="home-expertise__highlight">projets</strong> : comprendre le <strong class="home-expertise__highlight">besoin</strong>, choisir l'architecture adaptée et <strong class="home-expertise__highlight">construire</strong> une solution durable.</Fragment>
+      </SectionHeading>
+      <ol class="home-expertise__list">
+        {expertises.map((item) => (
+          <ServiceItem index={item.index} title={item.title} description={item.text} href={item.href} />
+        ))}
+      </ol>
+    </Container>
+  </section>
+
+  <!-- C. APPROCHE / DIFFÉRENCIATION -->
+  <section class="home-section home-approach" aria-labelledby="home-approach-title">
+    <Container>
+      <span class="home-kicker home-kicker--accent">Approche</span>
+      <div class="home-approach__grid">
+        <div>
+          <h2 id="home-approach-title" class="home-approach__statement">
+            La technologie s'adapte au projet,<br />pas l'inverse.
+          </h2>
+          <p class="home-approach__text">
+            Un site fortement orienté SEO n'appelle pas les mêmes choix qu'un
+            SaaS multi-utilisateurs ou qu'un outil métier connecté à votre
+            système d'information. Le studio part du besoin, des contraintes,
+            de l'existant et des objectifs avant de choisir l'architecture.
+          </p>
+        </div>
+        <ul class="home-approach__proofs">
+          {approachProofs.map((proof, i) => (
+            <li data-motion="proof">
+              <span class="home-approach__proof-index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              {proof}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Container>
+  </section>
+
+  <!-- D. RÉALISATIONS PHARES -->
+  <section class="home-section home-section--soft home-projects" aria-labelledby="home-projects-title">
+    <Container>
+      <SectionHeading
+        id="home-projects-title"
+        eyebrow="Réalisations"
+        title="Des projets construits autour de besoins très différents."
+        intro="Logiciel métier, SaaS de gestion ou site professionnel : chaque projet part d'un problème différent, pas d'une stack imposée."
+      />
+
+      <div class="home-projects__grid">
+        {primaryRealisation && (
+          <ProjectCard
+            slug={primaryRealisation.data.slug}
+            title={primaryRealisation.data.shortTitle ?? primaryRealisation.data.title}
+            category={primaryRealisation.data.category}
+            summary={primaryRealisation.data.summary}
+            technologies={primaryRealisation.data.technologies}
+            variant="featured"
+            primaryImage={projectMedia[primaryRealisation.data.slug]?.primary}
+            primaryAlt={projectMedia[primaryRealisation.data.slug]?.primaryAlt}
+            secondaryImage={projectMedia[primaryRealisation.data.slug]?.secondary}
+            secondaryAlt={projectMedia[primaryRealisation.data.slug]?.secondaryAlt}
+          />
+        )}
+
+        <div class="home-projects__secondary">
+          {secondaryRealisations.map((realisation) => (
+            <ProjectCard
+              slug={realisation.data.slug}
+              title={realisation.data.shortTitle ?? realisation.data.title}
+              category={realisation.data.category}
+              summary={realisation.data.summary}
+              technologies={realisation.data.technologies}
+              variant="standard"
+              primaryImage={projectMedia[realisation.data.slug]?.primary}
+              primaryAlt={projectMedia[realisation.data.slug]?.primaryAlt}
+              secondaryImage={projectMedia[realisation.data.slug]?.secondary}
+              secondaryAlt={projectMedia[realisation.data.slug]?.secondaryAlt}
+            />
+          ))}
+        </div>
+      </div>
+    </Container>
+  </section>
+
+  <!-- E. MÉTHODE -->
+  <section class="home-section home-method" aria-labelledby="home-method-title">
+    <Container>
+      <SectionHeading
+        id="home-method-title"
+        eyebrow="Méthode"
+        title="Un projet clair, de la compréhension à la livraison."
+      />
+      <div class="home-method__wrapper">
+        <div class="home-method__progress" aria-hidden="true">
+          <div class="home-method__progress-fill"></div>
+        </div>
+        <div class="home-method__rail-dots" aria-hidden="true">
+          {methodSteps.map(() => (
+            <span class="home-method__dot"></span>
+          ))}
+        </div>
+        <ol class="home-method__list">
+          {methodSteps.map((step) => (
+            <li class="home-method__step" data-motion="method-step">
+              <span class="home-method__index" aria-hidden="true">{step.index}</span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <ActionLink href="/methode/" variant="text" class="home-method__link">Découvrir la méthode</ActionLink>
+    </Container>
+  </section>
+
+  <!-- F. CAPACITÉS TECHNIQUES -->
+  <section class="home-section home-section--soft home-capabilities" aria-labelledby="home-capabilities-title">
+    <Container>
+      <SectionHeading
+        id="home-capabilities-title"
+        eyebrow="Capacités"
+        title="Les bonnes briques, au bon endroit."
+      />
+      <div class="home-capabilities__grid">
+        {capabilityGroups.map((group, i) => (
+          <dl class="home-capabilities__group" data-motion="capability">
+            <div class="home-capabilities__group-head">
+              <dt>{group.title}</dt>
+              <span class="home-capabilities__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            </div>
+            {group.items.split(", ").map((item) => (
+              <dd>{item}</dd>
+            ))}
+          </dl>
+        ))}
+      </div>
+      <p class="home-capabilities__closing">
+        La stack reste un moyen, <span class="home-capabilities__closing-accent">jamais la promesse.</span>
+      </p>
+    </Container>
+  </section>
+
+  <!-- G. CTA FINAL -->
+  <section class="home-section home-final-cta" aria-labelledby="home-final-cta-title">
+    <div class="home-final-cta__glow" aria-hidden="true"></div>
+    <Container class="home-final-cta__inner">
+      <span class="home-kicker" data-motion="cta-eyebrow">Un projet ?</span>
+      <h2 id="home-final-cta-title" data-motion="cta-title">Parlons du problème avant de parler technologie.</h2>
+      <p class="home-final-cta__text" data-motion="cta-text">
+        Application métier, SaaS, site professionnel ou besoin plus
+        spécifique : commençons par comprendre ce qu'il faut réellement
+        construire.
+      </p>
+      <div class="home-final-cta__actions" data-motion="cta-actions">
+        <ActionLink href="/contact/" variant="primary">Parler de votre projet</ActionLink>
+        <ActionLink href="/a-propos/" variant="secondary">Découvrir le studio</ActionLink>
+      </div>
+    </Container>
+  </section>
+
+  <HomeMotion />
+</BaseLayout>

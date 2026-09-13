@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Contact — Cantrelle Studio"
+  description="Page de prise de contact avec Cantrelle Studio. Coordonnées professionnelles à compléter avant mise en ligne."
+>
+  <section class="container">
+    <h1>Contact</h1>
+    <p class="provisional">
+      Contenu provisoire (CS-S0). Aucun formulaire de contact fonctionnel
+      n'est mis en place dans ce sprint.
+    </p>
+    <p>Coordonnées professionnelles à compléter avant mise en ligne.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-block: var(--space-lg);
+  }
+  .provisional {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    border-left: 3px solid var(--color-border);
+    padding-left: var(--space-sm);
+  }
+</style>

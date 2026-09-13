@@ -1,0 +1,14 @@
+{
+  "slug": "sereno",
+  "title": "Sereno",
+  "summary": "SaaS de facturation électronique conçu autour des contraintes métier et de la conformité française : création, contrôles, émission, Factur-X et suivi du cycle de vie.",
+  "category": "Application métier / SaaS",
+  "featured": true,
+  "order": 1,
+  "technologies": [],
+  "problem": "La facturation électronique implique des données structurées, des statuts de cycle de vie, des contrôles de conformité et des documents normés (PDF/A, XML) — pas un simple formulaire.",
+  "solution": "Un workflow explicite (créer, contrôler, émettre, suivre, corriger par avoir) qui traduit les règles Factur-X en comportements logiciels vérifiables, avec des contrôles bloquants avant émission.",
+  "result": "Un socle Factur-X validé (PDF/A-3 + XML), un workflow facture/avoir complet et une transmission simulée en environnement sandbox — avant toute exploitation commerciale réelle.",
+  "seoTitle": "Sereno — SaaS de facturation électronique | Cantrelle Studio",
+  "seoDescription": "Étude de cas Sereno : SaaS de facturation électronique multi-tenant, workflow métier, Factur-X, conformité et architecture Rails + React."
+}

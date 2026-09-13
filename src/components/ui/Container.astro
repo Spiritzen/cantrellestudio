@@ -1,0 +1,17 @@
+---
+// Container — largeur max du contenu + padding inline responsive UNIQUEMENT.
+// Aucun style métier (pas de background, pas de spacing vertical, pas de
+// typographie) : la classe `.container` existante (global.css) porte déjà
+// cette seule responsabilité, ce composant n'en est qu'un wrapper trivial
+// pour éliminer la duplication de `<div class="container ...">` répétée
+// dans Header/Footer/Home (CS-S4 §8).
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={["container", className]}>
+  <slot />
+</div>

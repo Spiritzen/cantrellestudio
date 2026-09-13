@@ -1,0 +1,14 @@
+{
+  "slug": "agencyos",
+  "title": "AgencyOS",
+  "summary": "Plateforme SaaS multi-tenant qui centralise CRM, projets, tâches, temps, facturation et pilotage financier dans un même espace.",
+  "category": "Application métier / SaaS",
+  "featured": true,
+  "order": 2,
+  "technologies": [],
+  "problem": "Une agence ou une activité de service disperse souvent ses clients, projets, tâches, temps et factures dans plusieurs outils déconnectés et peu fiables.",
+  "solution": "Une plateforme SaaS multi-tenant qui centralise CRM, projets, timesheet et finance dans un espace unique, avec isolation stricte des données par organisation.",
+  "result": "Une architecture multi-tenant fonctionnelle, des modules cohérents (CRM, projets, finance, équipe) et un déploiement Docker/HTTPS expérimenté en conditions réelles — démonstration publique actuellement hors ligne.",
+  "seoTitle": "AgencyOS — SaaS de gestion multi-tenant | Cantrelle Studio",
+  "seoDescription": "Étude de cas AgencyOS : SaaS multi-tenant réunissant CRM, projets, tâches, temps et finance avec Spring Boot, React et PostgreSQL."
+}

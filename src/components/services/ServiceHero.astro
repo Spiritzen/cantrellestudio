@@ -1,0 +1,38 @@
+---
+// ServiceHero — CS-S9. Bloc d'ouverture partagé par les 3 pages services :
+// eyebrow + H1 + lead + CTA. Volontairement simple (aucun motif visuel
+// spécifique ici : l'architecture/diagramme propre à chaque page vit dans
+// la page elle-même, pas dans ce composant — prompt §31, "leur composition
+// centrale doit différer"). Aucune 3D, aucun JS : CSS/HTML statique.
+import ActionLink from "../ui/ActionLink.astro";
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+  secondaryHref: string;
+  secondaryLabel: string;
+}
+
+const {
+  eyebrow,
+  title,
+  lead,
+  primaryHref = "/contact/",
+  primaryLabel = "Parler de votre projet",
+  secondaryHref,
+  secondaryLabel,
+} = Astro.props;
+---
+
+<div class="service-hero" data-motion="hero">
+  <span class="service-hero__eyebrow">{eyebrow}</span>
+  <h1 class="service-hero__title">{title}</h1>
+  <p class="service-hero__lead">{lead}</p>
+  <div class="service-hero__actions">
+    <ActionLink href={primaryHref} variant="primary">{primaryLabel}</ActionLink>
+    <ActionLink href={secondaryHref} variant="secondary">{secondaryLabel}</ActionLink>
+  </div>
+</div>

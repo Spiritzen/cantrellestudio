@@ -1,0 +1,698 @@
+/*
+  Home — composition de page (CS-S3, nettoyé en CS-S4 après extraction des
+  composants). Importé UNIQUEMENT par src/pages/index.astro. Toutes les
+  classes restent préfixées `home-` et scopées à cette page.
+  Principe (CS-S4 §23) : composant = apparence locale (voir
+  src/components/ui/*.astro), home.css = composition de la page (grilles,
+  spacing entre sections, éléments qui n'ont pas été extraits car non
+  réutilisés ailleurs : Hero, Approche, Méthode, Capacités, CTA final).
+*/
+
+.home-section {
+  border-top: 1px solid var(--color-border);
+  padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+.home-section:first-child {
+  border-top: none;
+}
+
+.home-section--soft {
+  background: var(--color-bg-soft);
+}
+
+/* Micro-label autonome — utilisé uniquement là où SectionHeading ne
+   s'applique pas (Hero : pas de H1 via composant ; Approche et CTA final :
+   mise en page asymétrique incompatible avec le motif standard). */
+.home-kicker {
+  display: block;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+/* Micro-sprint labels — 6 petits labels de section précis (Hero, Expertises,
+   Approche, Réalisations, Méthode, Capacités) passent en accent CTA à 80%
+   d'opacité, sans toucher taille/typo/position/spacing (aucune propriété de
+   layout redéclarée ici). `.home-kicker--accent` cible uniquement les 2 spans
+   qui l'ont explicitement reçu dans index.astro (Hero + Approche) : le 3e
+   usage de `.home-kicker` ("Un projet ?", CTA final) n'a pas cette classe et
+   reste donc inchangé. `.section-heading__eyebrow` est un composant partagé
+   avec les 3 pages Services, mais cette règle vit dans home.css, chargé
+   uniquement par index.astro — le préfixe `.home-section` est une précaution
+   défensive supplémentaire, pas le mécanisme de scoping réel. */
+.home-kicker--accent,
+.home-section .section-heading__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   A. HERO
+   ========================================================================== */
+
+.home-hero {
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+  /* TEST VISUEL — retire le test précédent (dégradé transparent→
+     --color-bg-soft) et reproduit à la place, à l'identique, la source
+     réelle de la lueur orangée du CTA final : `.home-final-cta__glow`
+     (voir ce sélecteur plus bas dans ce même fichier), un halo radial
+     ember diffus (même couleur, mêmes stops, même position). Appliqué
+     directement en `background` du Hero — pas de nouvelle couche DOM,
+     pas de panneau opaque, la 3D/les filaments restent visibles au
+     travers. Surcharge strictement locale, aucun token global touché,
+     trivialement réversible (retirer cette seule règle `background`). */
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(228, 95, 54, 0.14),
+    rgba(228, 95, 54, 0) 60%
+  );
+}
+
+.home-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .home-hero__grid {
+    grid-template-columns: 55fr 45fr;
+  }
+}
+
+.home-hero__copy {
+  max-width: 46rem;
+}
+
+.home-hero__subtext {
+  font-size: 1.1875rem;
+  color: var(--color-text-secondary);
+  max-width: 42rem;
+  margin: var(--space-sm) 0 var(--space-md) 0;
+}
+
+/* Micro-sprint Hero — mise en évidence de 3 mots/groupes dans le
+   sous-texte (gras + légèrement plus blanc que le reste, qui reste en
+   `--color-text-secondary`). Réutilise `--color-text` déjà existant
+   (couleur des titres) : aucune nouvelle couleur, même traitement que
+   `.home-expertise__highlight`. */
+.home-hero__highlight {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.home-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.home-hero__note {
+  margin: var(--space-md) 0 0 0;
+  font-size: 0.8125rem;
+  /* Micro-ajustement Hero — couleur uniquement (token accent existant),
+     aucune autre propriété touchée. L'animation d'entrée (opacity/transform/
+     blur) est gérée séparément par HomeMotion.astro et n'anime jamais la
+     couleur : aucun conflit possible. */
+  color: var(--color-accent);
+  letter-spacing: 0.04em;
+}
+
+/* Zone réservée dans la grille du Hero pour la colonne droite (CS-S3).
+   CS-S6B a retiré le cadre/lignes/blocs CSS qui y vivaient (jugés
+   parasites, "widget dans une carte" — verdict Sébastien) : ne reste
+   qu'un halo minimal en fallback. La scène 3D active, elle, n'est PLUS
+   rendue à l'intérieur de cette boîte (voir .hero-scene ci-dessous) : ce
+   conteneur ne sert plus qu'à réserver l'espace visuel de la colonne
+   droite quand la 3D n'est pas active (JS désactivé, WebGL indisponible,
+   <900px), sans aucune bordure ni fond qui la ferait ressembler à un
+   composant encadré. */
+.home-hero__stage {
+  position: relative;
+  min-height: 20rem;
+}
+
+.home-hero__stage-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 65% 35%,
+    rgba(228, 95, 54, 0.12),
+    rgba(228, 95, 54, 0) 60%
+  );
+}
+
+/* Seuil aligné exactement sur l'hydratation React de la scène 3D
+   (`client:media="(min-width: 900px)"`, HeroScene.tsx) — voir rapport
+   CS-S6 pour la justification initiale, inchangée en CS-S6B. */
+@media (max-width: 899px) {
+  .home-hero__stage {
+    display: none;
+  }
+}
+
+/* CS-S6B — refonte de positionnement : la scène 3D n'est plus un widget
+   encadré dans le Hero, mais un FOND FIXE PLEIN VIEWPORT, transparent
+   (Canvas alpha:true), sous TOUT le contenu de la page. `position:fixed`
+   place cet élément dans le contexte d'empilement racine, indépendamment
+   de sa position dans le DOM (aucun ancêtre ne porte de transform/filter
+   qui le "piégerait" — vérifié) ; `z-index:-1` le fait peindre sous le
+   contenu statique de la page (sections, cards, header sticky) plutôt que
+   dessus (un élément positionné à z-index:auto/0 peindrait au contraire
+   AU-DESSUS du contenu statique, quel que soit l'ordre DOM — d'où ce
+   z-index explicitement négatif, condition structurelle, pas cosmétique,
+   de la règle "ne jamais passer au-dessus des cards/texte/CTA", prompt
+   §10). `pointer-events:none` : ceinture-et-bretelles, ce fond ne peut
+   physiquement jamais intercepter un clic, même si un futur changement de
+   z-index venait à le repasser dessus par erreur. */
+.hero-scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   B. EXPERTISES — grille (l'apparence de chaque item vit dans ServiceItem)
+   ========================================================================== */
+
+.home-expertise__list {
+  list-style: none;
+  margin: var(--space-lg) 0 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* Micro-sprint "AnimationCardBesoinWebAxp" — mise en évidence de 4 mots
+   dans la phrase d'intro Expertises (gras + légèrement plus blanc que le
+   reste de la phrase, qui reste en `--color-text-secondary`). Réutilise
+   `--color-text` déjà existant (couleur des titres) : aucune nouvelle
+   couleur, aucune nouvelle variable. */
+.home-expertise__highlight {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   C. APPROCHE / DIFFÉRENCIATION
+   ========================================================================== */
+
+.home-approach__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 4vw, 3rem);
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .home-approach__grid {
+    grid-template-columns: 58fr 42fr;
+    align-items: start;
+  }
+}
+
+.home-approach__statement {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.2;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.home-approach__text {
+  max-width: 52ch;
+}
+
+/* CS-S8B §17 — halo Ember très localisé derrière la colonne des plaques :
+   opacité basse, zone limitée à la colonne elle-même (jamais un gros halo
+   plein écran), peint AVANT les plaques (élément généré en premier,
+   `position:relative` sur `.home-approach__proofs` crée son propre
+   contexte d'empilement local) — la 3D de fond continue de passer
+   derrière toute la section sans être combattue par ce halo, purement
+   local à cette colonne. */
+.home-approach__proofs {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.home-approach__proofs::before {
+  content: "";
+  position: absolute;
+  inset: -1.5rem -1rem;
+  background: radial-gradient(circle at 30% 20%, rgba(228, 95, 54, 0.07), rgba(228, 95, 54, 0) 65%);
+  pointer-events: none;
+}
+
+/* CS-S8 §14 puis CS-S8B §14-16 — "plaques structurelles" : bordure gauche
+   Ember conservée, fond très léger, index discret 01/02/03 (décoratif,
+   aria-hidden, ne modifie aucune copy), léger décalage de profondeur
+   architectural par plaque (±3px max, jamais un escalier prononcé).
+   Jamais une grosse card (pas d'ombre, pas de bordure complète, pas de
+   radius large). */
+.home-approach__proofs li {
+  position: relative;
+  border-left: 2px solid var(--color-accent-deep);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface);
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: transform 250ms ease, border-color 250ms ease;
+}
+
+.home-approach__proof-index {
+  display: inline-block;
+  min-width: 1.75em;
+  margin-right: 0.5em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  vertical-align: middle;
+}
+
+/* Décalage architectural (§16) : plaque 1 légèrement plus proche, plaque
+   2 neutre, plaque 3 légèrement décalée — amplitude 3px, jamais un
+   escalier. Combiné avec le hover (§36 : même propriété `transform` que
+   le reveal GSAP) via le pattern `clearProps` déjà éprouvé en CS-S8 : le
+   reveal pose puis retire son propre `transform` inline en fin de tween,
+   laissant cette règle CSS reprendre la main à chaque repos/replay. */
+.home-approach__proofs li:nth-child(1) {
+  transform: translateY(-3px);
+}
+
+.home-approach__proofs li:nth-child(3) {
+  transform: translateY(3px);
+}
+
+.home-approach__proofs li:hover {
+  transform: translateX(4px);
+  border-color: var(--color-accent);
+}
+
+.home-approach__proofs li:nth-child(1):hover {
+  transform: translate(4px, -3px);
+}
+
+.home-approach__proofs li:nth-child(3):hover {
+  transform: translate(4px, 3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-approach__proofs li {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   D. RÉALISATIONS PHARES — grille (l'apparence de chaque carte vit dans
+   ProjectCard)
+   ========================================================================== */
+
+.home-projects__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .home-projects__grid {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+.home-projects__secondary {
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* ==========================================================================
+   E. MÉTHODE
+   ========================================================================== */
+
+/* CS-S8 §17, étendu CS-S8B §21-22 — wrapper positionné : ancre le rail
+   horizontal (ligne + marqueurs) sur desktop et la ligne verticale de
+   parcours sur mobile/tablette.
+   ORDRE DE CASCADE IMPORTANT : toutes les règles "par défaut" (mobile)
+   sont déclarées EN PREMIER dans ce bloc, les media queries `min-width`
+   (desktop) et `max-width` (mobile, pour les détails qui ne peuvent pas
+   être de simples valeurs par défaut, ex. pseudo-élément de ligne
+   verticale) viennent APRÈS — à spécificité égale, une règle plus tardive
+   dans le fichier gagne sur une règle antérieure pour la même largeur de
+   viewport ; déclarer un override desktop AVANT une redéfinition "de
+   base" plus bas dans le fichier l'aurait silencieusement annulé. */
+.home-method__wrapper {
+  position: relative;
+  margin-top: var(--space-lg);
+}
+
+/* Ligne de progression discrète : un trait de fond surmonté d'un
+   remplissage Ember qui se dessine avec le scroll (scrub, desktop
+   uniquement — voir HomeMotion.astro, inchangé). Purement décoratif,
+   aria-hidden : l'information réelle (les 5 étapes numérotées) existe
+   déjà dans le HTML, cette ligne n'ajoute qu'une lecture visuelle de
+   progression — désormais le "rail" du parcours (prompt CS-S8B §21). */
+.home-method__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border-strong);
+  overflow: hidden;
+}
+
+.home-method__progress-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--color-accent);
+}
+
+/* CS-S8B §21 — petits marqueurs (points) alignés sur le rail, un par
+   étape : purement décoratifs (aria-hidden), masqués par défaut (mobile),
+   affichés uniquement à partir de 900px via une grille miroir de celle de
+   `.home-method__list` (mêmes 5 colonnes) — alignement robuste sans
+   calcul de position fragile. */
+.home-method__rail-dots {
+  display: none;
+}
+
+.home-method__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border-strong);
+}
+
+.home-method__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+/* CS-S8B §22 — MOBILE/TABLETTE (<900px, comportement PAR DÉFAUT) :
+   timeline verticale éditoriale. Marqueur (le numéro existant,
+   `.home-method__index`, réutilisé tel quel — aucun nouvel élément)
+   transformé en médaillon rond aligné à gauche sur une ligne verticale
+   continue, texte à droite. Spacing généreux conservé (§22 "ne pas
+   forcer un horizontal illisible sur mobile"). */
+.home-method__list {
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.home-method__list::before {
+  content: "";
+  position: absolute;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  left: 0.85rem;
+  width: 1px;
+  background: var(--color-border-strong);
+}
+
+.home-method__step {
+  position: relative;
+  border-top: none;
+  padding-top: 0;
+}
+
+.home-method__index {
+  position: absolute;
+  left: -2.5rem;
+  top: -0.125rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  border-radius: 50%;
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border-strong);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-method__step h3 {
+  font-size: 1.0625rem;
+  margin: 0 0 0.375rem 0;
+}
+
+.home-method__step p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.home-method__link {
+  display: inline-block;
+  margin-top: var(--space-lg);
+}
+
+/* === DESKTOP (≥900px) — RAIL HORIZONTAL ÉDITORIAL (prompt CS-S8B §21) ===
+   Toutes les redéfinitions ci-dessous viennent APRÈS les règles de base
+   ci-dessus : à specificité égale, elles l'emportent correctement pour
+   les largeurs ≥900px (voir note d'ordre de cascade en tête de section). */
+@media (min-width: 900px) {
+  .home-method__wrapper {
+    padding-top: var(--space-md);
+  }
+
+  .home-method__rail-dots {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .home-method__dot {
+    justify-self: start;
+    transform: translate(-3px, -3px);
+  }
+
+  .home-method__list {
+    position: static;
+    padding-left: 0;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+  }
+
+  .home-method__list::before {
+    content: none;
+  }
+
+  .home-method__step {
+    padding-top: 0;
+  }
+
+  .home-method__index {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    margin-bottom: var(--space-xs);
+    border: none;
+    background: none;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 899px) {
+  /* Le rail horizontal (ligne + marqueurs) n'a plus de sens visuel sous
+     900px (prompt §24 : pas d'effet dépendant du scrub sur mobile) — la
+     timeline verticale (règles de base ci-dessus) prend le relais. */
+  .home-method__progress {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   F. CAPACITÉS TECHNIQUES
+   ========================================================================== */
+
+.home-capabilities__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+/* CS-S8 §18, étendu CS-S8B §24-25 — "technical capability board" : mini
+   surface sobre (bordure fine + léger fond au hover), chaque groupe
+   affiche désormais son titre + un index discret côte à côte, puis ses
+   items un par ligne avec lignes séparatrices (au lieu d'une seule ligne
+   de texte séparée par des virgules) — même contenu textuel exact, aucune
+   nouvelle copy, juste un autre découpage visuel. Jamais de logos,
+   jamais de couleur par techno, jamais de barre de progression. */
+.home-capabilities__group {
+  margin: 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 250ms ease, background-color 250ms ease;
+}
+
+.home-capabilities__group:hover,
+.home-capabilities__group:focus-within {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-capabilities__group {
+    transition: none;
+  }
+}
+
+.home-capabilities__group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.home-capabilities__group dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.home-capabilities__index {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  flex: none;
+}
+
+.home-capabilities__group dd {
+  margin: 0;
+  padding-block: 0.4rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.home-capabilities__group dd:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* CS-S8B §26 — vraie phrase de clôture visuelle : pleine largeur, typo
+   plus affirmée, bordure haute, fragment existant accentué en Ember
+   (aucun mot ajouté, aucun HTML sémantique changé — un <span> autour du
+   texte déjà présent). */
+.home-capabilities__closing {
+  max-width: none;
+  margin: 0;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-size: clamp(1rem, 1.4vw, 1.1875rem);
+  font-style: normal;
+  color: var(--color-text-secondary);
+}
+
+.home-capabilities__closing-accent {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   G. CTA FINAL
+   ========================================================================== */
+
+.home-final-cta {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  /* Micro-correctif alignement — le padding-top hérité de `.home-section`
+     (clamp 3rem/7vw/6rem → 96px à 1440px) et le padding-bottom fixé au
+     sprint précédent (--space-xl = 64px) créaient un déséquilibre visuel
+     (97px en haut contre 64px en bas, mesuré). Remplacé par une seule
+     règle symétrique `padding-block` : le panneau est désormais centré
+     verticalement dans sa section. Le dégradé de transition vers le
+     Footer (ajouté au sprint précédent) est conservé à l'identique. */
+  padding-block: 96px;
+  background: linear-gradient(
+    to bottom,
+    transparent 55%,
+    var(--color-bg-soft) 100%
+  );
+}
+
+/* Micro-correctif bande noire avant Footer — la marge de séparation
+   CTA↔Footer est déjà assurée par le padding-bottom ci-dessus : on annule
+   uniquement le `margin-top` GÉNÉRIQUE du `<footer>` (global.css) quand il
+   suit le `<main>` de la Home. Structure DOM vérifiée dans BaseLayout.astro
+   (`<main id="main-content"><slot /></main><Footer />`, frères directs) :
+   `.home-final-cta` n'existe que dans le contenu de la Home (index.astro),
+   donc `:has(.home-final-cta)` scope cette règle à la Home uniquement, sans
+   toucher la règle globale `footer { margin-top: ... }` ni les autres
+   pages (qui n'ont pas `.home-final-cta` dans leur <main>). */
+main:has(.home-final-cta) + footer {
+  margin-top: 0;
+}
+
+/* Halo Ember — mécanique de respiration inchangée, gérée par
+   HomeMotion.astro (CS-S8/CS-S8A, ne pas toucher, prompt CS-S8B §5/§27) :
+   couvre toute la section (derrière le panneau ci-dessous), lui donnant
+   une "zone de lumière" ambiante plus large que le panneau lui-même. */
+.home-final-cta__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(228, 95, 54, 0.14),
+    rgba(228, 95, 54, 0) 60%
+  );
+}
+
+/* CS-S8B §27 — "grand panneau de conclusion" : une vraie surface Level 3
+   (mise en avant, cf. hiérarchie §29) avec bordure fine et radius 16px
+   max, plutôt qu'un simple texte centré sur le fond de section. Le halo
+   ci-dessus reste visible tout autour (bleed hors du panneau), sans
+   gradient animé additionnel. */
+.home-final-cta__inner {
+  position: relative;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.home-final-cta__text {
+  margin: var(--space-sm) auto var(--space-lg) auto;
+}
+
+.home-final-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}

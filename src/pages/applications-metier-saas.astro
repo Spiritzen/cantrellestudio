@@ -1,0 +1,248 @@
+---
+// Applications métier & SaaS — CS-S9. Landing commerciale + SEO on-page.
+// Remplace le contenu provisoire CS-S0. Copy sourcée : les faits sur
+// Sereno/AgencyOS proviennent de la Content Collection `realisations`
+// (jamais réinventés) ; MyDashServ/Ink Red Plumes proviennent du Source
+// Pack du prompt CS-S9 (src/data/serviceProofs.ts). Signature visuelle de
+// cette page (prompt §31) : système / architecture / flux — chaîne
+// BESOIN → RÈGLES MÉTIER → DONNÉES → API → INTERFACE → TESTS/LIVRAISON.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import ServiceProofCard from "../components/services/ServiceProofCard.astro";
+import ServiceCta from "../components/services/ServiceCta.astro";
+import ServiceMotion from "../components/services/ServiceMotion.astro";
+import RelatedCaseStudy from "../components/relations/RelatedCaseStudy.astro";
+import { mydashserv } from "../data/serviceProofs";
+import { projectMedia } from "../data/projectMedia";
+import { withBase } from "../utils/paths";
+import { caseStudyContent } from "../data/caseStudyContent";
+import { getProofsForService } from "../data/serviceCaseStudyMap";
+import "../styles/services.css";
+
+// CS-S10B — preuve phare Sereno / secondaire AgencyOS, source unique
+// `serviceCaseStudyMap.ts` (prompt §7). Ink Red Plumes retiré de cette page
+// (test anti-surcharge §36 : 3 blocs promotionnels maximum une fois les 2
+// études de cas ajoutées) ; reste affiché nulle part sur les pages Services
+// après ce sprint, mais demeure défini dans `serviceProofs.ts` — voir
+// rapport, section arbitrages.
+const appsProofs = getProofsForService("applications-metier-saas");
+
+const problems = [
+  "Quand un tableur devient difficile à maintenir à plusieurs.",
+  "Quand les mêmes données sont ressaisies dans plusieurs outils.",
+  "Quand les règles métier ne sont formalisées nulle part.",
+  "Quand un outil générique ne correspond plus à la façon de travailler.",
+  "Quand des étapes répétitives pourraient être automatisées.",
+  "Quand il manque des rôles et des droits clairs entre utilisateurs.",
+];
+
+const solutionFamilies = [
+  "CRM métier",
+  "Facturation",
+  "Planning",
+  "Portails & back-office",
+  "Tableaux de bord",
+  "SaaS multi-utilisateurs",
+];
+
+const architectureSteps = [
+  { label: "Besoin", accent: false },
+  { label: "Règles métier", accent: false },
+  { label: "Données", accent: false },
+  { label: "API / Services", accent: true },
+  { label: "Interface", accent: false },
+  { label: "Tests / Livraison", accent: false },
+];
+---
+
+<BaseLayout
+  title="Développement d'applications métier & SaaS | Cantrelle Studio"
+  description="Applications métier et SaaS sur mesure : cadrage, architecture, API, sécurité, interfaces et logique métier adaptées à votre activité."
+>
+  <div class="service-page service-page--apps">
+    <Container>
+      <ServiceBreadcrumb current="Applications métier & SaaS" />
+    </Container>
+
+    <section class="service-page__section">
+      <Container>
+        <ServiceHero
+          eyebrow="Applications métier & SaaS"
+          title="Des applications métier conçues autour de vos processus."
+          lead="CRM, facturation, planification, portails, workflows ou SaaS multi-utilisateurs : le studio part du besoin métier, modélise les règles et choisit l'architecture adaptée."
+          secondaryHref="/realisations/"
+          secondaryLabel="Voir les réalisations"
+        />
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="apps-problems-title">
+      <Container>
+        <SectionHeading
+          id="apps-problems-title"
+          eyebrow="Le point de départ"
+          title="Des problèmes concrets, pas une liste de fonctionnalités."
+          intro="Chaque projet part d'un contexte réel. Voici des situations fréquentes — pas une liste que tous les prospects reconnaîtront nécessairement."
+        />
+        <div class="service-problems-solutions">
+          <div class="service-problems" data-motion="block">
+            <h2>Des situations qui reviennent souvent</h2>
+            <ul>
+              {problems.map((problem) => (
+                <li>{problem}</li>
+              ))}
+            </ul>
+          </div>
+          <div class="service-solutions" data-motion="block">
+            <h2>Des familles de solutions possibles</h2>
+            <ul>
+              {solutionFamilies.map((family) => (
+                <li>{family}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="apps-architecture-title">
+      <Container>
+        <SectionHeading
+          id="apps-architecture-title"
+          eyebrow="Méthode"
+          title="On ne commence pas par choisir une technologie."
+          intro="Le studio part de ce qui doit fonctionner, pas d'une préférence pour React ou pour Spring Boot."
+        />
+        <div
+          class="service-architecture"
+          data-motion="block"
+          role="img"
+          aria-label="Schéma : Besoin, puis Règles métier, puis Données, puis API et Services, puis Interface, puis Tests et Livraison."
+        >
+          {architectureSteps.map((step, i) => (
+            <>
+              <div class:list={["service-architecture__step", step.accent && "service-architecture__step--accent"]}>
+                {step.label}
+              </div>
+              {i < architectureSteps.length - 1 && <div class="service-architecture__arrow" aria-hidden="true">↓</div>}
+            </>
+          ))}
+        </div>
+        <p class="service-architecture__note">
+          Cette lecture guide chaque choix technique : la stack vient après la compréhension du métier, pas avant.
+        </p>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="apps-proofs-title">
+      <Container>
+        <SectionHeading
+          id="apps-proofs-title"
+          eyebrow="Preuves"
+          title="Des applications métier et SaaS déjà construites."
+        />
+        <div class="related-case-study-pair">
+          {appsProofs.map((proof) => (
+            <RelatedCaseStudy
+              role={proof.role}
+              title={proof.projectSlug === "sereno" ? "Sereno" : "AgencyOS"}
+              category="Application métier / SaaS"
+              angle={proof.angle}
+              capabilities={caseStudyContent[proof.projectSlug].proves.slice(0, 3)}
+              image={projectMedia[proof.projectSlug].primary}
+              imageAlt={projectMedia[proof.projectSlug].primaryAlt}
+              href={`/realisations/${proof.projectSlug}/`}
+            />
+          ))}
+        </div>
+        <p class="service-architecture__note">Une autre logique métier a aussi été travaillée :</p>
+        <div class="service-proofs-grid">
+          <ServiceProofCard title={mydashserv.title} description={mydashserv.angle} facts={mydashserv.facts} />
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="apps-method-title">
+      <Container>
+        <SectionHeading
+          id="apps-method-title"
+          eyebrow="Cadrage"
+          title="Un projet clair avant d'être un projet codé."
+          intro="Comprendre, concevoir, développer, tester, livrer : la méthode du studio s'applique aux applications métier comme aux autres projets."
+        />
+        <p data-motion="block">
+          <ActionLink href="/methode/" variant="text">Découvrir la méthode</ActionLink>
+        </p>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="apps-stack-title">
+      <Container>
+        <SectionHeading id="apps-stack-title" eyebrow="Stack" title="La stack dépend des contraintes, pas d'un principe." />
+        <div class="service-tech-choice" data-motion="block">
+          <div class="service-tech-choice__col">
+            <h3>Backend & données</h3>
+            <ul>
+              <li>Java / Spring Boot</li>
+              <li>Ruby on Rails</li>
+              <li>PostgreSQL, MariaDB / MySQL</li>
+            </ul>
+          </div>
+          <div class="service-tech-choice__col">
+            <h3>Frontend & qualité</h3>
+            <ul>
+              <li>React / TypeScript</li>
+              <li>Astro si du contenu statique est pertinent</li>
+              <li>Tests, CI, API REST, authentification / rôles</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="service-faq" data-motion="block">
+          <details>
+            <summary>Quelle différence entre une application métier et un SaaS ?</summary>
+            <p>
+              Une application métier sert généralement les processus d'une seule structure. Un SaaS est conçu pour
+              plusieurs clients indépendants sur la même base (multi-tenant), avec une attention plus forte portée à
+              l'isolation des données et aux rôles. La méthode de départ reste la même : comprendre les règles avant
+              de choisir l'architecture.
+            </p>
+          </details>
+          <details>
+            <summary>Faut-il repartir de zéro pour moderniser un outil existant ?</summary>
+            <p>
+              Pas nécessairement. Le studio peut aussi partir d'un existant — base de données, API ou application déjà
+              en place — voir <a href={withBase("/developpement-sur-mesure/")}>développement sur mesure</a> pour les projets de
+              modernisation et d'intégration.
+            </p>
+          </details>
+          <details>
+            <summary>Comment la stack technique est-elle choisie ?</summary>
+            <p>
+              Selon vos contraintes réelles : existant technique, équipe, hébergement, volumes de données, délais.
+              La stack reste un moyen, jamais la promesse.
+            </p>
+          </details>
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="apps-cta-title">
+      <Container>
+        <ServiceCta
+          eyebrow="Un projet d'application métier ?"
+          title="Parlons de votre besoin avant de parler technologie."
+          text="CRM, facturation, planning, portail ou SaaS multi-utilisateurs : commençons par comprendre ce qui doit fonctionner."
+          secondaryHref="/realisations/"
+          secondaryLabel="Voir les réalisations"
+        />
+      </Container>
+    </section>
+  </div>
+
+  <ServiceMotion />
+</BaseLayout>

@@ -1,0 +1,21 @@
+---
+// ServiceBreadcrumb — CS-S9. Fil d'Ariane minimal pour les 3 pages
+// services : "Accueil / Nom du service", Accueil cliquable, le nom courant
+// non cliquable (prompt §27). Aucune route /services/ n'existe : ce
+// composant ne prétend jamais le contraire, il relie directement à /.
+// Micro-sprint pré-déploiement GitHub Pages.
+import { withBase } from "../../utils/paths";
+
+interface Props {
+  current: string;
+}
+
+const { current } = Astro.props;
+---
+
+<nav class="service-breadcrumb" aria-label="Fil d'Ariane">
+  <ol class="service-breadcrumb__list">
+    <li><a href={withBase("/")}>Accueil</a></li>
+    <li aria-current="page">{current}</li>
+  </ol>
+</nav>

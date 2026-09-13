@@ -1,0 +1,117 @@
+---
+// ServiceItem — motif des trois expertises Home, factorisé depuis CS-S3
+// (CS-S4 §10). Rend un <li> : à placer dans une liste (<ol>/<ul>) fournie
+// par la page qui compose la grille. Aucune icône, aucune image, aucun
+// fond flashy : préserve strictement l'apparence du wireframe CS-S3.
+import ActionLink from "./ActionLink.astro";
+
+interface Props {
+  index: string;
+  title: string;
+  description: string;
+  href: string;
+}
+
+const { index, title, description, href } = Astro.props;
+---
+
+<li class="service-item" data-motion="service">
+  <span class="service-item__line" aria-hidden="true"></span>
+  <span class="service-item__index" aria-hidden="true">{index}</span>
+  <h3>{title}</h3>
+  <p>{description}</p>
+  <ActionLink href={href} variant="text">En savoir plus</ActionLink>
+</li>
+
+<style>
+  /* CS-S8B §10-11 — "plaque éditoriale technique" : chaque expertise
+     devient un module distinct (bordure complète fine + surface Level 1,
+     radius modéré) au lieu d'une simple entrée de liste séparée par un
+     border-top. Le fond `--color-surface` (#121419) reste très proche du
+     fond de section `--color-bg-soft` (#0E1013, home-expertise est
+     `home-section--soft`) : c'est volontairement une surface "quasi
+     invisible" (hiérarchie §29 niveau 1), pas une grosse card SaaS. */
+  .service-item {
+    position: relative;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    background: var(--color-surface);
+    transition: transform 250ms ease, background-color 250ms ease, border-color 250ms ease;
+  }
+
+  /* Ligne Ember qui se déploie au reveal (scaleX 0 -> 1, piloté par
+     HomeMotion.astro) — se dessine désormais sur le bord supérieur de la
+     plaque (léger retrait horizontal pour respecter le radius). Si le JS
+     ne s'exécute pas, le border complet ci-dessus suffit déjà à délimiter
+     chaque module (§37, rien ne dépend du JS pour exister). */
+  .service-item__line {
+    position: absolute;
+    top: -1px;
+    left: var(--space-sm);
+    right: var(--space-sm);
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  /* Repère supérieur : numéro + courte ligne graphite (prompt §11 "petite
+     ligne / repère supérieur"), micro-diagramme CSS autorisé (§3). */
+  .service-item__index {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: var(--space-sm);
+    transition: color 250ms ease;
+  }
+
+  .service-item__index::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--color-border-strong);
+    transition: background-color 250ms ease;
+  }
+
+  .service-item h3 {
+    font-size: 1.375rem;
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .service-item p {
+    font-size: 0.9375rem;
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  /* Hover / focus premium (prompt §12) : déplacement max -3px, bordure un
+     peu plus claire, le numéro/la ligne supérieure prennent un peu
+     d'Ember — jamais de scale, de glow ou de tilt. Focus clavier
+     (focus-within, car l'élément interactif réel est le lien "En savoir
+     plus") : équivalent visuel strict du hover. */
+  .service-item:hover,
+  .service-item:focus-within {
+    transform: translateY(-3px);
+    background: var(--color-surface-elevated);
+    border-color: var(--color-border-strong);
+  }
+
+  .service-item:hover .service-item__index,
+  .service-item:focus-within .service-item__index {
+    color: var(--color-accent);
+  }
+
+  .service-item:hover .service-item__index::after,
+  .service-item:focus-within .service-item__index::after {
+    background: var(--color-accent-deep);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .service-item {
+      transition: none;
+    }
+  }
+</style>

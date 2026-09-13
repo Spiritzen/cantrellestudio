@@ -1,0 +1,377 @@
+/*
+  expertise-dot-wave.css — micro-sprint V3 (prompt
+  CS_EXPERTISES_DOT_WAVE_V3_CSS). Remplace intégralement le moteur Canvas
+  2D de la V2 (voir docs/rapports/rapport_rollback... et
+  rapport_test_v2_quadrillage_points_expertises.txt) : sur le poste réel
+  de Sébastien, la V2 provoquait des saccades perceptibles de la 3D tant
+  que la section Expertises restait visible. La V3 ne dessine RIEN par
+  JS : 3 couches CSS statiques (grille via `radial-gradient` répété,
+  jamais un point par élément DOM) + une animation CSS sur `mask-
+  position` des couches medium/peak, déclenchée par une classe
+  (`.is-wave-active`) posée par un minuscule IntersectionObserver. Aucun
+  `requestAnimationFrame`, aucun `ResizeObserver`, aucun `setInterval`,
+  aucun calcul par point, aucune compétition de rendu avec le contexte
+  WebGL du Hero.
+
+  Micro-sprint V3.1 (timing/replay) : la traversée dure désormais 8s et
+  se répète EN BOUCLE (`animation-iteration-count: infinite`) tant que
+  la section reste visible — la répétition est gérée entièrement par
+  CSS, jamais par un timer JS. L'IntersectionObserver (ExpertiseDotWave.
+  astro) applique une hystérésis à deux seuils (démarre à ≥30% visible,
+  arrête à <5% visible) pour éviter tout démarrage/arrêt instable près
+  de la frontière.
+
+  Micro-sprint V3.2.1 (random par cycle + luminosité) : le pattern actif
+  change désormais À CHAQUE CYCLE de 8s (plus seulement à l'entrée dans
+  la section), via l'événement CSS natif `animationiteration` écouté sur
+  la couche medium par ExpertiseDotWave.astro — aucun rAF/timer JS
+  ajouté. Couleur des points éclaircie de `#1c2026` (V3.2) à `#252b33`,
+  opacités inchangées.
+
+  Fichier ENTIÈREMENT DÉDIÉ à ce décor (comme la V2), importé uniquement
+  par ExpertiseDotWave.astro — home.css non touché. Rollback futur
+  (si nécessaire) : supprimer ce fichier + le composant + son montage.
+
+  Stacking (prompt §8, ne pas répéter l'erreur du tout premier essai V1) :
+  `.home-expertise` reçoit `isolation:isolate` pour forcer un vrai
+  stacking context (un `position:relative` seul, sans z-index explicite,
+  n'en crée PAS). Le décor est en z-index:0 (peint après le fond de
+  section, avant le contenu) ; `.home-expertise > .container` est promu
+  z-index:1 pour peindre au-dessus.
+*/
+
+.home-expertise {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-expertise > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.home-expertise__dot-wave {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Largeur du "sprite" elliptique medium/peak (patterns horizontal/
+     diagonal/cross), responsive (§10/§11) : la traversée doit rester une
+     bande qui se déplace, pas une zone qui couvre déjà toute la largeur
+     sur petit écran. */
+  --wave-medium-w: 260px;
+  --wave-peak-w: 170px;
+  /* Taille du sprite compact medium/peak, réutilisée UNIQUEMENT par
+     pattern-radial (micro-sprint V3.2) : un masque plus rond/compact que
+     les ellipses larges des autres patterns, pour qu'un déplacement
+     hors-champ vertical reste possible sans avoir à animer `mask-size`
+     (jugé potentiellement plus coûteux — voir rapport, "performance >
+     variété"). */
+  --radial-medium-size: 240px;
+  --radial-peak-size: 150px;
+}
+
+@media (max-width: 900px) {
+  .home-expertise__dot-wave {
+    --wave-medium-w: 180px;
+    --wave-peak-w: 120px;
+    --radial-medium-size: 170px;
+    --radial-peak-size: 110px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-expertise__dot-wave {
+    --wave-medium-w: 130px;
+    --wave-peak-w: 90px;
+    --radial-medium-size: 120px;
+    --radial-peak-size: 80px;
+  }
+}
+
+/* Grille de base — TOUJOURS visible, grille strictement fixe, jamais de
+   background-position animé (prompt §4 : "ne jamais animer le
+   background-position des points si cela fait bouger la grille"). Même
+   background-size sur les 3 couches pour que les centres des points se
+   superposent exactement (prompt §3/§4). */
+.home-expertise__dot-wave-layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  background-size: 26px 26px;
+  background-position: 0 0;
+}
+
+.home-expertise__dot-wave-base {
+  background-image: radial-gradient(circle, #252b33 1px, transparent 1.2px);
+  opacity: 0.55;
+}
+
+.home-expertise__dot-wave-medium {
+  background-image: radial-gradient(circle, #252b33 2.75px, transparent 3px);
+  opacity: 0.6;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse closest-side, black 60%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, black 60%, transparent 100%);
+  -webkit-mask-size: var(--wave-medium-w) 90%;
+  mask-size: var(--wave-medium-w) 90%;
+  -webkit-mask-position: calc(var(--wave-medium-w) * -1) 50%;
+  mask-position: calc(var(--wave-medium-w) * -1) 50%;
+}
+
+.home-expertise__dot-wave-peak {
+  background-image: radial-gradient(circle, #252b33 4.25px, transparent 4.6px);
+  opacity: 0.65;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse closest-side, black 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, black 55%, transparent 100%);
+  -webkit-mask-size: var(--wave-peak-w) 70%;
+  mask-size: var(--wave-peak-w) 70%;
+  -webkit-mask-position: calc(var(--wave-peak-w) * -1) 50%;
+  mask-position: calc(var(--wave-peak-w) * -1) 50%;
+}
+
+/* Traversée de l'onde — cycle de 8s qui se répète EN BOUCLE tant que
+   `.is-wave-active` reste posée (`animation-iteration-count: infinite`,
+   jamais un `setInterval`/`rAF` JS pour gérer la répétition — le
+   caractère répétitif est entièrement géré par CSS, prompt V3.1 §3/§4).
+   Le mouvement occupe 75% du cycle (0% → 75% : ~6s de traversée réelle)
+   puis reste immobile hors-champ jusqu'à 100% (~2s de pause, invisible
+   puisque hors-champ) avant que le cycle ne reboucle. `linear` : pas
+   d'accélération/décélération brutale (prompt V3.1 §2). Seule la
+   fenêtre du masque se déplace ; le quadrillage de points en dessous
+   reste parfaitement fixe (jamais de `background-position` animé).
+
+   Micro-sprint V3.2 — 4 PATTERNS : le JS (ExpertiseDotWave.astro) pose
+   UNE classe `pattern-*` (en plus de `is-wave-active`) au démarrage de
+   chaque entrée, choisie aléatoirement. Chaque pattern ne fait
+   qu'échanger le NOM du `@keyframes` appliqué à medium/peak — même
+   propriété animée (`mask-position`, éventuellement `mask-size` en
+   valeur STATIQUE non animée pour le pattern radial), même durée (8s),
+   même structure 0%/75%/100%, donc un coût de rendu de même nature pour
+   les 4 patterns. */
+
+/* --- Pattern A — HORIZONTAL (référence V3.1, comportement inchangé) --- */
+@keyframes dot-wave-sweep-medium {
+  0% {
+    -webkit-mask-position: calc(var(--wave-medium-w) * -1) 50%;
+    mask-position: calc(var(--wave-medium-w) * -1) 50%;
+  }
+  75% {
+    -webkit-mask-position: calc(100% + var(--wave-medium-w)) 50%;
+    mask-position: calc(100% + var(--wave-medium-w)) 50%;
+  }
+  100% {
+    -webkit-mask-position: calc(100% + var(--wave-medium-w)) 50%;
+    mask-position: calc(100% + var(--wave-medium-w)) 50%;
+  }
+}
+
+@keyframes dot-wave-sweep-peak {
+  0% {
+    -webkit-mask-position: calc(var(--wave-peak-w) * -1) 50%;
+    mask-position: calc(var(--wave-peak-w) * -1) 50%;
+  }
+  75% {
+    -webkit-mask-position: calc(100% + var(--wave-peak-w)) 50%;
+    mask-position: calc(100% + var(--wave-peak-w)) 50%;
+  }
+  100% {
+    -webkit-mask-position: calc(100% + var(--wave-peak-w)) 50%;
+    mask-position: calc(100% + var(--wave-peak-w)) 50%;
+  }
+}
+
+/* Repli par défaut : si `is-wave-active` est posée sans classe de
+   pattern (ne devrait jamais arriver, le JS pose toujours un pattern
+   avant `is-wave-active`), l'onde utilise ce pattern horizontal de
+   référence plutôt que de ne rien afficher. `.pattern-horizontal` n'a
+   donc pas besoin de sa propre règle : ce repli lui suffit déjà. */
+.is-wave-active .home-expertise__dot-wave-medium {
+  animation: dot-wave-sweep-medium 8s linear infinite;
+}
+
+.is-wave-active .home-expertise__dot-wave-peak {
+  animation: dot-wave-sweep-peak 8s linear infinite;
+}
+
+/* --- Pattern B — DIAGONALE : même trajectoire horizontale, mais un
+   glissement vertical doux (85% → 15%) l'accompagne, départ bas-gauche
+   hors champ, arrivée haut-droite hors champ. Angle doux, jamais
+   violent — seule la composante Y de `mask-position` change en plus. */
+@keyframes dot-wave-sweep-medium-diagonal {
+  0% {
+    -webkit-mask-position: calc(var(--wave-medium-w) * -1) 85%;
+    mask-position: calc(var(--wave-medium-w) * -1) 85%;
+  }
+  75% {
+    -webkit-mask-position: calc(100% + var(--wave-medium-w)) 15%;
+    mask-position: calc(100% + var(--wave-medium-w)) 15%;
+  }
+  100% {
+    -webkit-mask-position: calc(100% + var(--wave-medium-w)) 15%;
+    mask-position: calc(100% + var(--wave-medium-w)) 15%;
+  }
+}
+
+@keyframes dot-wave-sweep-peak-diagonal {
+  0% {
+    -webkit-mask-position: calc(var(--wave-peak-w) * -1) 85%;
+    mask-position: calc(var(--wave-peak-w) * -1) 85%;
+  }
+  75% {
+    -webkit-mask-position: calc(100% + var(--wave-peak-w)) 15%;
+    mask-position: calc(100% + var(--wave-peak-w)) 15%;
+  }
+  100% {
+    -webkit-mask-position: calc(100% + var(--wave-peak-w)) 15%;
+    mask-position: calc(100% + var(--wave-peak-w)) 15%;
+  }
+}
+
+.is-wave-active.pattern-diagonal .home-expertise__dot-wave-medium {
+  animation: dot-wave-sweep-medium-diagonal 8s linear infinite;
+}
+
+.is-wave-active.pattern-diagonal .home-expertise__dot-wave-peak {
+  animation: dot-wave-sweep-peak-diagonal 8s linear infinite;
+}
+
+/* --- Pattern C — PULSATION RADIALE : "respiration spatiale" lente, pas
+   une explosion. Arbitrage performance (prompt §6/§10) : plutôt que
+   d'ANIMER `mask-size` (jugé potentiellement plus coûteux à re-rastériser
+   chaque frame qu'un simple déplacement de position), ce pattern utilise
+   un masque compact et ROND de taille STATIQUE (`--radial-*-size`,
+   définie une fois par le sélecteur `.pattern-radial`, jamais animée) et
+   ne déplace que sa POSITION — même nature de coût que les 3 autres
+   patterns. Le masque arrive hors-champ (bas), progresse vers le centre,
+   s'attarde légèrement autour du centre (40%→60%, léger flottement),
+   puis ressort hors-champ (haut) et fait sa pause. */
+.is-wave-active.pattern-radial .home-expertise__dot-wave-medium {
+  -webkit-mask-size: var(--radial-medium-size) var(--radial-medium-size);
+  mask-size: var(--radial-medium-size) var(--radial-medium-size);
+  animation: dot-wave-sweep-medium-radial 8s linear infinite;
+}
+
+.is-wave-active.pattern-radial .home-expertise__dot-wave-peak {
+  -webkit-mask-size: var(--radial-peak-size) var(--radial-peak-size);
+  mask-size: var(--radial-peak-size) var(--radial-peak-size);
+  animation: dot-wave-sweep-peak-radial 8s linear infinite;
+}
+
+@keyframes dot-wave-sweep-medium-radial {
+  0% {
+    -webkit-mask-position: 50% calc(100% + var(--radial-medium-size));
+    mask-position: 50% calc(100% + var(--radial-medium-size));
+  }
+  40% {
+    -webkit-mask-position: 50% 50%;
+    mask-position: 50% 50%;
+  }
+  60% {
+    -webkit-mask-position: 46% 46%;
+    mask-position: 46% 46%;
+  }
+  75% {
+    -webkit-mask-position: 50% calc(var(--radial-medium-size) * -1);
+    mask-position: 50% calc(var(--radial-medium-size) * -1);
+  }
+  100% {
+    -webkit-mask-position: 50% calc(var(--radial-medium-size) * -1);
+    mask-position: 50% calc(var(--radial-medium-size) * -1);
+  }
+}
+
+@keyframes dot-wave-sweep-peak-radial {
+  0% {
+    -webkit-mask-position: 50% calc(100% + var(--radial-peak-size));
+    mask-position: 50% calc(100% + var(--radial-peak-size));
+  }
+  40% {
+    -webkit-mask-position: 50% 50%;
+    mask-position: 50% 50%;
+  }
+  60% {
+    -webkit-mask-position: 46% 46%;
+    mask-position: 46% 46%;
+  }
+  75% {
+    -webkit-mask-position: 50% calc(var(--radial-peak-size) * -1);
+    mask-position: 50% calc(var(--radial-peak-size) * -1);
+  }
+  100% {
+    -webkit-mask-position: 50% calc(var(--radial-peak-size) * -1);
+    mask-position: 50% calc(var(--radial-peak-size) * -1);
+  }
+}
+
+/* --- Pattern D — RENCONTRE/CROISEMENT : medium suit exactement la même
+   trajectoire gauche→droite que le pattern horizontal ; seul peak est
+   inversé (droite→gauche). Les deux se croisent visuellement autour du
+   milieu du parcours, sans "collision" — juste deux flux qui se
+   traversent.
+   Micro-sprint V3.2.1 : `dot-wave-sweep-medium-cross` est une COPIE
+   exacte de `dot-wave-sweep-medium` sous un nom dédié (au lieu de
+   réutiliser littéralement le même nom comme en V3.2) — nécessaire pour
+   que la couche medium, utilisée comme référence par l'écouteur JS
+   `animationiteration`, redémarre bien une animation fraîche à CHAQUE
+   changement de pattern (y compris horizontal↔cross), plutôt que de
+   continuer silencieusement le même minutage si le nom d'animation
+   calculé ne changeait pas. Les 4 patterns ont désormais chacun un nom
+   de keyframe medium ET peak strictement distinct. */
+@keyframes dot-wave-sweep-medium-cross {
+  0% {
+    -webkit-mask-position: calc(var(--wave-medium-w) * -1) 50%;
+    mask-position: calc(var(--wave-medium-w) * -1) 50%;
+  }
+  75% {
+    -webkit-mask-position: calc(100% + var(--wave-medium-w)) 50%;
+    mask-position: calc(100% + var(--wave-medium-w)) 50%;
+  }
+  100% {
+    -webkit-mask-position: calc(100% + var(--wave-medium-w)) 50%;
+    mask-position: calc(100% + var(--wave-medium-w)) 50%;
+  }
+}
+
+@keyframes dot-wave-sweep-peak-cross {
+  0% {
+    -webkit-mask-position: calc(100% + var(--wave-peak-w)) 50%;
+    mask-position: calc(100% + var(--wave-peak-w)) 50%;
+  }
+  75% {
+    -webkit-mask-position: calc(var(--wave-peak-w) * -1) 50%;
+    mask-position: calc(var(--wave-peak-w) * -1) 50%;
+  }
+  100% {
+    -webkit-mask-position: calc(var(--wave-peak-w) * -1) 50%;
+    mask-position: calc(var(--wave-peak-w) * -1) 50%;
+  }
+}
+
+.is-wave-active.pattern-cross .home-expertise__dot-wave-medium {
+  animation: dot-wave-sweep-medium-cross 8s linear infinite;
+}
+
+.is-wave-active.pattern-cross .home-expertise__dot-wave-peak {
+  animation: dot-wave-sweep-peak-cross 8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sous reduced-motion : le script (ExpertiseDotWave.astro) n'ajoute
+     jamais `.is-wave-active` (aucun IntersectionObserver créé) — les
+     couches medium/peak restent donc déjà masquées par défaut (mask
+     hors-champ). Cette règle est une sécurité CSS supplémentaire,
+     documentée : elle garantit qu'aucune animation ne pourrait démarrer
+     même si la classe était posée par erreur. Seule la grille de base
+     (1px, statique) reste visible — choix retenu explicitement plutôt
+     que de masquer tout le décor, car elle reste discrète et élégante
+     sans aucun mouvement. */
+  .home-expertise__dot-wave-medium,
+  .home-expertise__dot-wave-peak {
+    animation: none !important;
+  }
+}

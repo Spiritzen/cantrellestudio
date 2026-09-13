@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="À propos — Cantrelle Studio"
+  description="Cantrelle Studio est fondé par Sébastien Cantrelle, interlocuteur responsable du projet de bout en bout. Contenu provisoire (CS-S0)."
+>
+  <section class="container">
+    <h1>À propos</h1>
+    <p class="provisional">Contenu provisoire (CS-S0), rédaction commerciale non définitive.</p>
+    <p>
+      Cantrelle Studio est un studio fondé par Sébastien Cantrelle, qui est
+      l'interlocuteur responsable du projet de bout en bout.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-block: var(--space-lg);
+  }
+  .provisional {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    border-left: 3px solid var(--color-border);
+    padding-left: var(--space-sm);
+  }
+</style>

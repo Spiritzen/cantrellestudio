@@ -1,0 +1,39 @@
+---
+// CaseStudyMedia — CS-S10 §29/§30. "ProjectMediaFrame" : cadre premium
+// sobre (bordure fine, surface, radius) autour d'une vraie capture, SANS
+// jamais la recadrer de façon destructrice. Règle absolue (leçon CS-S8A,
+// rappelée §29 du prompt) : les captures sont des preuves — `object-fit:
+// contain` sur un cadre à ratio fixe garantit que l'intégralité de
+// l'interface (sidebar, contexte, barres d'action) reste toujours
+// visible, quel que soit le ratio natif de la capture. Pas de faux
+// navigateur, pas de points rouge/jaune/vert.
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  caption?: string;
+  index?: number;
+  eager?: boolean;
+}
+
+const { image, alt, caption, index, eager = false } = Astro.props;
+---
+
+<figure class="case-study__media">
+  <div class="case-study__media-frame">
+    {typeof index === "number" && <span class="case-study__media-index" aria-hidden="true">{String(index).padStart(2, "0")}</span>}
+    <Picture
+      src={image}
+      alt={alt}
+      formats={["avif", "webp"]}
+      widths={[400, 640, 900]}
+      sizes="(min-width: 900px) 45vw, 100vw"
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      class="case-study__media-img"
+    />
+  </div>
+  {caption && <figcaption class="case-study__media-caption">{caption}</figcaption>}
+</figure>

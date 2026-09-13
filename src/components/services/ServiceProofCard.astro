@@ -1,0 +1,83 @@
+---
+// ServiceProofCard — CS-S9, étendu CS-S9B. Preuve réutilisable par les 3
+// pages services. Deux usages :
+// - "étude de cas" : Sereno / AgencyOS / Belkhir Dépannage, dont
+//   title/category/summary proviennent de la Content Collection
+//   `realisations` (jamais réinventés) et `caseHref` pointe vers le slug
+//   réel existant (`/realisations/<slug>/`) ;
+// - "preuve secondaire" : MyDashServ / Ink Red Plumes / BeatStudio /
+//   GlassTrack / Vélocéan (src/data/serviceProofs.ts), sans lien d'étude
+//   de cas (aucune de ces réalisations n'existe dans la Content
+//   Collection ni ailleurs sur le site) et un `isDemonstrator` qui force
+//   l'affichage explicite du mot "démonstrateur" (prompt CS-S9 §45).
+//
+// CS-S9B — `image`/`imageAlt` optionnels : une vraie capture (Content
+// Collection via `projectMedia.ts`, ou source externe autorisée via
+// `externalProjectMedia.ts`, jamais une image inventée) rendue via
+// `astro:assets` (formats AVIF/WebP + fallback, lazy). Une carte sans
+// image reste pleinement valide (MyDashServ/Ink Red Plumes sur la page
+// Applications n'affichent volontairement PAS toujours de média, pour ne
+// pas surcharger — prompt §"rester sélectif").
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+// Micro-sprint pré-déploiement GitHub Pages — `caseHref` (quand fourni) est
+// un chemin canonique non préfixé, `withBase()` appliqué au rendu.
+import { withBase } from "../../utils/paths";
+
+interface Props {
+  title: string;
+  category?: string;
+  description: string;
+  facts?: string[];
+  caseHref?: string;
+  caseLabel?: string;
+  isDemonstrator?: boolean;
+  image?: ImageMetadata;
+  imageAlt?: string;
+}
+
+const {
+  title,
+  category,
+  description,
+  facts = [],
+  caseHref,
+  caseLabel,
+  isDemonstrator = false,
+  image,
+  imageAlt,
+} = Astro.props;
+---
+
+<article class:list={["service-proof", image && "service-proof--media"]} data-motion="proof">
+  {image && imageAlt && (
+    <div class="service-proof__media">
+      <Picture
+        src={image}
+        alt={imageAlt}
+        formats={["avif", "webp"]}
+        widths={[320, 480, 640]}
+        sizes="(min-width: 900px) 40vw, 100vw"
+        loading="lazy"
+        decoding="async"
+        class="service-proof__media-img"
+      />
+    </div>
+  )}
+  {category && <p class="service-proof__category">{category}</p>}
+  <h3 class="service-proof__title">
+    {title}
+    {isDemonstrator && <span class="service-proof__badge">Démonstrateur</span>}
+  </h3>
+  <p class="service-proof__description">{description}</p>
+  {facts.length > 0 && (
+    <ul class="service-proof__facts">
+      {facts.map((fact) => <li>{fact}</li>)}
+    </ul>
+  )}
+  {caseHref && (
+    <a class="service-proof__link" href={withBase(caseHref)}>
+      {caseLabel} <span aria-hidden="true">→</span>
+    </a>
+  )}
+</article>

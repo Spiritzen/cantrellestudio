@@ -1,0 +1,24 @@
+---
+// CaseStudyTech — CS-S10 §24. "Technologie → pourquoi elle est là", jamais
+// un mur de logos. Formulation en "utilisé pour..." plutôt que "choisi
+// parce que..." quand la motivation historique n'est pas documentée.
+export interface TechItem {
+  name: string;
+  role: string;
+}
+
+interface Props {
+  items: TechItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<dl class="case-study__tech">
+  {items.map((item) => (
+    <div class="case-study__tech-row">
+      <dt>{item.name}</dt>
+      <dd>{item.role}</dd>
+    </div>
+  ))}
+</dl>

@@ -1,0 +1,618 @@
+/*
+  case-study.css — CS-S10. Styles des 3 études de cas premium
+  (/realisations/sereno/, /realisations/agencyos/, /realisations/
+  belkhir-depannage/). Toutes les classes sont namespacées `.case-study*`
+  (prompt §32) pour ne jamais entrer en conflit avec `home-*` (Home) ni
+  `service-*` (pages Services, CS-S9/CS-S9B). Réutilise les tokens DA
+  existants : aucune nouvelle couleur de marque, aucune nouvelle police.
+  Micro-rappels projet (violet Sereno/AgencyOS, orange Belkhir) limités à
+  des badges/lignes/glows très faibles — jamais plus de 10-15% de la
+  surface visuelle (prompt §34).
+*/
+
+/* ==========================================================================
+   STRUCTURE PARTAGÉE
+   ========================================================================== */
+
+.case-study__section {
+  border-top: 1px solid var(--color-border);
+  padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+.case-study__section:first-of-type {
+  border-top: none;
+}
+
+.case-study__section--soft {
+  background: var(--color-bg-soft);
+}
+
+.case-study__eyebrow {
+  display: inline-block;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+/* ==========================================================================
+   HERO — composition asymétrique (copy ~42% / média ~58% desktop)
+   ========================================================================== */
+
+.case-study__hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 3rem);
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .case-study__hero {
+    grid-template-columns: 42fr 58fr;
+  }
+}
+
+.case-study__hero-copy h1 {
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.case-study__hero-summary {
+  font-size: 1.1875rem;
+  color: var(--color-text-secondary);
+  max-width: 42rem;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+/* Statut honnête (prompt §12/§22) : jamais caché en bas de page, toujours
+   visible juste sous le résumé, formulation factuelle. */
+.case-study__status {
+  display: inline-block;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.75rem;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.case-study__stack-short {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+}
+
+.case-study__stack-short li {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.case-study__hero-media {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-bg-soft);
+}
+
+.case-study__hero-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
+   MEDIA FRAME (CaseStudyMedia) — jamais de crop destructeur (prompt §29)
+   ========================================================================== */
+
+.case-study__media {
+  margin: 0;
+}
+
+.case-study__media-frame {
+  position: relative;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-soft);
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.case-study__media-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* `contain`, jamais `cover` : l'intégralité de l'interface capturée
+     reste visible, quel que soit son ratio natif (leçon CS-S8A). */
+  object-fit: contain;
+}
+
+.case-study__media-index {
+  position: absolute;
+  top: var(--space-xs);
+  left: var(--space-xs);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.45rem;
+}
+
+.case-study__media-caption {
+  margin: var(--space-xs) 0 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   SERVICE ASSOCIÉ / CONNEXE (CS-S10B, RelatedService) — juste sous le Hero.
+   Le principal reste discret (pas de carte, pas de glow) ; le connexe est
+   volontairement plus petit et sans bordure, jamais au même niveau visuel
+   (prompt §11/§16).
+   ========================================================================== */
+
+.case-study__related-service {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6em;
+  margin: 0 0 var(--space-md) 0;
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.case-study__related-service-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.case-study__related-service-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.2em;
+}
+
+.case-study__related-service-link:hover,
+.case-study__related-service-link:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
+.case-study__related-service-angle {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.case-study__related-service--connexe {
+  border-bottom: none;
+  padding-bottom: 0;
+  opacity: 0.82;
+  font-size: 0.9em;
+}
+
+.case-study__related-service--connexe .case-study__related-service-link {
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   PROBLÈME / RÉFLEXION (prompt §23) — texte éditorial + citation, jamais
+   deux cards identiques.
+   ========================================================================== */
+
+.case-study__problem {
+  max-width: 62ch;
+}
+
+.case-study__problem p {
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.case-study__reflection {
+  position: relative;
+  margin-top: var(--space-lg);
+  padding-left: var(--space-md);
+  border-left: 2px solid var(--color-accent-deep);
+  max-width: 56ch;
+}
+
+.case-study__reflection blockquote {
+  margin: 0 0 var(--space-xs) 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-style: normal;
+  color: var(--color-text);
+}
+
+.case-study__reflection p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* Grille "problème / réflexion" côte à côte à partir de 900px. */
+.case-study__problem-reflection {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .case-study__problem-reflection {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+
+  .case-study__reflection {
+    margin-top: 0;
+  }
+}
+
+/* ==========================================================================
+   GALERIE — grille de médias génériques (2-3 colonnes selon largeur)
+   ========================================================================== */
+
+.case-study__gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 700px) {
+  .case-study__gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .case-study__gallery--3col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==========================================================================
+   TECH — technologie → pourquoi (prompt §24, jamais un mur de logos)
+   ========================================================================== */
+
+.case-study__tech {
+  margin: var(--space-lg) 0 0 0;
+  display: grid;
+  gap: 0;
+  max-width: 56rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.case-study__tech-row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  border-top: 1px solid var(--color-border);
+}
+
+.case-study__tech-row:first-child {
+  border-top: none;
+}
+
+.case-study__tech-row dt {
+  padding: var(--space-sm) var(--space-md);
+  font-weight: 600;
+  background: var(--color-bg-soft);
+}
+
+.case-study__tech-row dd {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 599px) {
+  .case-study__tech-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   OUTCOME — "Construit et validé" / "Avant une exploitation commerciale"
+   ========================================================================== */
+
+.case-study__outcome-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 800px) {
+  .case-study__outcome-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.case-study__outcome-col h3 {
+  font-size: 1.0625rem;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.case-study__outcome-col--done h3 {
+  color: var(--color-text);
+}
+
+.case-study__outcome-col--next h3 {
+  color: var(--color-text-muted);
+}
+
+.case-study__outcome-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.case-study__outcome-col--done li {
+  padding-left: 1.4em;
+  position: relative;
+  color: var(--color-text-secondary);
+}
+
+.case-study__outcome-col--done li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.case-study__outcome-col--next li {
+  padding-left: 1.4em;
+  position: relative;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.case-study__outcome-col--next li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-strong);
+}
+
+.case-study__proves {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: var(--space-lg) 0 0 0;
+  padding: 0;
+}
+
+.case-study__proves li {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   PROJET SUIVANT (prompt §39)
+   ========================================================================== */
+
+.case-study__next {
+  display: block;
+  text-decoration: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.case-study__next:hover,
+.case-study__next:focus-visible {
+  border-color: var(--color-accent-deep);
+  background: var(--color-surface);
+}
+
+.case-study__next-label {
+  display: block;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.case-study__next-title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.case-study__next-category {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   LIENS (breadcrumb réutilisé de CS-S9, GitHub discret)
+   ========================================================================== */
+
+.case-study__github {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: var(--space-md);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.case-study__github:hover,
+.case-study__github:focus-visible {
+  color: var(--color-text);
+  border-color: var(--color-text);
+}
+
+/* ==========================================================================
+   A. SERENO — micro-rappel violet, composition précise/réglementaire
+   ========================================================================== */
+
+.case-study--sereno .case-study__status {
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+.case-study--sereno .case-study__reflection {
+  border-left-color: #8b5cf6;
+}
+
+/* Timeline horizontale du workflow (Créer → Contrôler → Émettre → Suivre
+   → Corriger) — signature visuelle Sereno, différente de la grille
+   AgencyOS et des blocs éditoriaux Belkhir. */
+.case-study__workflow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .case-study__workflow {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.case-study__workflow-step {
+  border-top: 2px solid rgba(139, 92, 246, 0.45);
+  padding-top: var(--space-sm);
+}
+
+.case-study__workflow-step h3 {
+  font-size: 1rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.case-study__workflow-step p {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* ==========================================================================
+   B. AGENCYOS — micro-rappel violet, composition large/grille produit
+   ========================================================================== */
+
+.case-study--agencyos .case-study__status {
+  border-color: rgba(124, 58, 237, 0.35);
+}
+
+.case-study--agencyos .case-study__reflection {
+  border-left-color: #7c3aed;
+}
+
+/* Grille de modules (Dashboard/CRM/Projets/Timesheet/Finance/Équipe) —
+   composition plus large, "un même produit, plusieurs domaines". */
+.case-study__modules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.case-study__module {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.case-study__module:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+.case-study__module h3 {
+  font-size: 1rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.case-study__module p {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study__module {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   C. BELKHIR — micro-rappel Ember/orange (déjà la couleur de marque),
+   composition éditoriale (alternance média/texte)
+   ========================================================================== */
+
+.case-study__editorial {
+  display: grid;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.case-study__editorial-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .case-study__editorial-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .case-study__editorial-row--reverse .case-study__media {
+    order: 2;
+  }
+}
+
+.case-study__editorial-row h3 {
+  font-size: 1.1875rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.case-study__editorial-row p {
+  color: var(--color-text-secondary);
+  margin: 0;
+}

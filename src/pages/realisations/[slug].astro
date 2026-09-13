@@ -1,0 +1,262 @@
+---
+// Étude de cas premium — CS-S10. Remplace le rendu générique CS-S0
+// (H1 nu + Problème/Solution/Résultat en paragraphes plats) par une vraie
+// narration : problème → réflexion → solution → démonstration visuelle →
+// choix techniques → résultat réel → ce que ça démontre → projet suivant.
+// Structure commune (prompt §11), composition centrale différenciée par
+// projet (prompt §33) : Sereno = timeline de workflow (structure/
+// conformité), AgencyOS = grille de modules (système/produit), Belkhir =
+// blocs éditoriaux alternés (contenu/conversion).
+//
+// Narration et faits enrichis dans src/data/caseStudyContent.ts (voir ce
+// fichier pour l'arbitrage sur la Content Collection, non modifiée dans
+// sa structure). Médias réels dans src/data/projectMedia.ts (`gallery`).
+import { getCollection } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ActionLink from "../../components/ui/ActionLink.astro";
+import ServiceBreadcrumb from "../../components/services/ServiceBreadcrumb.astro";
+import ServiceMotion from "../../components/services/ServiceMotion.astro";
+import CaseStudyHero from "../../components/case-studies/CaseStudyHero.astro";
+import CaseStudySection from "../../components/case-studies/CaseStudySection.astro";
+import CaseStudyMedia from "../../components/case-studies/CaseStudyMedia.astro";
+import CaseStudyTech from "../../components/case-studies/CaseStudyTech.astro";
+import CaseStudyOutcome from "../../components/case-studies/CaseStudyOutcome.astro";
+import CaseStudyNext from "../../components/case-studies/CaseStudyNext.astro";
+import RelatedService from "../../components/relations/RelatedService.astro";
+import { projectMedia } from "../../data/projectMedia";
+import { caseStudyContent, nextProjectSlug } from "../../data/caseStudyContent";
+import { getServicesForProject } from "../../data/serviceCaseStudyMap";
+import { withBase } from "../../utils/paths";
+import "../../styles/case-study.css";
+
+export const getStaticPaths = (async () => {
+  const realisations = await getCollection("realisations");
+  return realisations.map((realisation) => ({
+    params: { slug: realisation.data.slug },
+    props: { realisation, allRealisations: realisations },
+  }));
+}) satisfies GetStaticPaths;
+
+const { realisation, allRealisations } = Astro.props;
+const { slug, title, seoTitle, seoDescription } = realisation.data;
+
+const content = caseStudyContent[slug];
+const media = projectMedia[slug];
+const nextSlug = nextProjectSlug[slug];
+const nextRealisation = allRealisations.find((r) => r.data.slug === nextSlug);
+
+// CS-S10B — Service(s) associé(s) à ce projet, source unique
+// `serviceCaseStudyMap.ts` (remplace les constantes locales `serviceHref`/
+// `serviceLabel` de CS-S10, qui dupliquaient cette relation). `principal`
+// est toujours présent pour les 3 projets ; `connexe` uniquement pour
+// AgencyOS (prompt §11).
+const relatedServices = getServicesForProject(slug);
+const principalService = relatedServices.find((s) => s.onProjectPage === "principal")!;
+const connexeService = relatedServices.find((s) => s.onProjectPage === "connexe");
+
+// Sous-titres de la démonstration visuelle, adaptés par projet (prompt
+// §14-21) : Sereno suit le workflow de la facture, AgencyOS les modules
+// produit, Belkhir les moments éditoriaux du parcours visiteur.
+const workflowSteps = [
+  { title: "Créer", text: "Un brouillon prend forme, ligne par ligne, avec calcul serveur des totaux et de la TVA." },
+  { title: "Contrôler", text: "Le moteur de conformité bloque l'émission tant qu'une erreur reste détectée." },
+  { title: "Émettre", text: "La facture devient immuable : numéro attribué, PDF/A-3 et XML générés." },
+  { title: "Suivre", text: "Transmission simulée (sandbox), statuts et solde de paiement suivis dans le temps." },
+  { title: "Corriger", text: "Une erreur après émission se corrige par un avoir conforme, jamais par une réécriture." },
+];
+
+const moduleGroups = [
+  { title: "Dashboard", text: "Indicateurs temps réel : chiffre d'affaires, projets actifs, tâches, factures impayées." },
+  { title: "CRM", text: "Clients, contacts et pipeline, centralisés et à jour." },
+  { title: "Projets & tâches", text: "Kanban, phases, progression automatique par projet." },
+  { title: "Timesheet", text: "Saisie des heures, rentabilité par projet." },
+  { title: "Finance", text: "Devis, factures, paiements et dépenses dans le même espace." },
+  { title: "Équipe", text: "Rôles, invitations et portail collaboratif." },
+];
+
+// Titres courts des blocs éditoriaux Belkhir, alignés sur l'ordre de la
+// galerie (accueil → qualification → métier → zone → mobile).
+const belkhirRowTitles = ["Accueil", "Qualifier l'urgence", "Une page par métier", "Vérifier sa zone", "Pensé mobile"];
+---
+
+<BaseLayout title={seoTitle} description={seoDescription}>
+  <div class:list={["case-study", `case-study--${slug === "belkhir-depannage" ? "belkhir" : slug}`]}>
+    <div class="container">
+      <ServiceBreadcrumb current={title} />
+    </div>
+
+    <CaseStudySection>
+      <CaseStudyHero
+        eyebrow={content.eyebrow}
+        title={title}
+        summary={content.heroSummary}
+        statusLabel={content.statusLabel}
+        stack={content.stackShort}
+        image={media.gallery![0].image}
+        imageAlt={media.gallery![0].alt}
+      />
+      <RelatedService
+        role="principal"
+        serviceLabel={principalService.serviceLabel}
+        serviceHref={principalService.serviceHref}
+        angle={principalService.angle}
+      />
+      {connexeService && (
+        <RelatedService role="connexe" serviceLabel={connexeService.serviceLabel} serviceHref={connexeService.serviceHref} />
+      )}
+    </CaseStudySection>
+
+    <CaseStudySection soft aria-labelledby="problem-title">
+      <div class="case-study__problem-reflection">
+        <div class="case-study__problem" data-motion="block">
+          <span class="case-study__eyebrow">Le problème</span>
+          <h2 id="problem-title">{content.problemTitle}</h2>
+          {content.problemBody.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+        </div>
+        <div class="case-study__reflection" data-motion="block">
+          <span class="case-study__eyebrow">La réflexion</span>
+          <blockquote>{content.reflectionQuote}</blockquote>
+          {content.reflectionBody && <p>{content.reflectionBody}</p>}
+        </div>
+      </div>
+    </CaseStudySection>
+
+    {slug === "sereno" && (
+      <CaseStudySection aria-labelledby="solution-title">
+        <span class="case-study__eyebrow">La solution</span>
+        <h2 id="solution-title">Le parcours d'une facture</h2>
+        <div class="case-study__workflow" data-motion="block">
+          {workflowSteps.map((step) => (
+            <div class="case-study__workflow-step">
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </div>
+          ))}
+        </div>
+      </CaseStudySection>
+    )}
+
+    {slug === "agencyos" && (
+      <CaseStudySection aria-labelledby="solution-title">
+        <span class="case-study__eyebrow">La solution</span>
+        <h2 id="solution-title">Un même produit, plusieurs domaines métier</h2>
+        <div class="case-study__modules" data-motion="block">
+          {moduleGroups.map((group) => (
+            <div class="case-study__module">
+              <h3>{group.title}</h3>
+              <p>{group.text}</p>
+            </div>
+          ))}
+        </div>
+      </CaseStudySection>
+    )}
+
+    <CaseStudySection soft={slug !== "sereno" && slug !== "agencyos"} aria-labelledby="demo-title">
+      <span class="case-study__eyebrow">Démonstration visuelle</span>
+      <h2 id="demo-title">
+        {slug === "belkhir-depannage" ? "De l'accueil à la prise de contact" : "Ce qui a été construit"}
+      </h2>
+
+      {slug === "belkhir-depannage" ? (
+        <div class="case-study__editorial">
+          {media.gallery!.map((item, i) => (
+            <div class:list={["case-study__editorial-row", i % 2 === 1 && "case-study__editorial-row--reverse"]} data-motion="block">
+              <CaseStudyMedia image={item.image} alt={item.alt} index={i + 1} eager={i === 0} />
+              <div>
+                <h3>{belkhirRowTitles[i] ?? item.caption}</h3>
+                <p>{item.caption}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class:list={["case-study__gallery", media.gallery!.length > 4 && "case-study__gallery--3col"]}>
+          {media.gallery!.map((item, i) => (
+            <div data-motion="block">
+              <CaseStudyMedia image={item.image} alt={item.alt} caption={item.caption} index={i + 1} />
+            </div>
+          ))}
+        </div>
+      )}
+    </CaseStudySection>
+
+    <CaseStudySection soft={slug === "sereno" || slug === "agencyos"} aria-labelledby="tech-title">
+      <span class="case-study__eyebrow">Choix techniques</span>
+      <h2 id="tech-title">La technologie, et pourquoi elle est là</h2>
+      <div data-motion="block">
+        <CaseStudyTech items={content.tech} />
+      </div>
+      {content.githubUrl && (
+        <p>
+          <a class="case-study__github" href={content.githubUrl} target="_blank" rel="noopener noreferrer">
+            {content.githubLabel} <span aria-hidden="true">↗</span>
+          </a>
+        </p>
+      )}
+    </CaseStudySection>
+
+    <CaseStudySection aria-labelledby="outcome-title">
+      <span class="case-study__eyebrow">Résultat réel</span>
+      <h2 id="outcome-title">Ce qui a été construit</h2>
+      <div data-motion="block">
+        <CaseStudyOutcome achieved={content.outcomeAchieved} next={content.outcomeNext} proves={content.proves} />
+      </div>
+    </CaseStudySection>
+
+    <CaseStudySection soft aria-labelledby="cta-title">
+      <div class="case-study__cta" data-motion="block">
+        <span class="case-study__eyebrow">Vous avez un besoin similaire ?</span>
+        <h2 id="cta-title">Parlons de votre projet.</h2>
+        <div class="case-study__cta-actions">
+          <ActionLink href="/contact/" variant="primary">Parler de votre projet</ActionLink>
+          <ActionLink href={principalService.serviceHref} variant="secondary">
+            Découvrir {principalService.serviceLabel}
+          </ActionLink>
+        </div>
+      </div>
+
+      {nextRealisation && (
+        <div class="case-study__next-wrapper" data-motion="block">
+          <CaseStudyNext
+            title={nextRealisation.data.shortTitle ?? nextRealisation.data.title}
+            category={nextRealisation.data.category}
+            href={`/realisations/${nextRealisation.data.slug}/`}
+          />
+        </div>
+      )}
+
+      <p><a href={withBase("/realisations/")}>← Toutes les réalisations</a></p>
+    </CaseStudySection>
+  </div>
+
+  <ServiceMotion />
+</BaseLayout>
+
+<style>
+  .case-study__cta {
+    max-width: 42rem;
+    margin: 0 auto var(--space-lg) auto;
+    text-align: center;
+  }
+
+  .case-study__cta p {
+    margin: var(--space-sm) 0;
+  }
+
+  .case-study__cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+
+  .case-study__next-wrapper {
+    max-width: 32rem;
+    margin: 0 auto var(--space-lg) auto;
+  }
+</style>

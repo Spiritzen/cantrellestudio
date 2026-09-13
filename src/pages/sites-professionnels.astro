@@ -1,0 +1,246 @@
+---
+// Sites professionnels — CS-S9. Landing commerciale + SEO on-page.
+// Remplace le contenu provisoire CS-S0. Belkhir Dépannage est réutilisé
+// depuis la Content Collection `realisations` (jamais réinventé, toujours
+// présenté comme une maquette de refonte — jamais comme un site en
+// production). Vélocéan est cité uniquement comme démonstrateur (aucune
+// nouvelle étude de cas créée). Signature visuelle de cette page (prompt
+// §31) : page / contenu / visibilité / conversion — triptyque être
+// trouvé / compris / contacté.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import ServiceProofCard from "../components/services/ServiceProofCard.astro";
+import ServiceCta from "../components/services/ServiceCta.astro";
+import ServiceMotion from "../components/services/ServiceMotion.astro";
+import RelatedCaseStudy from "../components/relations/RelatedCaseStudy.astro";
+import { velocean } from "../data/serviceProofs";
+import { projectMedia } from "../data/projectMedia";
+import { externalProjectMedia } from "../data/externalProjectMedia";
+import { caseStudyContent } from "../data/caseStudyContent";
+import { getProofsForService } from "../data/serviceCaseStudyMap";
+import { withBase } from "../utils/paths";
+import "../styles/services.css";
+
+// CS-S10B — preuve phare unique Belkhir Dépannage, source unique
+// `serviceCaseStudyMap.ts` (prompt §8 : pas de seconde étude artificielle).
+const sitesProof = getProofsForService("sites-professionnels")[0];
+
+const builds = [
+  "une hiérarchie de contenu",
+  "un message clair",
+  "un parcours de navigation",
+  "une architecture de pages",
+  "des appels à l'action",
+  "une base technique propre",
+  "une expérience mobile soignée",
+  "un socle SEO",
+];
+
+const triptych = [
+  {
+    index: "01",
+    title: "Être trouvé",
+    items: ["Structure et pages dédiées par intention", "Title et meta uniques", "Maillage interne", "Performance", "Contenus réellement utiles"],
+  },
+  {
+    index: "02",
+    title: "Être compris",
+    items: ["Message clair dès l'arrivée", "Hiérarchie visuelle", "Navigation simple", "Contenu qui répond à la question du visiteur"],
+  },
+  {
+    index: "03",
+    title: "Être contacté",
+    items: ["Appels à l'action visibles", "Téléphone accessible", "Formulaire simple", "Parcours mobile pensé jusqu'au bout"],
+  },
+];
+
+const foundations = [
+  { title: "SEO technique", text: "Title, meta, canonical, HTML sémantique et maillage interne cohérent." },
+  { title: "Performance", text: "Pages légères, images optimisées, JavaScript limité au strict nécessaire." },
+  { title: "Responsive", text: "Une lecture soignée du mobile au desktop, sans compromis." },
+  { title: "Accessibilité", text: "Contraste, focus visible, navigation clavier, structure sémantique." },
+];
+---
+
+<BaseLayout
+  title="Création de sites professionnels & SEO | Cantrelle Studio"
+  description="Sites professionnels rapides, accessibles et pensés pour le SEO : architecture Astro ou React, contenus structurés, responsive et performance."
+>
+  <div class="service-page service-page--sites">
+    <Container>
+      <ServiceBreadcrumb current="Sites professionnels" />
+    </Container>
+
+    <section class="service-page__section">
+      <Container>
+        <ServiceHero
+          eyebrow="Sites professionnels"
+          title="Un site professionnel pensé pour être trouvé, compris et contacté."
+          lead="Architecture SEO, performance, responsive, accessibilité et direction artistique : chaque page doit servir un besoin concret, pas remplir un thème."
+          secondaryHref="/realisations/belkhir-depannage/"
+          secondaryLabel="Voir Belkhir Dépannage"
+        />
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-positioning-title">
+      <Container>
+        <SectionHeading
+          id="sites-positioning-title"
+          eyebrow="Positionnement"
+          title="Le studio ne vend pas « 5 pages et un formulaire »."
+          intro="Il construit :"
+        />
+        <ul class="service-chips" data-motion="block">
+          {builds.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="sites-triptych-title">
+      <Container>
+        <SectionHeading id="sites-triptych-title" eyebrow="3 objectifs" title="Être trouvé, être compris, être contacté." />
+        <div class="service-triptych">
+          {triptych.map((col) => (
+            <div class="service-triptych__item" data-motion="block">
+              <span class="service-triptych__index">{col.index}</span>
+              <h3>{col.title}</h3>
+              <ul>
+                {col.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p class="service-architecture__note">
+          <ActionLink href="/methode/" variant="text">Découvrir la méthode complète</ActionLink>
+        </p>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-foundations-title">
+      <Container>
+        <SectionHeading id="sites-foundations-title" eyebrow="Fondations" title="4 fondations, sur chaque projet." />
+        <div class="service-foundations">
+          {foundations.map((item) => (
+            <div class="service-foundations__item" data-motion="block">
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="sites-proofs-title">
+      <Container>
+        <SectionHeading id="sites-proofs-title" eyebrow="Preuves" title="Une maquette de refonte, pensée comme un vrai projet." />
+        <div class="related-case-study-pair">
+          <RelatedCaseStudy
+            role="primary"
+            title="Belkhir Dépannage"
+            category="Site professionnel"
+            angle={sitesProof.angle}
+            capabilities={caseStudyContent["belkhir-depannage"].proves.slice(0, 3)}
+            image={projectMedia["belkhir-depannage"].primary}
+            imageAlt={projectMedia["belkhir-depannage"].primaryAlt}
+            href="/realisations/belkhir-depannage/"
+          />
+          <ServiceProofCard
+            title={velocean.title}
+            description={velocean.angle}
+            facts={velocean.facts}
+            isDemonstrator={velocean.isDemonstrator}
+            image={externalProjectMedia.velocean.image}
+            imageAlt={externalProjectMedia.velocean.alt}
+          />
+        </div>
+        <p class="service-architecture__note">D'autres projets sont présentés dans les <a href={withBase("/realisations/")}>réalisations</a>.</p>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-tech-title">
+      <Container>
+        <SectionHeading id="sites-tech-title" eyebrow="Choix technique" title="La technologie dépend du site." />
+        <div class="service-tech-choice" data-motion="block">
+          <div class="service-tech-choice__col">
+            <h3>Astro</h3>
+            <ul>
+              <li>Contenu, SEO, rendu statique</li>
+              <li>JavaScript minimal</li>
+              <li>Adapté aux vitrines et sites de contenu</li>
+            </ul>
+          </div>
+          <div class="service-tech-choice__col">
+            <h3>React</h3>
+            <ul>
+              <li>Interactions plus riches</li>
+              <li>Expériences complexes</li>
+              <li>Parties applicatives d'un site — voir <a href={withBase("/applications-metier-saas/")}>applications métier & SaaS</a></li>
+            </ul>
+          </div>
+        </div>
+        <p class="service-architecture__note">Le bon choix dépend du site, pas d'une préférence par défaut.</p>
+      </Container>
+    </section>
+
+    <section class="service-page__section" aria-labelledby="sites-honesty-title">
+      <Container>
+        <SectionHeading id="sites-honesty-title" eyebrow="SEO honnête" title="Une base solide, pas une promesse de classement." />
+        <div class="service-honesty" data-motion="block">
+          <p class="service-honesty__statement">
+            Le studio peut construire une base technique et éditoriale solide. Personne ne peut promettre une
+            position précise dans Google.
+          </p>
+          <p>Ce qui peut être travaillé : la qualité technique, les contenus, la structure, la performance et le suivi dans le temps.</p>
+        </div>
+
+        <div class="service-faq" data-motion="block">
+          <details>
+            <summary>Astro ou React pour un site professionnel ?</summary>
+            <p>
+              Cela dépend du besoin : un site de contenu ou une vitrine tire parti d'Astro (rendu statique, SEO,
+              performance). Une partie plus interactive ou applicative s'appuie davantage sur React. Le choix se fait
+              projet par projet, pas par défaut.
+            </p>
+          </details>
+          <details>
+            <summary>Peut-on garantir une première position dans Google ?</summary>
+            <p>
+              Non — personne ne peut le garantir honnêtement. Ce qui peut l'être : une base technique et éditoriale
+              solide (SEO technique, structure, contenu utile, performance).
+            </p>
+          </details>
+          <details>
+            <summary>Le site peut-il évoluer plus tard ?</summary>
+            <p>
+              Oui. L'architecture est pensée pour ajouter des pages ou des fonctionnalités sans tout refaire — voir
+              <a href={withBase("/developpement-sur-mesure/")}>développement sur mesure</a> pour les évolutions plus poussées.
+            </p>
+          </details>
+        </div>
+      </Container>
+    </section>
+
+    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-cta-title">
+      <Container>
+        <ServiceCta
+          eyebrow="Un site à créer ou à repenser ?"
+          title="Parlons de ce que votre site doit vraiment faire."
+          text="Être trouvé, être compris, être contacté : commençons par le besoin réel derrière le site."
+          secondaryHref="/realisations/"
+          secondaryLabel="Voir les réalisations"
+        />
+      </Container>
+    </section>
+  </div>
+
+  <ServiceMotion />
+</BaseLayout>

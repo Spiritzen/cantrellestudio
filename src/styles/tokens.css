@@ -1,0 +1,66 @@
+/*
+  Design tokens — V1 de production (CS-S2C).
+  Propagation des Design Foundations validées après le Design Lab CS-S2B —
+  voir docs/rapports/RAPPORT_CS_S2B_VALIDATION_VISUELLE.txt (autorité des
+  valeurs finales) et CS-S2_DIRECTION_ARTISTIQUE_CANTRELLE_STUDIO.txt.
+  Remplace les valeurs neutres temporaires du socle CS-S0.
+*/
+:root {
+  /* Neutres */
+  --color-bg: #0A0B0D;
+  --color-bg-soft: #0E1013;
+  --color-surface: #121419;
+  --color-surface-elevated: #171A20;
+
+  /* Textes */
+  --color-text: #F1EFE8;
+  --color-text-secondary: #A5A8AE;
+  --color-text-muted: #6D727B;
+
+  /* Bordures — discrètes, jamais la source principale de séparation */
+  --color-border: rgba(241, 239, 232, 0.08);
+  --color-border-strong: rgba(241, 239, 232, 0.16);
+
+  /* Accent Ember — ajusté après validation visuelle CS-S2B (#F06432 → #E45F36) */
+  --color-accent: #E45F36;
+  --color-accent-soft: #FF8A5C;
+  --color-accent-deep: #A83B1E;
+  /* Texte à poser sur un fond --color-accent (CTA primary, skip-link,
+     sélection) : le ratio de contraste est nettement meilleur avec un texte
+     très sombre qu'avec de l'ivoire ou du blanc sur cet orange cuivré. */
+  --color-accent-contrast: #14100D;
+
+  /* États sémantiques — jamais des couleurs de marque */
+  --color-success: #4FAE79;
+  --color-warning: #D8A84E;
+  --color-danger: #D76565;
+  --color-info: #6F94C7;
+
+  /* Typographies de production : Sora (display) + Manrope (body/UI).
+     Syne n'est volontairement pas référencée ici : elle reste réservée au
+     Design Lab (voir src/styles/design-lab.css). */
+  --font-display: "Sora Variable", system-ui, sans-serif;
+  --font-body: "Manrope Variable", system-ui, sans-serif;
+  --font-size-base: 1rem;
+  --line-height-base: 1.6;
+
+  /* Espacements — échelle CS-S0 conservée telle quelle : déjà cohérente. */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+
+  /* Largeur de contenu — ajustée dans la plage validée 1240–1360px (CS-S2 §13
+     et RAPPORT_CS_S2B_VALIDATION_VISUELLE.txt) ; alignée sur le container du
+     Design Lab (1320px) pour une cohérence visuelle globale. */
+  --content-width: 82.5rem; /* 1320px */
+  --content-padding-inline: var(--space-sm);
+
+  /* Rayons — 10/16 dominants, 6 pour le détail, 22 exceptionnel. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --border-width: 1px;
+}

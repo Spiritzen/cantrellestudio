@@ -1,0 +1,111 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getServicesForProject } from "../../data/serviceCaseStudyMap";
+import { withBase } from "../../utils/paths";
+
+const realisations = (await getCollection("realisations")).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+// CS-S10B §14 — afficher clairement le Service associé sur chaque card
+// (édition minimale, source unique serviceCaseStudyMap.ts, pas de refonte).
+const principalServiceOf = (slug: string) =>
+  getServicesForProject(slug).find((s) => s.onProjectPage === "principal");
+---
+
+<BaseLayout
+  title="Réalisations — Cantrelle Studio"
+  description="Études de cas Cantrelle Studio : Sereno, AgencyOS, Belkhir Dépannage — problème, solution, choix techniques et résultat réel."
+>
+  <section class="container">
+    <h1>Réalisations</h1>
+    <p class="intro">Trois projets, trois études de cas : le problème posé, la solution construite et l'état réel obtenu.</p>
+
+    <ul class="realisations-list">
+      {realisations.map((realisation) => {
+        const service = principalServiceOf(realisation.data.slug);
+        return (
+          <li>
+            <a href={withBase(`/realisations/${realisation.data.slug}/`)}>
+              <span class="label">Étude de cas</span>
+              <h2>{realisation.data.shortTitle ?? realisation.data.title}</h2>
+              <p class="category">{realisation.data.category}</p>
+              <p>{realisation.data.summary}</p>
+              {service && <p class="service">Service : {service.serviceLabel}</p>}
+              <span class="cta">Voir l'étude de cas <span aria-hidden="true">→</span></span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-block: var(--space-lg);
+  }
+  .intro {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    max-width: 48ch;
+  }
+  .realisations-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--space-md);
+  }
+  .realisations-list li {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color 200ms ease, background-color 200ms ease;
+  }
+  .realisations-list li:hover,
+  .realisations-list li:focus-within {
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-soft);
+  }
+  .realisations-list a {
+    display: block;
+    padding: var(--space-sm);
+    color: inherit;
+    text-decoration: none;
+  }
+  .label {
+    display: inline-block;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+  }
+  .realisations-list h2 {
+    margin: 0 0 var(--space-xs) 0;
+    font-size: 1.1rem;
+  }
+  .category {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin: 0 0 var(--space-xs) 0;
+  }
+  .service {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-xs) 0;
+  }
+  .cta {
+    display: inline-block;
+    margin-top: var(--space-xs);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border-strong);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .realisations-list li {
+      transition: none;
+    }
+  }
+</style>

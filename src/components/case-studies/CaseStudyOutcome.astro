@@ -1,0 +1,41 @@
+---
+// CaseStudyOutcome — CS-S10 §25/§26. "Ce qui a été construit" plutôt que
+// "Résultats" (évite toute interprétation business) : deux listes
+// honnêtes (validé aujourd'hui / à venir avant une exploitation
+// commerciale), jamais de KPI inventé, puis une bande de capacités
+// démontrées (3-5, formulation concise) qui clôt l'étude avant le CTA.
+export interface Props {
+  achieved: string[];
+  next: string[];
+  proves: string[];
+}
+
+const { achieved, next, proves } = Astro.props;
+---
+
+<div class="case-study__outcome">
+  <div class="case-study__outcome-grid">
+    <div class="case-study__outcome-col case-study__outcome-col--done">
+      <h3>Construit et validé</h3>
+      <ul>
+        {achieved.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="case-study__outcome-col case-study__outcome-col--next">
+      <h3>Avant une exploitation commerciale</h3>
+      <ul>
+        {next.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<ul class="case-study__proves">
+  {proves.map((item) => (
+    <li>{item}</li>
+  ))}
+</ul>

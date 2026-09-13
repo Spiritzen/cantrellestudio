@@ -1,0 +1,73 @@
+---
+// ServiceMotion — CS-S9B. Motion léger des 3 pages services, cohérent avec
+// le langage de mouvement de la Home (CS-S8/CS-S8A) : mêmes constantes
+// (durée, easing, stagger, offsets) importées depuis `motionUtils.ts`
+// (partagé, non spécifique à la Home), même pattern set()+to()+clearProps
+// (évite les deux bugs GSAP documentés en CS-S8 : transform figé et
+// :hover bloqué après reveal — voir HomeMotion.astro), même logique de
+// replay bidirectionnel (onEnter/onEnterBack rejouent, onLeave/onLeaveBack
+// réinitialisent) validée en CS-S8A.
+//
+// N'IMPORTE PAS HomeMotion.astro et ne le modifie pas : composant
+// entièrement séparé, propre aux pages services, conformément à la règle
+// CS-S9B "ne pas modifier la Home au-delà du strict nécessaire". Reste un
+// simple hôte de script (aucun template, aucune hydratation React),
+// exactement le même choix d'architecture que HomeMotion pour un coût nul
+// en dehors des pages qui l'importent.
+//
+// CS-S10 §28 — "Si le système de motion CS-S9B peut être réutilisé : le
+// réutiliser." Le sélecteur de section a été élargi pour couvrir aussi
+// `.case-study__section` (études de cas, CS-S10) : même reveal, même
+// replay, même chunk JS partagé — zéro nouveau moteur de motion créé.
+//
+// Portée : un seul ScrollTrigger par section (`.service-page__section`
+// ou `.case-study__section`), jamais un par élément — reveal groupé des
+// enfants `[data-motion]` de chaque section, avec un léger stagger.
+// Aucun scrub, aucun parallax, aucun effet agressif.
+---
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { DURATION, EASE, STAGGER, OFFSET, prefersReducedMotion } from "../motion/motionUtils";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  if (!prefersReducedMotion()) {
+    document.querySelectorAll(".service-page__section, .case-study__section").forEach((section) => {
+      const targets = Array.from(section.querySelectorAll("[data-motion]"));
+      if (targets.length === 0) return;
+
+      const setInitial = () => gsap.set(targets, { opacity: 0, y: OFFSET.title });
+      let tween: gsap.core.Tween | null = null;
+
+      const play = () => {
+        tween?.kill();
+        tween = gsap.to(targets, {
+          opacity: 1,
+          y: 0,
+          duration: DURATION.reveal,
+          ease: EASE,
+          stagger: STAGGER,
+          clearProps: "opacity,transform",
+        });
+      };
+
+      const reset = () => {
+        tween?.kill();
+        setInitial();
+      };
+
+      setInitial();
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top 90%",
+        end: "bottom 10%",
+        onEnter: play,
+        onEnterBack: play,
+        onLeave: reset,
+        onLeaveBack: reset,
+      });
+    });
+  }
+</script>

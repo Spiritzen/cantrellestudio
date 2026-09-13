@@ -1,0 +1,430 @@
+---
+// HomeMotion — CS-S8. Orchestre le langage de mouvement de la Home.
+//
+// CHOIX D'ARCHITECTURE (voir rapport CS-S8 pour la justification complète) :
+// ce composant ne rend RIEN et n'hydrate AUCUN framework — c'est un simple
+// hôte pour un bloc de script module (type module), traité par Vite
+// (imports npm standards, tree-shaking, bundling normal). Aucune île React, aucun
+// `client:load` : GSAP est une bibliothèque JS pure qui manipule le DOM par
+// sélecteurs, elle n'a besoin d'aucun état React ni de rendu virtuel. Une
+// île React ici n'aurait fait qu'ajouter le coût d'hydratation du runtime
+// React pour une fonctionnalité qui n'en tire aucun bénéfice — exactement
+// le cas que le prompt §9 demande d'éviter ("si une solution Astro +
+// script inline/module léger suffit : la préférer").
+// Le contenu HTML de la Home reste 100% Astro, rendu côté serveur, visible
+// sans JS (§26) : ce script ne fait qu'ajouter un mouvement d'ENTRÉE et
+// quelques effets de scroll par-dessus un DOM déjà complet et lisible.
+//
+// NOTE D'IMPLÉMENTATION IMPORTANTE : tous les reveals utilisent
+// gsap.set() (état de départ posé explicitement) PUIS gsap.to() (animation
+// vers l'état final explicite), jamais gsap.from()/fromTo(). Constaté à
+// l'usage (voir rapport CS-S8 §incidents) : dans cette configuration,
+// gsap.from() sur `y` avec ScrollTrigger pouvait laisser la translation
+// figée à sa valeur de départ alors que l'opacité s'animait normalement —
+// gsap.set()+gsap.to() explicite ce qui est la valeur de départ et ce qui
+// est la valeur cible, sans dépendre de l'inférence de "l'état naturel" de
+// l'élément par GSAP, et corrige entièrement le problème (revérifié).
+---
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { DURATION, EASE, STAGGER, OFFSET, prefersReducedMotion } from "./motionUtils";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const desktopEffects = window.matchMedia("(min-width: 900px)");
+
+  // CS-S8 §25 — OBLIGATOIRE. Sous prefers-reduced-motion, AUCUNE animation
+  // n'est créée : ni reveal, ni parallax, ni scrub, ni respiration infinie.
+  // Le contenu reste dans son état HTML/CSS naturel — déjà pleinement
+  // visible par défaut (§26 : jamais d'opacity:0 posé en CSS), donc rien à
+  // "révéler" de toute façon. C'est la garde unique qui protège tout le
+  // reste de ce fichier (mutation A du rapport CS-S8 désactive précisément
+  // cette ligne pour prouver qu'elle est bien nécessaire).
+  if (prefersReducedMotion()) {
+    // Rien à faire : le DOM est déjà dans son état final.
+  } else {
+    setupHero();
+    setupSectionHeadings();
+    setupExpertises();
+    setupApproche();
+    setupRealisations();
+    setupMethode();
+    setupCapacites();
+    setupCtaFinal();
+    setupFooter();
+  }
+
+  /** Anime un groupe d'éléments : pose l'état de départ (opacity 0, y
+   * décalé) puis anime vers l'état final explicite (opacity 1, y 0).
+   * `clearProps` (par défaut "opacity,transform") retire le style inline
+   * posé par GSAP une fois le reveal terminé : SANS cette étape, l'inline
+   * `transform`/`opacity` laissé par GSAP (spécificité 1,0,0,0) écrase
+   * silencieusement toute règle CSS `:hover`/`:focus` ciblant les mêmes
+   * propriétés sur cet élément pour le reste de la vie de la page — bug
+   * réellement rencontré et corrigé en CS-S8 (voir rapport CS-S8
+   * §incidents).
+   *
+   * CS-S8A FIX C — REPLAY BIDIRECTIONNEL. Si `opts.scrollTrigger` est
+   * fourni, le reveal n'est plus one-shot (`toggleActions: "play none none
+   * none"`, comportement CS-S8 initial jugé insuffisant par Sébastien) :
+   * un unique `ScrollTrigger.create()` pilote deux callbacks — `play()`
+   * (rejoue le tween depuis le début, `onEnter`/`onEnterBack`, donc en
+   * descendant ET en remontant) et `reset()` (repose l'état initial
+   * opacity:0/y décalé, `onLeave`/`onLeaveBack`, uniquement quand la
+   * section est presque hors écran — bornes par défaut `top 90%` / `bottom
+   * 10%`, prompt CS-S8A §13). `tween?.kill()` avant chaque `play()`/
+   * `reset()` empêche tout tween empilé lors d'allers-retours rapides. Sans
+   * `opts.scrollTrigger` (cas du Hero, voir `setupHero`), le reveal reste
+   * strictement one-shot et immédiat. */
+  function reveal(
+    targets: Element[] | NodeListOf<Element>,
+    y: number | ((i: number) => number),
+    opts: gsap.TweenVars & { scrollTrigger?: ScrollTrigger.Vars } = {},
+  ) {
+    const list = Array.from(targets as Iterable<Element>);
+    if (list.length === 0) return;
+    const { scrollTrigger, ...tweenOpts } = opts;
+
+    const setInitial = () => gsap.set(list, { opacity: 0, y });
+    let tween: gsap.core.Tween | null = null;
+
+    const play = () => {
+      tween?.kill();
+      tween = gsap.to(list, {
+        opacity: 1,
+        y: 0,
+        duration: DURATION.reveal,
+        ease: EASE,
+        stagger: STAGGER,
+        clearProps: "opacity,transform",
+        ...tweenOpts,
+      });
+    };
+
+    setInitial();
+
+    if (!scrollTrigger) {
+      play();
+      return;
+    }
+
+    const reset = () => {
+      tween?.kill();
+      setInitial();
+    };
+
+    ScrollTrigger.create({
+      trigger: scrollTrigger.trigger,
+      start: scrollTrigger.start ?? "top 90%",
+      end: scrollTrigger.end ?? "bottom 10%",
+      onEnter: play,
+      onEnterBack: play,
+      onLeave: reset,
+      onLeaveBack: reset,
+    });
+  }
+
+  /** Hero — au-dessus de la ligne de flottaison : reveal immédiat, PAS de
+   * ScrollTrigger (le contenu est déjà dans le viewport au chargement).
+   *
+   * CS-S8A §14 — reste volontairement one-shot (pas de replay au retour en
+   * haut de page) : le rejouer proprement exigerait un nouveau listener de
+   * scroll dédié à la détection du retour complet en haut, alors que la
+   * scène 3D (HeroScene/HeroSpheres, hors périmètre CS-S8A, ne jamais
+   * toucher) lit déjà elle-même la position de scroll pour sa propre
+   * logique — ajouter un second observateur augmente le risque
+   * d'interférence pour un gain cosmétique mineur sur un contenu vu une
+   * seule fois par visite. Choix documenté, conforme à l'autorisation
+   * explicite du prompt ("Sinon : laisser son animation initiale one-shot
+   * ... et documenter").
+   *
+   * Micro-sprint dédié — la ligne "Applications métier · SaaS · Web
+   * professionnel" (`[data-motion="hero-note"]`) reçoit sa PROPRE animation
+   * en fin de fonction, séparée du groupe reveal ci-dessus (paramètres
+   * différents : délai fixe de 1s, durée 0.6s, arrivée depuis la droite,
+   * opacité/flou initiaux spécifiques) — jamais mélangée au stagger des 4
+   * éléments existants. "Flou initial 50%" interprété comme `blur(6px)`
+   * (valeur ajustable visuellement, même logique que le blur des cards
+   * Expertises). */
+  function setupHero() {
+    const eyebrow = document.querySelector('[data-motion="hero-eyebrow"]');
+    const title = document.querySelector('[data-motion="hero-title"]');
+    const lead = document.querySelector('[data-motion="hero-lead"]');
+    const cta = document.querySelector('[data-motion="hero-cta"]');
+    const parts: { el: Element; y: number }[] = [
+      eyebrow && { el: eyebrow, y: OFFSET.eyebrow },
+      title && { el: title, y: OFFSET.title },
+      lead && { el: lead, y: OFFSET.intro },
+      cta && { el: cta, y: OFFSET.cta },
+    ].filter(Boolean) as { el: Element; y: number }[];
+    if (parts.length === 0) return;
+
+    reveal(
+      parts.map((p) => p.el),
+      (i: number) => parts[i].y,
+      { stagger: STAGGER },
+    );
+
+    // Ligne "Applications métier · SaaS · Web professionnel" sous les CTA —
+    // micro-sprint dédié, animation propre à cet élément (paramètres exacts
+    // fournis : délai 2s, durée 0.4s, arrivée depuis la droite, opacité
+    // initiale 0.4, flou initial ~50%). One-shot comme le reste du Hero
+    // (CS-S8A §14, pas de ScrollTrigger : contenu déjà dans le viewport).
+    const note = document.querySelector('[data-motion="hero-note"]');
+    if (note) {
+      gsap.set(note, { opacity: 0.4, x: OFFSET.title, filter: "blur(6px)" });
+      gsap.to(note, {
+        opacity: 1,
+        x: 0,
+        filter: "blur(0px)",
+        duration: 0.6,
+        delay: 1,
+        ease: EASE,
+        clearProps: "opacity,transform,filter",
+      });
+    }
+  }
+
+  /** Titres de section génériques (Expertises/Réalisations/Méthode/
+   * Capacités — tous via SectionHeading.astro). 1 ScrollTrigger par
+   * instance (via `reveal`), jamais un sélecteur fragile (data-motion, pas
+   * :nth-child). Rejoue à chaque entrée/sortie (FIX C). */
+  function setupSectionHeadings() {
+    document.querySelectorAll(".section-heading").forEach((heading) => {
+      const eyebrow = heading.querySelector('[data-motion="eyebrow"]');
+      const title = heading.querySelector('[data-motion="title"]');
+      const intro = heading.querySelector('[data-motion="intro"]');
+      const parts: { el: Element; y: number }[] = [
+        eyebrow && { el: eyebrow, y: OFFSET.eyebrow },
+        title && { el: title, y: OFFSET.title },
+        intro && { el: intro, y: OFFSET.intro },
+      ].filter(Boolean) as { el: Element; y: number }[];
+      if (parts.length === 0) return;
+
+      reveal(
+        parts.map((p) => p.el),
+        (i: number) => parts[i].y,
+        { scrollTrigger: { trigger: heading } },
+      );
+    });
+  }
+
+  /** B. Expertises — TEST VISUEL BORNÉ (prompt AnimationCardBesoinWebAxp,
+   * micro-sprint dédié). Remplace le reveal standard (fade+translate,
+   * partagé avec le reste de la Home) par une apparition plus expressive
+   * PROPRE À CETTE SECTION SEULE : BLUR + FADE + POP + OVERSHOOT + SETTLE.
+   * Réutilise strictement l'architecture existante (GSAP déjà en place,
+   * même pattern set()/timeline+kill()/ScrollTrigger onEnter-onEnterBack/
+   * onLeave-onLeaveBack que le reste de ce fichier) — aucune librairie
+   * ajoutée, aucun second moteur de motion créé.
+   *
+   * Chaque card : opacity 0→1, scale 0.1→1, blur 26px→0, en UN seul tween
+   * (micro-sprint de correction : l'overshoot 1.3→1 en 2 phases donnait un
+   * effet "bug" à cette vitesse — retiré, remplacé par une montée directe
+   * 0.1→1, sans dépassement). Durée totale par card 0.5s (ajustée depuis
+   * 0.7s), décalage de 0.2s entre cards (inchangé) : Card 1 0.0-0.5s,
+   * Card 2 0.2-0.7s, Card 3 0.4-0.9s — une vague, jamais un enchaînement
+   * séquentiel strict.
+   *
+   * Easing du scale — micro-sprint de correction supplémentaire :
+   * `power2.out` (ease-out) retiré, remplacé par `none` (vitesse
+   * constante/linéaire, déjà utilisé ailleurs dans ce fichier pour
+   * `setupMethode`). Sur un delta de scale aussi large (0.1→1, ×10),
+   * `power2.out` concentrait presque toute la croissance en tout début de
+   * tween (décélération forte) : la card semblait "sauter" quasi
+   * instantanément à sa taille avant de ralentir — c'est cet effet de
+   * "bug" perçu qui est corrigé. `none` répartit la croissance à vitesse
+   * constante sur toute la durée, sans à-coup ni accélération/décélération
+   * marquée : c'est le choix le plus sûr pour éliminer l'artefact (une
+   * courbe exponentielle aurait, à l'inverse, concentré la croissance en
+   * fin de tween — même famille de risque visuel, déplacée). La ligne
+   * Ember (accent existant de ServiceItem) est conservée et suit le même
+   * point de départ que sa card, durée/easing inchangés (DURATION.reveal/
+   * EASE).
+   *
+   * `clearProps: "opacity,transform,filter"` sur ce tween (prompt §10)
+   * retire tout style inline résiduel une fois l'animation terminée, afin
+   * que :hover/:focus/:focus-within (CSS pur, ServiceItem.astro) restent
+   * pleinement fonctionnels après chaque replay. */
+  function setupExpertises() {
+    const list = document.querySelector(".home-expertise__list");
+    const items = list ? Array.from(list.querySelectorAll('[data-motion="service"]')) : [];
+    if (!list || items.length === 0) return;
+
+    const linesList = Array.from(list.querySelectorAll('[data-motion="service"] .service-item__line'));
+
+    const CARD_STAGGER = 0.2;
+    const CARD_DURATION = 0.5; // ajusté depuis 0.7s (micro-sprint de suivi)
+    const INITIAL_BLUR = "blur(26px)";
+
+    const setInitial = () => {
+      gsap.set(items, { opacity: 0, scale: 0.1, filter: INITIAL_BLUR });
+      if (linesList.length > 0) gsap.set(linesList, { scaleX: 0, transformOrigin: "left center" });
+    };
+
+    let timeline: gsap.core.Timeline | null = null;
+
+    const play = () => {
+      timeline?.kill();
+      timeline = gsap.timeline();
+
+      items.forEach((item, i) => {
+        const start = i * CARD_STAGGER;
+        timeline!.to(
+          item,
+          {
+            opacity: 1,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: CARD_DURATION,
+            ease: "none",
+            clearProps: "opacity,transform,filter",
+          },
+          start,
+        );
+
+        const line = linesList[i];
+        if (line) {
+          timeline!.to(line, { scaleX: 1, duration: DURATION.reveal, ease: EASE, clearProps: "transform" }, start);
+        }
+      });
+    };
+
+    const reset = () => {
+      timeline?.kill();
+      setInitial();
+    };
+
+    setInitial();
+    ScrollTrigger.create({
+      trigger: list,
+      start: "top 90%",
+      end: "bottom 10%",
+      onEnter: play,
+      onEnterBack: play,
+      onLeave: reset,
+      onLeaveBack: reset,
+    });
+  }
+
+  /** C. Approche — les 3 "plaques" se révèlent avec un léger décalage
+   * différencié (prompt CS-S8 §14). Rejoue à chaque entrée/sortie (FIX C). */
+  function setupApproche() {
+    const list = document.querySelector(".home-approach__proofs");
+    const items = list ? list.querySelectorAll('[data-motion="proof"]') : [];
+    if (!list || items.length === 0) return;
+
+    reveal(items, (i: number) => OFFSET.intro + i * 6, {
+      scrollTrigger: { trigger: list },
+    });
+  }
+
+  /** D. Réalisations — reveal des cards. Rejoue à chaque entrée/sortie
+   * (FIX C).
+   *
+   * CS-S8A FIX B — le micro-parallax des médias (±6px, introduit par CS-S8)
+   * est SUPPRIMÉ : il exigeait un sur-cadrage (`position:absolute; inset:
+   * -8px 0`) qui, cumulé à `object-fit:cover`, rendait les captures Sereno/
+   * AgencyOS/Belkhir visiblement trop zoomées/recadrées — la lisibilité de
+   * ces preuves produit prime sur l'effet de profondeur (arbitrage explicite
+   * du prompt CS-S8A §9). Le cadrage exact de CS-S5/CS-S5B est restauré
+   * dans `ProjectCard.astro`. Aucune animation continue ne reste dans cette
+   * section : seul le reveal des cards + le hover (border/scale ≤1.005,
+   * CSS pur) subsistent. */
+  function setupRealisations() {
+    const grid = document.querySelector(".home-projects__grid");
+    const cards = grid ? grid.querySelectorAll('[data-motion="project"]') : [];
+    if (!grid || cards.length === 0) return;
+
+    reveal(cards, OFFSET.card, {
+      scrollTrigger: { trigger: grid },
+    });
+  }
+
+  /** E. Méthode — reveal séquentiel des 5 étapes (rejoue, FIX C) + ligne de
+   * progression qui se remplit avec le scroll (scrub, desktop uniquement).
+   * Le remplissage est un EFFET CONTINU lié à la position de scroll (prompt
+   * §15) : il ne doit jamais être traité comme un reveal — `scrub: true`
+   * le resynchronise déjà naturellement à chaque scroll, aucun reset ad hoc
+   * n'est nécessaire ni souhaitable ici. */
+  function setupMethode() {
+    const list = document.querySelector(".home-method__list");
+    const steps = list ? list.querySelectorAll('[data-motion="method-step"]') : [];
+    if (list && steps.length > 0) {
+      reveal(steps, OFFSET.title, {
+        scrollTrigger: { trigger: list },
+      });
+    }
+
+    const fill = document.querySelector(".home-method__progress-fill");
+    if (fill && list && desktopEffects.matches) {
+      gsap.set(fill, { scaleX: 0, transformOrigin: "left center" });
+      gsap.to(fill, {
+        scaleX: 1,
+        ease: "none",
+        scrollTrigger: { trigger: list, start: "top 80%", end: "bottom 60%", scrub: true },
+      });
+    }
+  }
+
+  /** F. Capacités — reveal des 4 groupes. Rejoue à chaque entrée/sortie
+   * (FIX C). */
+  function setupCapacites() {
+    const grid = document.querySelector(".home-capabilities__grid");
+    const groups = grid ? grid.querySelectorAll('[data-motion="capability"]') : [];
+    if (!grid || groups.length === 0) return;
+
+    reveal(groups, OFFSET.title, {
+      scrollTrigger: { trigger: grid },
+    });
+  }
+
+  /** G. CTA final — reveal plus ample ("fermeture de page", rejoue à
+   * chaque entrée/sortie, FIX C) + halo Ember qui respire très lentement
+   * (jamais une pulsation agressive : cycle 4s aller/4s retour, amplitude
+   * faible).
+   *
+   * CS-S8A §16 — le halo est créé UNE SEULE FOIS, sans ScrollTrigger,
+   * indépendamment du reveal du texte : contrairement au reveal, il n'est
+   * jamais recréé lors d'un retour sur la section, donc jamais dupliqué
+   * (un seul tween infini vérifié après plusieurs allers-retours). */
+  function setupCtaFinal() {
+    const section = document.querySelector(".home-final-cta");
+    if (!section) return;
+    const targets = ["cta-eyebrow", "cta-title", "cta-text", "cta-actions"]
+      .map((name) => section.querySelector(`[data-motion="${name}"]`))
+      .filter((el): el is Element => Boolean(el));
+
+    if (targets.length > 0) {
+      reveal(targets, OFFSET.card, {
+        duration: DURATION.structural,
+        scrollTrigger: { trigger: section, start: "top 80%" },
+      });
+    }
+
+    const glow = section.querySelector(".home-final-cta__glow");
+    if (glow) {
+      gsap.to(glow, {
+        opacity: 0.65,
+        scale: 1.04,
+        duration: 4,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        transformOrigin: "50% 50%",
+      });
+    }
+  }
+
+  /** Footer — simple reveal d'entrée (prompt CS-S8 §33, rien de plus).
+   * Rejoue à chaque entrée/sortie (FIX C). */
+  function setupFooter() {
+    const footer = document.querySelector('[data-motion="footer"]');
+    if (!footer) return;
+    reveal([footer], OFFSET.intro, {
+      scrollTrigger: { trigger: footer, start: "top 92%" },
+    });
+  }
+</script>

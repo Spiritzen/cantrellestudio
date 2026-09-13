@@ -1,0 +1,418 @@
+---
+// CS-S2B — Design Lab — laboratoire visuel interne, isolé.
+// Objectif : rendre jugeables les Design Foundations candidates (CS-S2)
+// AVANT toute landing, tout composant de production, tout Hero 3D.
+//
+// Contraintes strictes de ce sprint :
+// - aucune page publique ne pointe vers cette route (absente de Header/Footer) ;
+// - noindex,nofollow (voir SeoHead.astro) ;
+// - exclue du sitemap (voir astro.config.mjs) ;
+// - pas de React, pas de Three/R3F, pas de GSAP ;
+// - tokens et polices strictement scopés à cette page (design-lab.css,
+//   imports de police ci-dessous), aucune fuite vers la production.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "@fontsource-variable/sora";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/syne";
+import "../styles/design-lab.css";
+
+const paletteSwatches = [
+  { name: "--lab-color-bg", value: "#0A0B0D", usage: "Fond principal, body, grandes surfaces, Hero", cls: "design-lab__surface-demo--bg" },
+  { name: "--lab-color-bg-soft", value: "#0E1013", usage: "Alternance de sections, surfaces légèrement détachées", cls: "design-lab__surface-demo--bg-soft" },
+  { name: "--lab-color-surface", value: "#121419", usage: "Cards, panneaux, navigation, blocs de contenu", cls: "design-lab__surface-demo--surface" },
+  { name: "--lab-color-surface-elevated", value: "#171A20", usage: "Hover, popover futur, surface mise en avant", cls: "design-lab__surface-demo--elevated" },
+  { name: "--lab-color-text", value: "#F1EFE8", usage: "H1, H2, texte clé, CTA clair (ivoire chaud, pas de blanc pur)", cls: "" },
+  { name: "--lab-color-text-secondary", value: "#A5A8AE", usage: "Paragraphes, métadonnées, navigation secondaire", cls: "" },
+  { name: "--lab-color-text-muted", value: "#6D727B", usage: "Légendes, labels, détails secondaires", cls: "" },
+  { name: "--lab-color-border", value: "rgba(241,239,232,0.08)", usage: "Bordure faible : cards, boutons secondaires, navigation", cls: "" },
+  { name: "--lab-color-border-strong", value: "rgba(241,239,232,0.16)", usage: "Bordure forte, cards mises en avant", cls: "" },
+  { name: "--lab-color-accent", value: "#F06432", usage: "Accent Ember — CTA principal, état actif (rare, ~5% max)", cls: "" },
+  { name: "--lab-color-accent-soft", value: "#FF8A5C", usage: "Hover accent, reflet clair", cls: "" },
+  { name: "--lab-color-accent-deep", value: "#A83B1E", usage: "Accent pressé/actif, ombre chaude", cls: "" },
+  { name: "--lab-color-success", value: "#4FAE79", usage: "État sémantique — succès uniquement", cls: "" },
+  { name: "--lab-color-warning", value: "#D8A84E", usage: "État sémantique — avertissement uniquement", cls: "" },
+  { name: "--lab-color-danger", value: "#D76565", usage: "État sémantique — erreur uniquement", cls: "" },
+  { name: "--lab-color-info", value: "#6F94C7", usage: "État sémantique — information uniquement", cls: "" },
+];
+
+const radii = [
+  { label: "sm — 6px", size: "6px" },
+  { label: "md — 10px", size: "10px" },
+  { label: "lg — 16px", size: "16px" },
+  { label: "xl — 22px", size: "22px" },
+];
+
+// Specimens communs — identiques pour Piste A et Piste B (comparaison honnête).
+const specimen = {
+  kicker: "CANTRELLE STUDIO — DESIGN LAB",
+  h1: "Des outils numériques conçus pour durer.",
+  h2: "Ingénierie numérique, clarté et profondeur.",
+  h3: "Applications métier & SaaS",
+  bodyLarge:
+    "Le studio conçoit des solutions numériques adaptées au besoin métier, de l'application sur mesure au site professionnel.",
+  body: "La technologie est choisie en fonction du projet, pas l'inverse. Cette page sert uniquement à éprouver la direction artistique.",
+  microLabel: "DESIGN FOUNDATION",
+  ctaPrimary: "Parler du projet",
+  ctaSecondary: "Voir les réalisations",
+  link: "Découvrir la méthode",
+};
+
+const checklist = [
+  "Ouvrir /design-lab/ sur desktop (≥ 1280 px).",
+  "Regarder la palette sans lire les explications.",
+  "Le fond paraît-il premium, ou simplement noir ?",
+  "L'ivoire est-il préférable au blanc pur pour vous ?",
+  "Ember #F06432 : trop orange ? trop rouge ? suffisamment premium ?",
+  "Comparer la Piste A (Sora + Manrope) en section F.",
+  "Comparer la Piste B (Syne + Manrope) en section F.",
+  "Regarder les deux sans savoir laquelle est recommandée par défaut.",
+  "Juger les H1/H2 à 1440 px de large.",
+  "Redimensionner à 1024 / 768 / 390 px et vérifier la lisibilité.",
+  "Naviguer au clavier (Tab) et vérifier la visibilité du focus.",
+  "Survoler les boutons à la souris pour juger le hover.",
+  "Juger le rayon des cards (trop \"bubble\" ? trop dur ?).",
+  "Juger la discrétion des bordures.",
+  "Juger la quantité d'espace (trop aéré ? trop compact ?).",
+  "Conclure : Piste A / Piste B / aucune des deux.",
+  "Noter les ajustements de couleur souhaités, le cas échéant.",
+  "Ne pas demander à Claude Code de propager les choix sur la Home avant retour à ChatGPT.",
+];
+---
+
+<BaseLayout
+  title="Design Lab — Cantrelle Studio"
+  description="Laboratoire visuel interne de validation des Design Foundations CS-S2. Page non destinée à la publication."
+  noindex={true}
+>
+  <div class="design-lab">
+    <!-- A. INTRODUCTION -->
+    <section class="design-lab__section" aria-labelledby="lab-intro-title">
+      <div class="design-lab__section-inner">
+        <p class="design-lab__banner" role="note">
+          <span class="design-lab__banner-dot" aria-hidden="true"></span>
+          Interne — validation visuelle, non destiné à la publication
+        </p>
+        <h1 id="lab-intro-title" class="design-lab__type-h1" style="margin-top: var(--lab-space-md);">
+          Design Lab — Cantrelle Studio
+        </h1>
+        <p class="design-lab__type-body-lg">
+          Cette page compare, en conditions réelles de code, les Design Foundations
+          candidates définies dans <code>CS-S2_DIRECTION_ARTISTIQUE_CANTRELLE_STUDIO.txt</code> :
+          palette graphite / ivoire / Ember, surfaces, rayons, boutons, cards, labels,
+          focus et deux pistes typographiques.
+        </p>
+        <p class="design-lab__type-body">
+          Rien ici n'est définitif. Aucune valeur de cette page ne remplace les tokens
+          de production (<code>src/styles/tokens.css</code>). La décision finale (palette
+          ajustée, police retenue) revient à Sébastien, avec ChatGPT comme garde-fou.
+        </p>
+      </div>
+    </section>
+
+    <!-- B. PALETTE -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-palette-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">B — Palette</span>
+        <h2 id="lab-palette-title" class="design-lab__section-title">Palette candidate</h2>
+        <p class="design-lab__section-lede">
+          80&nbsp;% neutres sombres, 15&nbsp;% texte, 5&nbsp;% accent. L'accent Ember ne doit
+          jamais devenir un remplissage systématique.
+        </p>
+        <div class="design-lab__swatch-grid">
+          {paletteSwatches.map((swatch) => (
+            <div>
+              <div
+                class={`design-lab__swatch-color ${swatch.cls}`}
+                style={!swatch.cls ? `background:${swatch.value.startsWith("rgba") ? "#121419" : swatch.value};` : undefined}
+              ></div>
+              <span class="design-lab__swatch-name">{swatch.name}</span>
+              <span class="design-lab__swatch-value">{swatch.value}</span>
+              <p class="design-lab__swatch-usage">{swatch.usage}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- C. SURFACES ET BORDURES -->
+    <section class="design-lab__section" aria-labelledby="lab-surfaces-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">C — Surfaces et bordures</span>
+        <h2 id="lab-surfaces-title" class="design-lab__section-title">Niveaux de surface</h2>
+        <p class="design-lab__section-lede">
+          La séparation vient de la valeur et de la bordure, jamais d'une ombre lourde.
+        </p>
+        <div class="design-lab__surface-grid">
+          <div class="design-lab__surface-demo design-lab__surface-demo--bg">
+            <span class="design-lab__surface-label">Fond principal</span>
+          </div>
+          <div class="design-lab__surface-demo design-lab__surface-demo--bg-soft">
+            <span class="design-lab__surface-label">Fond secondaire</span>
+          </div>
+          <div class="design-lab__surface-demo design-lab__surface-demo--surface">
+            <span class="design-lab__surface-label">Surface standard (repos)</span>
+          </div>
+          <div class="design-lab__surface-demo design-lab__surface-demo--elevated">
+            <span class="design-lab__surface-label">Surface élevée (aperçu hover)</span>
+          </div>
+          <div class="design-lab__surface-demo design-lab__surface-demo--surface design-lab__surface-demo--border-strong">
+            <span class="design-lab__surface-label">Bordure forte</span>
+          </div>
+        </div>
+
+        <h3 class="design-lab__type-h3" style="margin-top: var(--lab-space-md);">Halo Ember (exemple unique)</h3>
+        <div class="design-lab__halo-box">
+          <div class="design-lab__halo-glow" aria-hidden="true"></div>
+          <span class="design-lab__halo-label">
+            radial-gradient(circle, rgba(240,100,50,.16), rgba(240,100,50,0) 60%)
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- D. TYPOGRAPHIE — PISTE A -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-typo-a-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">D — Typographie, Piste A</span>
+        <h2 id="lab-typo-a-title" class="design-lab__section-title">Piste A — Sora + Manrope</h2>
+        <p class="design-lab__section-lede">
+          Specimen visuel — ces lignes ne sont pas des titres de page (une seule
+          section plus bas explique pourquoi), elles montrent seulement à quoi
+          ressemblerait un H1/H2/H3 avec cette police.
+        </p>
+        <div class="design-lab__type-sample design-lab__type-sample--a">
+          <span class="design-lab__type-micro">{specimen.microLabel}</span>
+          <p class="design-lab__type-h1">{specimen.h1}</p>
+          <p class="design-lab__type-h2">{specimen.h2}</p>
+          <p class="design-lab__type-h3">{specimen.h3}</p>
+          <p class="design-lab__type-body-lg">{specimen.bodyLarge}</p>
+          <p class="design-lab__type-body">{specimen.body}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- E. TYPOGRAPHIE — PISTE B -->
+    <section class="design-lab__section" aria-labelledby="lab-typo-b-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">E — Typographie, Piste B</span>
+        <h2 id="lab-typo-b-title" class="design-lab__section-title">Piste B — Syne + Manrope</h2>
+        <p class="design-lab__section-lede">
+          Specimen visuel, mêmes textes et mêmes tailles que la Piste A.
+        </p>
+        <div class="design-lab__type-sample design-lab__type-sample--b">
+          <span class="design-lab__type-micro">{specimen.microLabel}</span>
+          <p class="design-lab__type-h1">{specimen.h1}</p>
+          <p class="design-lab__type-h2">{specimen.h2}</p>
+          <p class="design-lab__type-h3">{specimen.h3}</p>
+          <p class="design-lab__type-body-lg">{specimen.bodyLarge}</p>
+          <p class="design-lab__type-body">{specimen.body}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- F. COMPARAISON DIRECTE A/B -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-ab-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">F — Comparaison directe</span>
+        <h2 id="lab-ab-title" class="design-lab__section-title">Piste A / Piste B côte à côte</h2>
+        <p class="design-lab__section-lede">
+          Mêmes tailles, mêmes line-heights, mêmes espacements, mêmes couleurs, même
+          texte. Aucune piste n'est mise en avant visuellement.
+        </p>
+        <div class="design-lab__ab-grid">
+          <div class="design-lab__type-sample design-lab__type-sample--a">
+            <p class="design-lab__ab-heading">Piste A — Sora + Manrope</p>
+            <p class="design-lab__type-h2" style="margin-top:0;">{specimen.h2}</p>
+            <p class="design-lab__type-h3">{specimen.h3}</p>
+            <p class="design-lab__type-body">{specimen.body}</p>
+          </div>
+          <div class="design-lab__type-sample design-lab__type-sample--b">
+            <p class="design-lab__ab-heading">Piste B — Syne + Manrope</p>
+            <p class="design-lab__type-h2" style="margin-top:0;">{specimen.h2}</p>
+            <p class="design-lab__type-h3">{specimen.h3}</p>
+            <p class="design-lab__type-body">{specimen.body}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- G. BOUTONS -->
+    <section class="design-lab__section" aria-labelledby="lab-buttons-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">G — Boutons</span>
+        <h2 id="lab-buttons-title" class="design-lab__section-title">Boutons candidats</h2>
+        <p class="design-lab__section-lede">
+          Testez le focus au clavier (Tab) et le hover à la souris directement sur ces
+          éléments.
+        </p>
+        <div class="design-lab__actions">
+          <button type="button" class="design-lab__button design-lab__button--primary">{specimen.ctaPrimary}</button>
+          <button type="button" class="design-lab__button design-lab__button--secondary">{specimen.ctaSecondary}</button>
+          <button type="button" class="design-lab__button design-lab__button--tertiary">{specimen.link} →</button>
+          <button type="button" class="design-lab__button design-lab__button--primary" disabled>Primary (disabled)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- H. LIENS -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-links-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">H — Liens</span>
+        <h2 id="lab-links-title" class="design-lab__section-title">Lien texte</h2>
+        <p class="design-lab__type-body">
+          Exemple en contexte de paragraphe :
+          <a href="#lab-methode-anchor" class="design-lab__link">{specimen.link}</a>
+          — testez le focus clavier et le survol.
+        </p>
+        <p id="lab-methode-anchor" class="design-lab__type-body" style="margin-top:var(--lab-space-xs);">
+          (Ancre de démonstration — ce lien ne mène nulle part côté production.)
+        </p>
+      </div>
+    </section>
+
+    <!-- I. LABELS / BADGES -->
+    <section class="design-lab__section" aria-labelledby="lab-labels-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">I — Labels / badges</span>
+        <h2 id="lab-labels-title" class="design-lab__section-title">Labels sobres</h2>
+        <div class="design-lab__label-row">
+          <span class="design-lab__label">Neutre</span>
+          <span class="design-lab__label design-lab__label--accent">Accent</span>
+          <span class="design-lab__label design-lab__label--success">Succès</span>
+          <span class="design-lab__label design-lab__label--warning">Avertissement</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- J. CARDS -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-cards-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">J — Cards</span>
+        <h2 id="lab-cards-title" class="design-lab__section-title">Cards candidates</h2>
+        <div class="design-lab__card-grid">
+          <article class="design-lab__card">
+            <h3>Card standard</h3>
+            <p>Surface, bordure faible, radius candidat. Contenu abstrait, purement specimen.</p>
+            <a href="#lab-cards-title" class="design-lab__link">En savoir plus →</a>
+          </article>
+          <article class="design-lab__card design-lab__card--featured">
+            <h3>Card mise en avant</h3>
+            <p>Bordure forte et lumière locale discrète, sans gradient agressif.</p>
+            <a href="#lab-cards-title" class="design-lab__link">En savoir plus →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- K. ÉTATS SÉMANTIQUES -->
+    <section class="design-lab__section" aria-labelledby="lab-states-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">K — États sémantiques</span>
+        <h2 id="lab-states-title" class="design-lab__section-title">Succès / avertissement / erreur / information</h2>
+        <p class="design-lab__section-lede">
+          Ces couleurs restent des états, jamais des couleurs de marque.
+        </p>
+        <div class="design-lab__state-grid">
+          <div class="design-lab__state-swatch">
+            <span class="design-lab__state-dot" style="background:var(--lab-color-success);"></span>
+            Succès — #4FAE79
+          </div>
+          <div class="design-lab__state-swatch">
+            <span class="design-lab__state-dot" style="background:var(--lab-color-warning);"></span>
+            Avertissement — #D8A84E
+          </div>
+          <div class="design-lab__state-swatch">
+            <span class="design-lab__state-dot" style="background:var(--lab-color-danger);"></span>
+            Erreur — #D76565
+          </div>
+          <div class="design-lab__state-swatch">
+            <span class="design-lab__state-dot" style="background:var(--lab-color-info);"></span>
+            Information — #6F94C7
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- L. RAYONS / RYTHME -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-radii-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">L — Rayons / rythme</span>
+        <h2 id="lab-radii-title" class="design-lab__section-title">Échelle de rayons</h2>
+        <p class="design-lab__section-lede">
+          Objectif : rester architectural, éviter le "bubble SaaS".
+        </p>
+        <div class="design-lab__radius-row">
+          {radii.map((r) => (
+            <div>
+              <div class="design-lab__radius-demo" style={`border-radius:${r.size};`}></div>
+              <p class="design-lab__swatch-usage">{r.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- M. FOCUS CLAVIER -->
+    <section class="design-lab__section" aria-labelledby="lab-focus-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">M — Focus clavier</span>
+        <h2 id="lab-focus-title" class="design-lab__section-title">Testez avec Tab</h2>
+        <p class="design-lab__section-lede">
+          Naviguez au clavier : le focus doit rester visible et cohérent avec l'accent
+          Ember, sans jamais reposer sur une ombre quasi invisible.
+        </p>
+        <div class="design-lab__actions">
+          <a href="#lab-focus-title" class="design-lab__link">Lien focusable</a>
+          <button type="button" class="design-lab__button design-lab__button--secondary">Bouton focusable</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- N. ÉCHANTILLON DE COMPOSITION -->
+    <section class="design-lab__section design-lab__section--soft" aria-labelledby="lab-composition-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">N — Échantillon de composition</span>
+        <h2 id="lab-composition-title" class="design-lab__section-title">
+          Est-ce que ces fondations produisent déjà la sensation Cantrelle Studio ?
+        </h2>
+        <p class="design-lab__section-lede">
+          Illustré ici avec la Piste A (Sora + Manrope) à titre d'exemple uniquement —
+          cela n'implique aucune décision typographique. Ce n'est pas la Home, pas de
+          Hero final, pas de 3D.
+        </p>
+        <div class="design-lab__composition design-lab__type-sample--a">
+          <span class="design-lab__type-micro">{specimen.microLabel}</span>
+          <p class="design-lab__type-h1">{specimen.h1}</p>
+          <p class="design-lab__type-body-lg">{specimen.bodyLarge}</p>
+          <div class="design-lab__actions" style="margin-top:var(--lab-space-sm);">
+            <button type="button" class="design-lab__button design-lab__button--primary">{specimen.ctaPrimary}</button>
+            <button type="button" class="design-lab__button design-lab__button--secondary">{specimen.ctaSecondary}</button>
+          </div>
+          <div class="design-lab__card-grid" style="margin-top:var(--lab-space-md); max-width: 22rem;">
+            <article class="design-lab__card">
+              <p class="design-lab__card-title">{specimen.h3}</p>
+              <p>{specimen.body}</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- O. CHECKLIST DE VALIDATION HUMAINE -->
+    <section class="design-lab__section" aria-labelledby="lab-checklist-title">
+      <div class="design-lab__section-inner">
+        <span class="design-lab__kicker">O — Checklist de validation</span>
+        <h2 id="lab-checklist-title" class="design-lab__section-title">À faire par Sébastien</h2>
+        <p class="design-lab__section-lede">
+          Le verdict esthétique appartient à Sébastien. Cette checklist accompagne la
+          revue ; elle ne remplace pas un jugement visuel réel.
+        </p>
+        <ol class="design-lab__checklist">
+          {checklist.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

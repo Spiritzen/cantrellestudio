@@ -1,0 +1,178 @@
+---
+// Footer V1 (CS-S4) — sobre, cohérent avec la landing. 4 zones : marque,
+// services, studio, mentions légales. Aucune coordonnée inventée, aucun
+// réseau social, aucune newsletter, aucun second gros CTA (la Home a déjà
+// son CTA final juste avant — voir prompt CS-S4 §20/§21).
+import Container from "../ui/Container.astro";
+// Micro-sprint pré-déploiement GitHub Pages — tous les liens internes
+// ci-dessous sont des <a> bruts (pas d'ActionLink) : passage explicite par
+// `withBase()` à chacun.
+import { withBase } from "../../utils/paths";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <Container class="site-footer__inner" data-motion="footer">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <p class="site-footer__brand-name"
+          ><span class="site-footer__brand-accent">C</span>antrelle <span class="site-footer__brand-accent">S</span>tudio</p
+        >
+        <p class="site-footer__tagline">Applications métier · SaaS · Sites professionnels</p>
+        <p class="site-footer__tagline-secondary">
+          Des solutions numériques pensées autour de votre activité.
+        </p>
+        <p class="site-footer__placeholder-note">
+          Coordonnées professionnelles à compléter avant mise en ligne.
+        </p>
+      </div>
+
+      <nav class="site-footer__col" aria-label="Services">
+        <p class="site-footer__col-title">Services</p>
+        <ul>
+          <li><a href={withBase("/applications-metier-saas/")}>Applications métier & SaaS</a></li>
+          <li><a href={withBase("/sites-professionnels/")}>Sites professionnels</a></li>
+          <li><a href={withBase("/developpement-sur-mesure/")}>Développement sur mesure</a></li>
+        </ul>
+      </nav>
+
+      <nav class="site-footer__col" aria-label="Studio">
+        <p class="site-footer__col-title">Studio</p>
+        <ul>
+          <li><a href={withBase("/realisations/")}>Réalisations</a></li>
+          <li><a href={withBase("/methode/")}>Méthode</a></li>
+          <li><a href={withBase("/a-propos/")}>À propos</a></li>
+          <li><a href={withBase("/contact/")}>Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p>&copy; {year} Cantrelle Studio (nom de travail).</p>
+      <nav aria-label="Liens légaux">
+        <ul class="site-footer__legal">
+          <li><a href={withBase("/mentions-legales/")}>Mentions légales</a></li>
+          <li><a href={withBase("/politique-confidentialite/")}>Politique de confidentialité</a></li>
+        </ul>
+      </nav>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  /* CS-S5 — bug de scoping identique à celui corrigé sur le Header en
+     CS-S4B, confirmé ici par inspection du HTML/CSS compilés (pas
+     supposé) : cette classe est passée à `<Container class="...">`, dont
+     le <div> réel ne porte donc PAS le data-astro-cid de Footer.astro —
+     la règle ne s'appliquait jamais. Seule cette règle est concernée
+     (toutes les autres classes ci-dessous sont sur des éléments écrits
+     directement par Footer.astro et étaient déjà correctement scopées,
+     vérifié). Correction limitée au scoping, aucune autre modification. */
+  :global(.site-footer__inner) {
+    padding-block: var(--space-xl) var(--space-lg);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 700px) {
+    .site-footer__grid {
+      grid-template-columns: 1.4fr 1fr 1fr;
+    }
+  }
+
+  .site-footer__brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  /* Micro-sprint labels — même token accent que le Header
+     (.site-header__brand-accent), sans opacité (contrairement aux labels
+     de section de la Home). */
+  .site-footer__brand-accent {
+    color: var(--color-accent);
+  }
+
+  .site-footer__tagline {
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .site-footer__tagline-secondary {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--color-text-secondary);
+  }
+
+  .site-footer__placeholder-note {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .site-footer__col-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .site-footer__col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .site-footer__col a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+  }
+
+  .site-footer__col a:hover {
+    color: var(--color-accent);
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .site-footer__bottom p {
+    margin: 0;
+    color: inherit;
+  }
+
+  .site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .site-footer__legal a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .site-footer__legal a:hover {
+    color: var(--color-accent);
+  }
+</style>

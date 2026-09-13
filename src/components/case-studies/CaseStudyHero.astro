@@ -1,0 +1,47 @@
+---
+// CaseStudyHero — CS-S10. Hero d'étude de cas : type de projet, titre,
+// résumé, statut honnête, stack courte, média principal réel (jamais un
+// placeholder). Composition asymétrique desktop (copy ~42%, média ~58%),
+// empilée sur mobile (copy puis média) — prompt §12/§13.
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  summary: string;
+  statusLabel: string;
+  stack: string[];
+  image: ImageMetadata;
+  imageAlt: string;
+}
+
+const { eyebrow, title, summary, statusLabel, stack, image, imageAlt } = Astro.props;
+---
+
+<div class="case-study__hero">
+  <div class="case-study__hero-copy">
+    <span class="case-study__eyebrow">{eyebrow}</span>
+    <h1>{title}</h1>
+    <p class="case-study__hero-summary">{summary}</p>
+    <p class="case-study__status">{statusLabel}</p>
+    <ul class="case-study__stack-short">
+      {stack.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  </div>
+  <div class="case-study__hero-media">
+    <Picture
+      src={image}
+      alt={imageAlt}
+      formats={["avif", "webp"]}
+      widths={[480, 768, 1024, 1440]}
+      sizes="(min-width: 900px) 58vw, 100vw"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      class="case-study__hero-img"
+    />
+  </div>
+</div>

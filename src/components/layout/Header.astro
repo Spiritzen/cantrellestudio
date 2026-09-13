@@ -1,0 +1,345 @@
+---
+// Header V1 (CS-S4) — desktop calme et hiérarchisé, Services regroupés,
+// CTA visible, menu mobile accessible. Remplace le Header CS-S0 (nav plate
+// à 8 liens permanents) sans supprimer aucune route : /contact/ reste
+// atteignable via le CTA, la Home reste atteignable via la marque.
+import Container from "../ui/Container.astro";
+import ActionLink from "../ui/ActionLink.astro";
+import MobileNav from "./MobileNav.astro";
+import { withBase, stripBase } from "../../utils/paths";
+
+// Micro-sprint pré-déploiement GitHub Pages — `stripBase()` neutralise un
+// éventuel préfixe `/cantrellestudio` sur `Astro.url.pathname` AVANT la
+// comparaison `isActive`/`isServiceActive` ci-dessous : `services`/
+// `mainLinks` restent des chemins canoniques non préfixés (source de vérité
+// unique), et c'est uniquement au rendu (`withBase(item.href)` dans le
+// template) que le sous-chemin est appliqué.
+const currentPath = stripBase(Astro.url.pathname);
+
+const services = [
+  { href: "/applications-metier-saas/", label: "Applications métier & SaaS" },
+  { href: "/sites-professionnels/", label: "Sites professionnels" },
+  { href: "/developpement-sur-mesure/", label: "Développement sur mesure" },
+];
+
+const mainLinks = [
+  { href: "/realisations/", label: "Réalisations" },
+  { href: "/methode/", label: "Méthode" },
+  { href: "/a-propos/", label: "À propos" },
+];
+
+function isActive(href: string) {
+  return currentPath === href || currentPath.startsWith(href);
+}
+
+const isServiceActive = services.some((item) => currentPath.startsWith(item.href));
+---
+
+<header class="site-header">
+  <Container class="site-header__inner">
+    <a class="site-header__brand" href={withBase("/")}
+      ><span class="site-header__brand-accent">C</span>antrelle <span class="site-header__brand-accent">S</span>tudio</a
+    >
+
+    <nav class="site-header__nav" aria-label="Navigation principale">
+      <ul class="site-header__nav-list">
+        <li class="site-header__nav-item site-header__nav-item--services">
+          <button
+            type="button"
+            class:list={["site-header__services-trigger", isServiceActive && "site-header__services-trigger--active"]}
+            id="services-trigger"
+            aria-expanded="false"
+            aria-controls="services-panel"
+          >
+            Services
+            <span class="site-header__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="site-header__services-panel" id="services-panel" aria-labelledby="services-trigger" hidden>
+            <ul>
+              {services.map((item) => (
+                <li>
+                  <a href={withBase(item.href)} aria-current={isActive(item.href) ? "page" : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+        {mainLinks.map((item) => (
+          <li>
+            <a href={withBase(item.href)} aria-current={isActive(item.href) ? "page" : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <ActionLink href="/contact/" variant="primary" class="site-header__cta">
+        Parler du projet
+      </ActionLink>
+      <MobileNav services={services} mainLinks={mainLinks} currentPath={currentPath} />
+    </div>
+  </Container>
+</header>
+
+<script>
+  const trigger = document.getElementById("services-trigger");
+  const panel = document.getElementById("services-panel");
+
+  if (trigger && panel) {
+    const openPanel = () => {
+      trigger.setAttribute("aria-expanded", "true");
+      panel.hidden = false;
+    };
+
+    const closePanel = (options: { returnFocus?: boolean } = {}) => {
+      trigger.setAttribute("aria-expanded", "false");
+      panel.hidden = true;
+      if (options.returnFocus) trigger.focus();
+    };
+
+    trigger.addEventListener("click", () => {
+      const isOpen = trigger.getAttribute("aria-expanded") === "true";
+      if (isOpen) {
+        closePanel();
+      } else {
+        openPanel();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && trigger.getAttribute("aria-expanded") === "true") {
+        closePanel({ returnFocus: true });
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        !trigger.contains(target) &&
+        !panel.contains(target)
+      ) {
+        closePanel();
+      }
+    });
+
+    panel.addEventListener("focusout", () => {
+      requestAnimationFrame(() => {
+        const active = document.activeElement;
+        if (active !== trigger && !panel.contains(active)) {
+          closePanel();
+        }
+      });
+    });
+  }
+</script>
+
+<style>
+  /*
+    CS-S4B — CAUSE RÉELLE DU BUG DESKTOP/MOBILE (confirmée par inspection du
+    HTML/CSS compilés, pas supposée) :
+    `.site-header__inner` est appliqué via `<Container class="...">` et
+    `.site-header__cta` via `<ActionLink class="...">`. En Astro, le CSS
+    scopé d'un composant n'est ajouté qu'aux éléments que CE composant écrit
+    lui-même — pas à ceux rendus par un composant enfant (Container,
+    ActionLink), même si on leur passe une classe du parent. Résultat : le
+    <div> réel n'avait AUCUN data-astro-cid, et le <a> du CTA portait celui
+    d'ActionLink — les règles ci-dessous ne s'appliquaient donc JAMAIS,
+    d'où l'absence de vraie barre flex et le CTA visible sur mobile.
+    Correction : les sélecteurs touchant des éléments rendus par un enfant
+    sont explicitement passés en :global() pour cibler la classe telle
+    quelle, où qu'elle soit rendue.
+  */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    /* Micro-sprint Navbar — fond translucide (couleur de fond actuelle,
+       --color-bg, mélangée à 60% d'opacité via color-mix : aucune
+       nouvelle teinte codée en dur) + flou d'arrière-plan. Appliqué sur
+       `.site-header` (l'élément réel écrit par CE composant, jamais un
+       enfant rendu par Container/ActionLink) : pas de piège de scoping
+       CS-S4B ici. `-webkit-backdrop-filter` avant `backdrop-filter`
+       pour Safari/WebKit. */
+    background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  /* Fallback : si `backdrop-filter` n'est supporté ni préfixé ni non
+     préfixé, le fond translucide seul laisserait un contenu défilant
+     visible et non flouté derrière un texte à contraste réduit — on
+     repasse alors sur la couleur de fond pleine (opaque), pour garder
+     le Header lisible sans dépendre du flou. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .site-header {
+      background: var(--color-bg);
+    }
+  }
+
+  .site-header__brand-accent {
+    color: var(--color-accent);
+  }
+
+  :global(.site-header__inner) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: var(--space-lg);
+    min-height: 72px;
+    padding-block: var(--space-xs);
+  }
+
+  .site-header__brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* Breakpoint unique CS-S4B (nav, CTA header et hamburger en dépendent
+     tous — jamais d'état hybride). Déterminé par inspection du contenu
+     réel (marque + 4 items de nav + CTA) plutôt que fixé arbitrairement :
+     voir rapport CS-S4B pour la mesure exacte. */
+  .site-header__nav {
+    display: none;
+  }
+
+  @media (min-width: 1100px) {
+    .site-header__nav {
+      display: flex;
+      justify-self: end;
+    }
+  }
+
+  .site-header__nav-list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .site-header__nav-list > li {
+    position: relative;
+  }
+
+  .site-header__nav-list a {
+    display: inline-block;
+    color: var(--color-text);
+    text-decoration: none;
+    padding-block: 0.375rem;
+    border-bottom: 2px solid transparent;
+  }
+
+  .site-header__nav-list a:hover {
+    color: var(--color-accent);
+  }
+
+  .site-header__nav-list a[aria-current="page"] {
+    border-bottom-color: var(--color-accent);
+  }
+
+  .site-header__services-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: none;
+    border: none;
+    padding-block: 0.375rem;
+    border-bottom: 2px solid transparent;
+    font: inherit;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .site-header__services-trigger:hover {
+    color: var(--color-accent);
+  }
+
+  .site-header__services-trigger--active {
+    border-bottom-color: var(--color-accent);
+  }
+
+  .site-header__chevron {
+    width: 0.4em;
+    height: 0.4em;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 180ms ease;
+  }
+
+  .site-header__services-trigger[aria-expanded="true"] .site-header__chevron {
+    transform: rotate(225deg);
+  }
+
+  .site-header__services-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    min-width: 17rem;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    padding: var(--space-xs);
+  }
+
+  .site-header__services-panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .site-header__services-panel a {
+    display: block;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.9375rem;
+  }
+
+  .site-header__services-panel a:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .site-header__services-panel a[aria-current="page"] {
+    color: var(--color-accent);
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  /* CTA Header : discret, moins massif que les CTA Hero/CTA final (qui
+     restent inchangés, ActionLink non modifié). Override ciblé via
+     :global() pour la même raison de scoping que .site-header__inner.
+     Sélecteur ".site-header__actions .site-header__cta" (et non
+     ".site-header__cta" seul) : la règle scopée d'ActionLink
+     (`.action-link--primary[data-astro-cid-xxx]`) a une spécificité de
+     deux classes — un sélecteur d'une seule classe perdrait silencieusement
+     la cascade (confirmé empiriquement en preview avant correction). */
+  :global(.site-header__actions .site-header__cta) {
+    min-height: 44px;
+    padding-inline: 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  @media (max-width: 1099px) {
+    :global(.site-header__actions .site-header__cta) {
+      display: none;
+    }
+  }
+</style>

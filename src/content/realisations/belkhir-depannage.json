@@ -1,0 +1,14 @@
+{
+  "slug": "belkhir-depannage",
+  "title": "Belkhir Dépannage",
+  "summary": "Maquette multi-pages d'un site de dépannage d'urgence, pensée pour le SEO, la compréhension immédiate du besoin et la prise de contact depuis un mobile.",
+  "category": "Site professionnel",
+  "featured": true,
+  "order": 3,
+  "technologies": [],
+  "problem": "Pour un service de dépannage d'urgence, le visiteur doit comprendre immédiatement à qui il a affaire, voir un numéro d'appel, identifier son métier et vérifier sa zone — depuis un mobile, dans l'urgence.",
+  "solution": "Une maquette multi-pages Astro qui qualifie l'urgence avant de pousser l'appel : une page par métier, une vérification de zone d'intervention, une barre d'appel permanente sur mobile.",
+  "result": "Une maquette multi-pages structurée (accueil, pages métiers, zones d'intervention), un socle SEO technique et une navigation mobile accessible — projet de refonte pour un client réel, actuellement en validation, non encore indexé.",
+  "seoTitle": "Belkhir Dépannage — étude de refonte web | Cantrelle Studio",
+  "seoDescription": "Étude de cas d'une maquette multi-pages de refonte pour un service de dépannage : Astro, responsive, SEO structurel et parcours de contact."
+}

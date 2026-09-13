@@ -1,0 +1,26 @@
+---
+// ServiceCta — CS-S9. Bloc de conclusion partagé par les 3 pages services.
+// CTA primaire commun (prompt §26 : "Parler de votre projet" → /contact/),
+// CTA secondaire contextuel par page.
+import ActionLink from "../ui/ActionLink.astro";
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  text: string;
+  secondaryHref: string;
+  secondaryLabel: string;
+}
+
+const { eyebrow, title, text, secondaryHref, secondaryLabel } = Astro.props;
+---
+
+<div class="service-cta" data-motion="cta">
+  <span class="service-cta__eyebrow">{eyebrow}</span>
+  <h2 class="service-cta__title">{title}</h2>
+  <p class="service-cta__text">{text}</p>
+  <div class="service-cta__actions">
+    <ActionLink href="/contact/" variant="primary">Parler de votre projet</ActionLink>
+    <ActionLink href={secondaryHref} variant="secondary">{secondaryLabel}</ActionLink>
+  </div>
+</div>

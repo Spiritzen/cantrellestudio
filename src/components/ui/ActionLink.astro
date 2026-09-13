@@ -1,0 +1,108 @@
+---
+// ActionLink — lien d'action réutilisable pour les vraies navigations (CS-S4).
+// Rend toujours un <a> : jamais un <button> pour une navigation.
+// Aucun JS, aucune animation complexe.
+//
+// Micro-sprint pré-déploiement GitHub Pages — `href` passe systématiquement
+// par `withBase()` : TOUS les appelants de ce composant dans le projet lui
+// passent un chemin interne (`/contact/`, `/realisations/${slug}/`, etc.),
+// jamais un lien externe — point de passage unique, aucune double gestion
+// du sous-chemin ailleurs pour les CTA.
+import { withBase } from "../../utils/paths";
+
+interface Props {
+  href: string;
+  variant?: "primary" | "secondary" | "text";
+  class?: string;
+  ariaLabel?: string;
+}
+
+const { href, variant = "primary", class: className, ariaLabel } = Astro.props;
+---
+
+<a
+  href={withBase(href)}
+  class:list={["action-link", `action-link--${variant}`, className]}
+  aria-label={ariaLabel}
+>
+  <slot />
+  {variant === "text" && <span class="action-link__arrow" aria-hidden="true"> →</span>}
+</a>
+
+<style>
+  .action-link {
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .action-link--primary,
+  .action-link--secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding-inline: 1.5rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    border: 1px solid transparent;
+    transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+
+  .action-link--primary {
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+  }
+
+  .action-link--primary:hover {
+    background: var(--color-accent-soft);
+    transform: translateY(-1px);
+  }
+
+  .action-link--primary:focus-visible {
+    color: var(--color-accent-contrast);
+  }
+
+  .action-link--secondary {
+    background: transparent;
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+  }
+
+  .action-link--secondary:hover {
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
+    transform: translateY(-1px);
+  }
+
+  .action-link--text {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-strong);
+    text-underline-offset: 0.2em;
+  }
+
+  .action-link--text:hover,
+  .action-link--text:focus-visible {
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
+  }
+
+  /* CS-S8B §34 — micro-interaction de flèche (2-4px), cohérente avec les
+     autres liens texte de la Home (Expertises, Réalisations, Méthode). */
+  .action-link__arrow {
+    display: inline-block;
+    text-decoration: none;
+    transition: transform 200ms ease;
+  }
+
+  .action-link--text:hover .action-link__arrow,
+  .action-link--text:focus-visible .action-link__arrow {
+    transform: translateX(3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .action-link__arrow {
+      transition: none;
+    }
+  }
+</style>

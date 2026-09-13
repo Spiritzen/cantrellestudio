@@ -1,0 +1,594 @@
+/*
+  CS-S2B — Design Lab — CSS et tokens CANDIDATS.
+  Importé UNIQUEMENT par src/pages/design-lab.astro.
+  Namespacé sous .design-lab pour ne jamais fuiter vers les pages
+  commerciales. Ne remplace pas src/styles/tokens.css (production, CS-S0).
+*/
+
+.design-lab {
+  /* --- Tokens candidats CS-S2, préfixés --lab-* --- */
+  --lab-color-bg: #0A0B0D;
+  --lab-color-bg-soft: #0E1013;
+  --lab-color-surface: #121419;
+  --lab-color-surface-elevated: #171A20;
+
+  --lab-color-text: #F1EFE8;
+  --lab-color-text-secondary: #A5A8AE;
+  --lab-color-text-muted: #6D727B;
+
+  --lab-color-border: rgba(241, 239, 232, 0.08);
+  --lab-color-border-strong: rgba(241, 239, 232, 0.16);
+
+  --lab-color-accent: #F06432;
+  --lab-color-accent-soft: #FF8A5C;
+  --lab-color-accent-deep: #A83B1E;
+
+  --lab-color-success: #4FAE79;
+  --lab-color-warning: #D8A84E;
+  --lab-color-danger: #D76565;
+  --lab-color-info: #6F94C7;
+
+  --lab-radius-sm: 6px;
+  --lab-radius-md: 10px;
+  --lab-radius-lg: 16px;
+  --lab-radius-xl: 22px;
+
+  /* Piste A = candidate principale, Piste B = alternative (CS-S2 §10/§11) */
+  --lab-font-display-a: 'Sora Variable', system-ui, sans-serif;
+  --lab-font-display-b: 'Syne Variable', system-ui, sans-serif;
+  --lab-font-body: 'Manrope Variable', system-ui, sans-serif;
+
+  --lab-space-2xs: 0.375rem;
+  --lab-space-xs: 0.75rem;
+  --lab-space-sm: 1.25rem;
+  --lab-space-md: 2rem;
+  --lab-space-lg: 3.5rem;
+  --lab-space-xl: 5.5rem;
+
+  --lab-container: 1320px;
+
+  display: block;
+  background: var(--lab-color-bg);
+  color: var(--lab-color-text);
+  font-family: var(--lab-font-body);
+  line-height: 1.6;
+}
+
+/* Focus visible cohérent avec Ember, prioritaire uniquement dans le lab. */
+.design-lab :focus-visible {
+  outline: 3px solid var(--lab-color-accent);
+  outline-offset: 3px;
+}
+
+.design-lab img,
+.design-lab svg {
+  max-width: 100%;
+}
+
+/* --- Structure --- */
+
+.design-lab__section {
+  border-top: 1px solid var(--lab-color-border);
+  padding-block: var(--lab-space-xl);
+}
+
+.design-lab__section:first-child {
+  border-top: none;
+}
+
+.design-lab__section-inner {
+  width: 100%;
+  max-width: var(--lab-container);
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.design-lab__section--soft {
+  background: var(--lab-color-bg-soft);
+}
+
+/* --- Typo utilitaires --- */
+
+.design-lab__kicker {
+  display: block;
+  font-family: var(--lab-font-body);
+  font-size: clamp(0.75rem, 0.9vw, 0.8125rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-color-text-muted);
+  margin: 0 0 var(--lab-space-sm) 0;
+}
+
+.design-lab__eyebrow {
+  color: var(--lab-color-accent);
+}
+
+.design-lab h2.design-lab__section-title {
+  font-family: var(--lab-font-display-a);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.15;
+  margin: 0 0 var(--lab-space-xs) 0;
+}
+
+.design-lab__section-lede {
+  max-width: 62ch;
+  color: var(--lab-color-text-secondary);
+  font-size: 1.0625rem;
+  margin: 0 0 var(--lab-space-md) 0;
+}
+
+/* --- Bandeau interne très visible (obligatoire, CS-S2B §8) --- */
+
+.design-lab__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lab-space-xs);
+  background: var(--lab-color-surface);
+  border: 1px solid var(--lab-color-accent);
+  border-radius: var(--lab-radius-md);
+  padding: var(--lab-space-xs) var(--lab-space-sm);
+  color: var(--lab-color-text);
+  font-weight: 600;
+}
+
+.design-lab__banner-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--lab-color-accent);
+  flex-shrink: 0;
+}
+
+/* --- Palette --- */
+
+.design-lab__swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--lab-space-sm);
+}
+
+.design-lab__swatch-color {
+  height: 4.5rem;
+  border-radius: var(--lab-radius-sm);
+  border: 1px solid var(--lab-color-border-strong);
+  margin-bottom: var(--lab-space-2xs);
+}
+
+.design-lab__swatch-name {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--lab-color-text);
+}
+
+.design-lab__swatch-value {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--lab-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
+.design-lab__swatch-usage {
+  margin: var(--lab-space-2xs) 0 0 0;
+  font-size: 0.8125rem;
+  color: var(--lab-color-text-secondary);
+}
+
+/* --- Surfaces / bordures --- */
+
+.design-lab__surface-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--lab-space-sm);
+}
+
+.design-lab__surface-demo {
+  border-radius: var(--lab-radius-lg);
+  padding: var(--lab-space-md);
+  min-height: 8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border: 1px solid var(--lab-color-border);
+}
+
+.design-lab__surface-demo--bg {
+  background: var(--lab-color-bg);
+}
+
+.design-lab__surface-demo--bg-soft {
+  background: var(--lab-color-bg-soft);
+}
+
+.design-lab__surface-demo--surface {
+  background: var(--lab-color-surface);
+}
+
+.design-lab__surface-demo--elevated {
+  background: var(--lab-color-surface-elevated);
+}
+
+.design-lab__surface-demo--border-strong {
+  border-color: var(--lab-color-border-strong);
+}
+
+.design-lab__surface-label {
+  font-size: 0.8125rem;
+  color: var(--lab-color-text-secondary);
+}
+
+/* --- Halo Ember --- */
+
+.design-lab__halo-box {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--lab-radius-lg);
+  border: 1px solid var(--lab-color-border);
+  background: var(--lab-color-bg-soft);
+  min-height: 12rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.design-lab__halo-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle,
+    rgba(240, 100, 50, 0.16),
+    rgba(240, 100, 50, 0) 60%
+  );
+}
+
+.design-lab__halo-label {
+  position: relative;
+  color: var(--lab-color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* --- Typographie : blocs piste A / piste B --- */
+
+.design-lab__type-sample {
+  border: 1px solid var(--lab-color-border);
+  border-radius: var(--lab-radius-lg);
+  padding: var(--lab-space-md);
+  background: var(--lab-color-bg-soft);
+}
+
+.design-lab__type-sample--a h1,
+.design-lab__type-sample--a h2,
+.design-lab__type-sample--a h3 {
+  font-family: var(--lab-font-display-a);
+}
+
+.design-lab__type-sample--b h1,
+.design-lab__type-sample--b h2,
+.design-lab__type-sample--b h3 {
+  font-family: var(--lab-font-display-b);
+}
+
+.design-lab__type-h1 {
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  line-height: 1.05;
+  margin: 0 0 var(--lab-space-xs) 0;
+  color: var(--lab-color-text);
+}
+
+.design-lab__type-h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.15;
+  margin: var(--lab-space-sm) 0 var(--lab-space-2xs) 0;
+  color: var(--lab-color-text);
+}
+
+.design-lab__type-h3 {
+  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+  line-height: 1.3;
+  margin: var(--lab-space-sm) 0 var(--lab-space-2xs) 0;
+  color: var(--lab-color-text);
+}
+
+.design-lab__type-body-lg {
+  font-size: 1.1875rem;
+  color: var(--lab-color-text-secondary);
+  max-width: 60ch;
+  margin: 0 0 var(--lab-space-2xs) 0;
+}
+
+.design-lab__type-body {
+  font-size: 1.0625rem;
+  color: var(--lab-color-text-secondary);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.design-lab__type-micro {
+  display: block;
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lab-color-text-muted);
+  margin: 0 0 var(--lab-space-xs) 0;
+}
+
+.design-lab__ab-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--lab-space-sm);
+}
+
+@media (min-width: 900px) {
+  .design-lab__ab-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.design-lab__ab-heading {
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lab-color-text-muted);
+  margin: 0 0 var(--lab-space-xs) 0;
+}
+
+/* --- Boutons candidats --- */
+
+.design-lab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lab-space-sm);
+}
+
+.design-lab__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding-inline: 1.5rem;
+  border-radius: var(--lab-radius-md);
+  font-family: var(--lab-font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.design-lab__button--primary {
+  background: var(--lab-color-accent);
+  color: #14100D;
+}
+
+.design-lab__button--primary:hover {
+  background: var(--lab-color-accent-soft);
+}
+
+.design-lab__button--primary:active {
+  background: var(--lab-color-accent-deep);
+  color: var(--lab-color-text);
+}
+
+.design-lab__button--primary[disabled] {
+  background: var(--lab-color-surface-elevated);
+  color: var(--lab-color-text-muted);
+  cursor: not-allowed;
+}
+
+.design-lab__button--secondary {
+  background: transparent;
+  color: var(--lab-color-text);
+  border-color: var(--lab-color-border-strong);
+}
+
+.design-lab__button--secondary:hover {
+  background: var(--lab-color-surface-elevated);
+}
+
+.design-lab__button--tertiary {
+  background: transparent;
+  border: none;
+  color: var(--lab-color-text);
+  padding-inline: 0;
+  min-height: auto;
+  text-decoration: underline;
+  text-decoration-color: var(--lab-color-border-strong);
+  text-underline-offset: 0.25em;
+}
+
+.design-lab__button--tertiary:hover {
+  text-decoration-color: var(--lab-color-accent);
+  color: var(--lab-color-accent);
+}
+
+/* --- Liens --- */
+
+.design-lab__link {
+  color: var(--lab-color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--lab-color-border-strong);
+  text-underline-offset: 0.25em;
+  font-weight: 600;
+}
+
+.design-lab__link:hover {
+  color: var(--lab-color-accent);
+  text-decoration-color: var(--lab-color-accent);
+}
+
+/* --- Labels / badges --- */
+
+.design-lab__label-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lab-space-xs);
+}
+
+.design-lab__label {
+  display: inline-flex;
+  align-items: center;
+  height: 1.75rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--lab-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--lab-color-border-strong);
+  color: var(--lab-color-text-secondary);
+  background: var(--lab-color-surface);
+}
+
+.design-lab__label--accent {
+  color: var(--lab-color-accent);
+  border-color: var(--lab-color-accent-deep);
+}
+
+.design-lab__label--success {
+  color: var(--lab-color-success);
+  border-color: var(--lab-color-success);
+}
+
+.design-lab__label--warning {
+  color: var(--lab-color-warning);
+  border-color: var(--lab-color-warning);
+}
+
+/* --- Cards --- */
+
+.design-lab__card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--lab-space-sm);
+}
+
+.design-lab__card {
+  background: var(--lab-color-surface);
+  border: 1px solid var(--lab-color-border);
+  border-radius: var(--lab-radius-lg);
+  padding: var(--lab-space-md);
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.design-lab__card:hover {
+  background: var(--lab-color-surface-elevated);
+}
+
+.design-lab__card--featured {
+  border-color: var(--lab-color-border-strong);
+  position: relative;
+  overflow: hidden;
+}
+
+.design-lab__card--featured::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 100% 0%,
+    rgba(240, 100, 50, 0.1),
+    rgba(240, 100, 50, 0) 55%
+  );
+  pointer-events: none;
+}
+
+.design-lab__card h3,
+.design-lab__card-title {
+  font-family: var(--lab-font-display-a);
+  font-size: 1.25rem;
+  margin: 0 0 var(--lab-space-2xs) 0;
+  position: relative;
+}
+
+.design-lab__card p {
+  color: var(--lab-color-text-secondary);
+  font-size: 0.9375rem;
+  margin: 0 0 var(--lab-space-xs) 0;
+  position: relative;
+}
+
+/* --- États sémantiques --- */
+
+.design-lab__state-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--lab-space-sm);
+}
+
+.design-lab__state-swatch {
+  border: 1px solid var(--lab-color-border);
+  border-radius: var(--lab-radius-md);
+  padding: var(--lab-space-xs);
+}
+
+.design-lab__state-dot {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+/* --- Rayons --- */
+
+.design-lab__radius-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lab-space-sm);
+  align-items: flex-end;
+}
+
+.design-lab__radius-demo {
+  width: 5.5rem;
+  height: 5.5rem;
+  background: var(--lab-color-surface);
+  border: 1px solid var(--lab-color-border-strong);
+}
+
+/* --- Composition finale --- */
+
+.design-lab__composition {
+  background: var(--lab-color-bg-soft);
+  border: 1px solid var(--lab-color-border);
+  border-radius: var(--lab-radius-xl);
+  padding: clamp(1.5rem, 4vw, var(--lab-space-xl));
+}
+
+/* --- Checklist --- */
+
+.design-lab__checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--lab-space-2xs);
+}
+
+.design-lab__checklist li {
+  display: flex;
+  gap: var(--lab-space-xs);
+  padding: var(--lab-space-2xs) 0;
+  border-bottom: 1px solid var(--lab-color-border);
+  color: var(--lab-color-text-secondary);
+  font-size: 0.9375rem;
+}
+
+.design-lab__checklist li::before {
+  content: "";
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.15rem;
+  border: 1px solid var(--lab-color-border-strong);
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .design-lab * {
+    transition-duration: 0.01ms !important;
+  }
+}

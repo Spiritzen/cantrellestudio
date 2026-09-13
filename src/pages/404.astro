@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+// Micro-sprint pré-déploiement GitHub Pages.
+import { withBase } from "../utils/paths";
+---
+
+<BaseLayout
+  title="Page non trouvée — Cantrelle Studio"
+  description="La page demandée n'existe pas ou plus."
+>
+  <section class="container">
+    <h1>Page non trouvée</h1>
+    <p>La page que vous cherchez n'existe pas ou plus.</p>
+    <p><a href={withBase("/")}>Retour à l'accueil</a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-block: var(--space-lg);
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+// CaseStudySection — CS-S10. Wrapper de section léger (section + Container
+// + alternance de fond), namespacé `.case-study__section`, distinct de
+// `.service-page__section` (CS-S9) pour ne jamais mélanger les deux
+// feuilles de style.
+interface Props {
+  id?: string;
+  soft?: boolean;
+  class?: string;
+  "aria-labelledby"?: string;
+}
+
+const { id, soft = false, class: className, "aria-labelledby": ariaLabelledby } = Astro.props;
+---
+
+<section
+  id={id}
+  aria-labelledby={ariaLabelledby}
+  class:list={["case-study__section", soft && "case-study__section--soft", className]}
+>
+  <div class="container">
+    <slot />
+  </div>
+</section>
