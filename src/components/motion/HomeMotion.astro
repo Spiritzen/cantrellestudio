@@ -81,13 +81,17 @@
   function reveal(
     targets: Element[] | NodeListOf<Element>,
     y: number | ((i: number) => number),
-    opts: gsap.TweenVars & { scrollTrigger?: ScrollTrigger.Vars } = {},
+    opts: gsap.TweenVars & { scrollTrigger?: ScrollTrigger.Vars; fromScale?: number } = {},
   ) {
     const list = Array.from(targets as Iterable<Element>);
     if (list.length === 0) return;
-    const { scrollTrigger, ...tweenOpts } = opts;
+    const { scrollTrigger, fromScale, ...tweenOpts } = opts;
 
-    const setInitial = () => gsap.set(list, { opacity: 0, y });
+    // CS-S11B — `fromScale` optionnel (défaut 1 = aucun changement, donc
+    // strictement rétrocompatible avec tous les appels existants qui ne le
+    // passent pas) : ajoute une très légère montée en échelle à l'entrée,
+    // demandée spécifiquement pour les cards Capacités (setupCapacites).
+    const setInitial = () => gsap.set(list, { opacity: 0, y, scale: fromScale ?? 1 });
     let tween: gsap.core.Tween | null = null;
 
     const play = () => {
@@ -95,6 +99,7 @@
       tween = gsap.to(list, {
         opacity: 1,
         y: 0,
+        scale: 1,
         duration: DURATION.reveal,
         ease: EASE,
         stagger: STAGGER,
@@ -369,15 +374,96 @@
     }
   }
 
-  /** F. Capacités — reveal des 4 groupes. Rejoue à chaque entrée/sortie
-   * (FIX C). */
+  /** F. Capacités — CS-S11B "cards plus vivantes".
+   *
+   * A. Entrée en cascade (mobile ET desktop, aucune dépendance au hover,
+   * prompt §B) : réutilise le `reveal()` générique partagé (mêmes
+   * durée/easing/stagger que le reste de la Home, rejoue à chaque
+   * entrée/sortie comme FIX C), avec en plus une très légère montée en
+   * échelle (`fromScale`, §B "légère montée en échelle si utile") —
+   * jamais de boucle, jamais d'animation agressive.
+   *
+   * B. Tilt 3D léger au survol (desktop uniquement, prompt §A) : GSAP
+   * `quickTo` par card (interpolation fluide native, pas de nouvelle
+   * dépendance) pilote `rotationX`/`rotationY` (amplitude faible, ±5°,
+   * "pas d'effet manège") + une légère translation vers le haut, à partir
+   * de la position du pointeur DANS la card. Un `transformPerspective`
+   * posé une fois par card rend le tilt lisible en 3D sans toucher au CSS
+   * (pas de `perspective` ajouté sur un ancêtre, donc aucun risque de
+   * piéger un élément `position:fixed` ailleurs sur la page — cf. le
+   * gotcha de stacking déjà rencontré sur le Hero). Un très léger
+   * contre-mouvement du bloc titre (`.home-capabilities__group-head`,
+   * quelques px) ajoute le micro-parallax interne demandé (§A), sans
+   * dupliquer la logique de tilt. Retour fluide à l'état neutre au
+   * `pointerleave` (même `quickTo`, cible 0). Gestion du pointeur scopée
+   * strictement à cette section — aucun listener global, aucun effet sur
+   * les autres cards de la page.
+   *
+   * Le halo/bordure réveillés au survol restent en CSS pur (`:hover`/
+   * `:focus-within` déjà existants, home.css) : seule la partie qui NE
+   * PEUT PAS se faire proprement en CSS (rotation dépendante de la
+   * position du curseur) est ajoutée ici.
+   *
+   * `prefers-reduced-motion` : toute cette fonction est déjà appelée
+   * uniquement dans la branche `else` du garde-fou en tête de fichier —
+   * sous reduced-motion, ni le reveal ni le tilt ne sont jamais créés. */
   function setupCapacites() {
     const grid = document.querySelector(".home-capabilities__grid");
-    const groups = grid ? grid.querySelectorAll('[data-motion="capability"]') : [];
+    const groups = grid ? Array.from(grid.querySelectorAll<HTMLElement>('[data-motion="capability"]')) : [];
     if (!grid || groups.length === 0) return;
 
     reveal(groups, OFFSET.title, {
       scrollTrigger: { trigger: grid },
+      fromScale: 0.96,
+    });
+
+    const hoverCapable = window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (!hoverCapable.matches) return;
+
+    const TILT_MAX_DEG = 5; // amplitude faible et élégante, pas d'effet manège
+    const LIFT_PX = -6;
+    const PARALLAX_PX = 4;
+    const QUICK_OPTS = { duration: 0.45, ease: "power2.out" } as const;
+
+    groups.forEach((card) => {
+      const head = card.querySelector<HTMLElement>(".home-capabilities__group-head");
+      gsap.set(card, { transformPerspective: 700, transformOrigin: "center" });
+
+      const quickRotateX = gsap.quickTo(card, "rotationX", QUICK_OPTS);
+      const quickRotateY = gsap.quickTo(card, "rotationY", QUICK_OPTS);
+      const quickLift = gsap.quickTo(card, "y", QUICK_OPTS);
+      const quickParallaxX = head ? gsap.quickTo(head, "x", QUICK_OPTS) : null;
+      const quickParallaxY = head ? gsap.quickTo(head, "y", QUICK_OPTS) : null;
+
+      let bounds = card.getBoundingClientRect();
+
+      const onEnter = () => {
+        bounds = card.getBoundingClientRect();
+      };
+
+      const onMove = (event: PointerEvent) => {
+        // -1 (bord gauche/haut) .. 1 (bord droit/bas), 0 au centre.
+        const px = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+        const py = ((event.clientY - bounds.top) / bounds.height) * 2 - 1;
+
+        quickRotateX(py * -TILT_MAX_DEG);
+        quickRotateY(px * TILT_MAX_DEG);
+        quickLift(LIFT_PX);
+        quickParallaxX?.(px * PARALLAX_PX);
+        quickParallaxY?.(py * PARALLAX_PX);
+      };
+
+      const onLeave = () => {
+        quickRotateX(0);
+        quickRotateY(0);
+        quickLift(0);
+        quickParallaxX?.(0);
+        quickParallaxY?.(0);
+      };
+
+      card.addEventListener("pointerenter", onEnter);
+      card.addEventListener("pointermove", onMove);
+      card.addEventListener("pointerleave", onLeave);
     });
   }
 

@@ -70,11 +70,32 @@ const methodSteps = [
 ];
 
 // --- F. Capacités techniques ---------------------------------------------
+// CS-S11B — micro-accent visuel discret par card (prompt §C) : un
+// pictogramme SVG inline très simple par thème (jamais une photo, jamais
+// une icône de librairie/logo de techno), couleur héritée via
+// `currentColor` (home.css `.home-capabilities__icon`). Contenu textuel
+// (title/items) strictement inchangé.
 const capabilityGroups = [
-  { title: "Frontend", items: "Astro, React, TypeScript" },
-  { title: "Backend", items: "Java / Spring Boot, Ruby on Rails, API REST" },
-  { title: "Data & livraison", items: "PostgreSQL, Docker, CI/CD" },
-  { title: "3D & expérience", items: "Three.js, React Three Fiber, GSAP" },
+  {
+    title: "Frontend",
+    items: "Astro, React, TypeScript",
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 6 3 12l5 6M16 6l5 6-5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  },
+  {
+    title: "Backend",
+    items: "Java / Spring Boot, Ruby on Rails, API REST",
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="4.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="10" width="18" height="4.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="16" width="18" height="4.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  },
+  {
+    title: "Data & livraison",
+    items: "PostgreSQL, Docker, CI/CD",
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  },
+  {
+    title: "3D & expérience",
+    items: "Three.js, React Three Fiber, GSAP",
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 20 7.5v9L12 21 4 16.5v-9Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 3v9m0 0-8-4.5M12 12l8-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  },
 ];
 ---
 
@@ -253,7 +274,10 @@ const capabilityGroups = [
         {capabilityGroups.map((group, i) => (
           <dl class="home-capabilities__group" data-motion="capability">
             <div class="home-capabilities__group-head">
-              <dt>{group.title}</dt>
+              <span class="home-capabilities__title-group">
+                <span class="home-capabilities__icon" set:html={group.icon} />
+                <dt>{group.title}</dt>
+              </span>
               <span class="home-capabilities__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
             </div>
             {group.items.split(", ").map((item) => (

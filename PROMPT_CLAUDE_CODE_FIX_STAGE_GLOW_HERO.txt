@@ -1,0 +1,67 @@
+PROMPT CLAUDE CODE — MICRO-FIX HERO : MASQUER LE STAGE GLOW AU-DESSUS DE LA 3D
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+CONTEXTE CONFIRMÉ PAR MINI-AUDIT
+Le rectangle orangé visible dans le Hero vient de :
+`.home-hero__stage-glow`
+
+Fichier CSS :
+src/styles/home.css
+
+Il est :
+- position:absolute;
+- inset:0;
+- z-index:auto;
+- peint au-dessus de `.hero-scene`
+- alors que `.hero-scene` est en `position: fixed; z-index: -1`.
+
+Le mini-audit a confirmé dans le navigateur à 1440px que ce glow passe effectivement AU-DESSUS des boules 3D et crée le voile rectangulaire.
+
+OBJECTIF UNIQUE
+Supprimer ce rectangle orangé sur desktop lorsque la 3D est active, sans toucher au reste du Hero.
+
+CORRECTION À APPLIQUER
+Ajouter uniquement une règle CSS ciblée :
+
+@media (min-width: 900px) {
+  .home-hero__stage-glow {
+    display: none;
+  }
+}
+
+IMPORTANT
+- Ne PAS supprimer le composant du HTML.
+- Ne PAS modifier `.hero-scene`.
+- Ne PAS changer son z-index.
+- Ne PAS toucher aux boules 3D.
+- Ne PAS toucher aux filaments.
+- Ne PAS toucher à l’environment map.
+- Ne PAS toucher au grand radial-gradient diffus de `.home-hero`.
+- Ne PAS modifier les textes, CTA, layout ou responsive.
+- Ne PAS entreprendre un refactor de fallback WebGL dans ce sprint.
+
+Le but est uniquement de retirer le voile rectangulaire confirmé au-dessus de la scène 3D desktop.
+
+VALIDATION RAPIDE
+À 1440px :
+- rectangle orangé net disparu : OUI/NON
+- boules 3D non voilées : OUI/NON
+- grand halo orangé diffus du Hero toujours présent : OUI/NON
+- filaments inchangés : OUI/NON
+- layout inchangé : OUI/NON
+
+Puis :
+- npm run check
+- npm run build
+
+Aucun git add / commit / push.
+
+RÉPONSE COURTE
+- fichier modifié ;
+- règle ajoutée ;
+- rectangle disparu : OUI/NON ;
+- 3D intacte : OUI/NON ;
+- check/build : GREEN/RED ;
+- STOP.

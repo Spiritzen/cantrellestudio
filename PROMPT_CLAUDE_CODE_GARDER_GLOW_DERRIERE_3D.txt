@@ -1,0 +1,52 @@
+PROMPT CLAUDE CODE — CORRIGER LE STACKING DU GLOW SANS SUPPRIMER LE CARRÉ
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+CONTEXTE
+Le précédent micro-fix a ajouté :
+@media (min-width: 900px) {
+  .home-hero__stage-glow {
+    display: none;
+  }
+}
+
+Cela a bien supprimé le voile sur les boules, MAIS ce n’était pas l’intention finale :
+Sébastien veut CONSERVER le carré / halo orangé, simplement le placer DERRIÈRE les boules 3D.
+
+OBJECTIF UNIQUE
+Restaurer `.home-hero__stage-glow` sur desktop puis corriger uniquement l’ordre des couches pour obtenir :
+
+1. fond du Hero
+2. carré / halo orangé
+3. boules 3D + filaments
+4. textes / CTA
+
+À FAIRE
+1. Retirer uniquement la règle `display:none` ajoutée au précédent micro-fix.
+2. Inspecter le stacking réel existant.
+3. Appliquer la correction CSS minimale pour que `.home-hero__stage-glow` reste visible MAIS derrière `.hero-scene`.
+4. Garder textes et CTA au-dessus de la 3D.
+
+IMPORTANT
+- Ne pas supprimer `.home-hero__stage-glow`.
+- Ne pas changer sa couleur, sa taille, son gradient ou son opacité.
+- Ne pas toucher aux boules, matériaux, environment map, filaments, animations ou layout.
+- Ne pas refactorer le Hero.
+- Ne pas créer de nouvelle couche décorative.
+
+VALIDATION RAPIDE À 1440px
+- carré orangé visible : OUI
+- carré derrière les boules : OUI
+- boules non voilées : OUI
+- textes/CTA au-dessus : OUI
+- filaments inchangés : OUI
+
+Pas de git add / commit / push.
+
+Réponse courte :
+- règle précédente retirée : OUI/NON
+- correction de stacking appliquée : laquelle
+- carré conservé : OUI/NON
+- carré derrière la 3D : OUI/NON
+- STOP.

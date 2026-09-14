@@ -137,9 +137,32 @@
   min-height: 20rem;
 }
 
+/* MINI-AUDIT + FIX — PROMPT_CLAUDE_CODE_MINI_AUDIT_COUCHES_HERO_RECTANGLE_ORANGE.txt
+   / PROMPT_CLAUDE_CODE_FIX_STAGE_GLOW_HERO.txt / PROMPT_CLAUDE_CODE_GARDER_GLOW_DERRIERE_3D.txt
+   Ce halo peignait au-dessus de `.hero-scene` (`position:fixed;
+   z-index:-1`, plus bas dans ce fichier) : étant `position:absolute` avec
+   z-index:auto, il se plaçait dans la couche "descendants positionnés,
+   z-index:auto" de la stacking context racine — une couche peinte APRÈS
+   (donc au-dessus) la couche "z-index négatif" où peint `.hero-scene`
+   (aucun ancêtre entre les deux ne crée sa propre stacking context —
+   vérifié). Confirmé dans le navigateur à 1440px (elementFromPoint) : ce
+   halo passait bien au-dessus des sphères, créant un voile rectangulaire
+   net.
+   Un premier micro-fix l'avait masqué en desktop (`display:none`), ce qui
+   supprimait le voile mais aussi le carré lui-même — non voulu. Correction
+   retenue : le GARDER visible, mais le faire peindre DERRIÈRE la 3D en le
+   faisant rejoindre la MÊME couche "z-index négatif" de la racine que
+   `.hero-scene`, avec une valeur plus négative (`z-index: -2` < `-1`) —
+   au sein de cette couche, les stacking contexts s'ordonnent par z-index
+   croissant, donc -2 peint AVANT (derrière) -1. Aucun changement de
+   position/taille/gradient/opacité : seul l'ordre de peinture change.
+   Résultat : fond du Hero -> carré orangé (-2) -> 3D/filaments (-1) ->
+   contenu normal du Hero (textes/CTA, non positionnés, couche "in-flow"
+   au-dessus des deux). */
 .home-hero__stage-glow {
   position: absolute;
   inset: 0;
+  z-index: -2;
   background: radial-gradient(
     circle at 65% 35%,
     rgba(228, 95, 54, 0.12),
@@ -554,13 +577,26 @@
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  transition: border-color 250ms ease, background-color 250ms ease;
+  /* CS-S11B — `box-shadow` ajouté à la liste de transitions existante
+     (renforcement discret de l'ombre au survol, règle suivante). Le tilt
+     3D lui-même (rotationX/Y, translation) est piloté par GSAP
+     (HomeMotion.astro, setupCapacites) : jamais de `transform` déclaré en
+     CSS ici, pour ne jamais entrer en conflit avec les valeurs posées par
+     GSAP au survol. */
+  box-shadow: none;
+  transition: border-color 250ms ease, background-color 250ms ease, box-shadow 250ms ease;
 }
 
 .home-capabilities__group:hover,
 .home-capabilities__group:focus-within {
   border-color: var(--color-border-strong);
   background: var(--color-surface);
+  /* CS-S11B — halo Ember discret + ombre portée renforcée (accompagne le
+     tilt/lift piloté par GSAP). Volontairement doux : pas de bordure
+     colorée franche, un glow diffus à faible opacité. */
+  box-shadow:
+    0 22px 44px -26px rgba(228, 95, 54, 0.35),
+    0 14px 28px -16px rgba(0, 0, 0, 0.55);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -575,6 +611,41 @@
   justify-content: space-between;
   gap: var(--space-sm);
   margin: 0 0 var(--space-xs) 0;
+}
+
+/* CS-S11B — regroupe icône + titre à gauche de `.home-capabilities__group-head`
+   (l'index reste seul à droite) : préserve le `justify-content:space-between`
+   existant entre exactement 2 enfants. */
+.home-capabilities__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* CS-S11B — micro-accent visuel discret par card (pictogramme lié au
+   thème : Frontend/Backend/Data & livraison/3D & expérience), jamais une
+   image, jamais une couleur par techno (même principe que les items en
+   dessous). Couleur neutre par défaut, légèrement réveillée en Ember au
+   survol (même déclencheur CSS que le halo de la card, cohérent avec
+   §A "halo/orange subtil"). */
+.home-capabilities__icon {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: none;
+  color: var(--color-text-muted);
+  transition: color 250ms ease;
+}
+
+.home-capabilities__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.home-capabilities__group:hover .home-capabilities__icon,
+.home-capabilities__group:focus-within .home-capabilities__icon {
+  color: var(--color-accent);
 }
 
 .home-capabilities__group dt {

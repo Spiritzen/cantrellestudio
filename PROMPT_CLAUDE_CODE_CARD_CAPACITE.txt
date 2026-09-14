@@ -1,0 +1,118 @@
+PROMPT CLAUDE CODE — CS-S11B / CAPACITÉS / CARDS PLUS VIVANTES
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+OBJECTIF
+Améliorer visuellement la section "Capacités" pour casser la monotonie des 4 cards, sans casser la DA actuelle, sans alourdir la page, et sans repartir dans 3 versions.
+
+IMPORTANT
+On garde :
+- la structure globale de la section
+- les textes
+- la palette actuelle
+- le fond noir des cards déjà validé
+- le quadrillage de points en fond de section
+- l’esprit premium / sobre / pro
+
+On veut :
+1. un effet plus vivant sur desktop au hover
+2. une animation d’apparition une à une sur mobile / sans hover
+3. zéro effet gadget
+4. zéro régression perf visible
+
+FICHIERS À INSPECTER
+- src/pages/index.astro
+- src/styles/home.css
+- tout composant éventuel lié à la section Capacités
+- fichiers fournis en référence technique uniquement :
+  - /mnt/data/InteractiveCard.tsx
+  - /mnt/data/InteractiveCard.css
+  - /mnt/data/CardBackground.tsx
+  - /mnt/data/CardBackground.css
+  - /mnt/data/CardParticles.tsx
+  - /mnt/data/CardModal.tsx
+  - /mnt/data/CardModal.css
+
+IMPORTANT SUR CES FICHIERS DE RÉFÉRENCE
+Ils servent d’inspiration technique seulement.
+NE PAS copier le style fantasy / carte à jouer.
+NE PAS intégrer modal, particules ou effets lourds.
+NE RÉUTILISER que l’idée de :
+- tilt léger
+- gestion du pointeur
+- profondeur subtile
+- animation maîtrisée
+
+SPÉCIFICATION DEMANDÉE
+
+A. DESKTOP — HOVER CARD
+Pour chaque card de la section Capacités :
+- tilt 3D léger au survol
+- amplitude faible et élégante (pas d’effet manège)
+- légère translation vers le haut
+- renforcement discret de l’ombre
+- halo/orange subtil ou bordure légèrement réveillée
+- contenu interne avec micro parallax très léger si simple à faire
+- retour fluide à l’état neutre au mouseleave
+
+B. MOBILE / TABLETTE / SANS HOVER
+- aucune dépendance au hover
+- chaque card s’anime une seule fois à l’entrée dans le viewport
+- apparition en cascade (stagger)
+- animation sobre : opacity + translateY + très légère montée en échelle si utile
+- pas de boucle permanente
+- pas d’animation agressive
+
+C. VISUEL INTERNE
+- si possible, ajouter un micro-accent visuel par card :
+  - petit pictogramme ou motif discret
+  - lié au thème de la card (frontend, backend, data & livraison, 3D & expérience)
+- ce visuel doit rester très discret
+- pas d’image lourde
+- pas de photos
+- pas de surcharge
+
+D. ACCESSIBILITÉ / PERF
+- respecter prefers-reduced-motion
+- pas de canvas
+- pas de librairie ajoutée
+- pas de rendu lourd
+- pas d’animation continue coûteuse
+- pas de dégradation du Hero 3D
+
+E. INTÉGRATION
+- appliquer exactement le même comportement visuel aux 4 cards
+- garder une cohérence totale entre elles
+- ne pas modifier les autres sections
+- rester scoped à la section Capacités
+
+PLAN D’EXÉCUTION
+1. repérer le markup exact des cards Capacités
+2. ajouter la logique minimale nécessaire
+3. styliser les cards avec un hover premium léger
+4. ajouter l’animation d’entrée une à une pour mobile / viewport
+5. vérifier visuellement en local
+6. lancer :
+   - npm run check
+   - npm run build
+
+INTERDIT
+- pas de refonte complète
+- pas de changement de contenu
+- pas de modal
+- pas de particules
+- pas de gros SVG complexes si non nécessaires
+- pas de dépendance externe
+- pas de git add / commit / push
+
+RÉPONSE ATTENDUE
+- fichiers modifiés
+- ce qui a été ajouté
+- confirmation :
+  - hover desktop OK
+  - apparition mobile OK
+  - perf OK
+  - npm run check OK
+  - npm run build OK
+- STOP

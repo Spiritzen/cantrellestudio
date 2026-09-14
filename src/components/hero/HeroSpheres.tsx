@@ -37,8 +37,19 @@
 // le frameloop passe en "demand", cf. HeroScene.tsx).
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Line, Environment, Lightformer } from "@react-three/drei";
+import { Line } from "@react-three/drei";
 import * as THREE from "three";
+// TEST RÉVERSIBLE — voir PROMPT_CLAUDE_CODE_TEST_ENV_MAP_PNG_HERO.txt et
+// HeroEnvironmentImage.tsx. Remplace temporairement le rig procédural
+// <Environment>/<Lightformer> (CS-S6C/D, commenté juste plus bas, jamais
+// supprimé) par `src/assets/hdr/hdr.png` comme environment map.
+import HeroEnvironmentImage from "./HeroEnvironmentImage";
+// PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — les 3
+// sphères procédurales sont remplacées par 3 instances de BALL.glb
+// (mêmes geometry/material, scales distincts). Succède au test A/B à 1
+// sphère (PROMPT_CLAUDE_CODE_TEST_BALL_GLB_HERO.txt / HeroBallGlb.tsx,
+// désormais superflu).
+import { useHeroBallModel } from "./useHeroBallModel";
 
 interface HeroSpheresProps {
   /** prefers-reduced-motion actif : pose stable/apaisée (voir §14 CS-S6B). */
@@ -228,6 +239,19 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     [],
   );
 
+  // PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — geometry
+  // + material extraits UNE SEULE FOIS de BALL.glb (cache useGLTF, un seul
+  // chargement réseau), partagés PAR RÉFÉRENCE par les 3 <mesh> plus bas
+  // (pas de scene.clone(), le GLB ne contient qu'un mesh). `ballRawRadius`
+  // = rayon du modèle brut, jamais mis à l'échelle : sert à convertir les
+  // anciens rayons validés (LARGE/MEDIUM/SMALL_RADIUS, INCHANGÉS) en scale
+  // par sphère, pour reproduire EXACTEMENT les proportions Soleil > Terre
+  // > Lune d'avant le test GLB. Ne PAS appliquer le même scale aux 3.
+  const { geometry: ballGeometry, material: ballMaterial, rawRadius: ballRawRadius } = useHeroBallModel();
+  const largeBallScale = LARGE_RADIUS / ballRawRadius;
+  const mediumBallScale = MEDIUM_RADIUS / ballRawRadius;
+  const smallBallScale = SMALL_RADIUS / ballRawRadius;
+
   // 5 filaments — génération procédurale biaisée horizontale (micro-sprint
   // "Hero filaments random avec biais horizontal"). Remplace les 5 courbes
   // fixes CS-S6B/C (mêmes bornes d'espace x/y/z conservées à l'identique,
@@ -412,19 +436,19 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
       <directionalLight position={[-4, -1.5, -2]} intensity={0.5} color={NEUTRAL_SECONDARY} />
       <pointLight position={[1.4, 1.1, 2.2]} intensity={1.7} color={EMBER} distance={6} decay={2} />
 
-      {/* Rig d'environnement PROCÉDURAL (CS-S6C, drei Environment +
-          Lightformer, déjà installés, aucune dépendance ajoutée, aucune
-          HDRI). CS-S6D : intensités des lightformers relevées et
-          résolution légèrement montée (64 -> 96) pour des reflets un peu
-          plus définis, toujours loin du chrome-miroir (roughness 0.24,
-          resolution encore basse). `frames={1}` inchangé : un seul bake
-          au montage, aucun coût par frame. */}
+      {/* Rig d'environnement PROCÉDURAL (CS-S6C/D) — DÉSACTIVÉ pour le test
+          RÉVERSIBLE PROMPT_CLAUDE_CODE_TEST_ENV_MAP_PNG_HERO.txt, remplacé
+          juste en dessous par <HeroEnvironmentImage />. Pour revenir en
+          arrière : supprimer <HeroEnvironmentImage /> et dé-commenter ce
+          bloc.
       <Environment resolution={96} frames={1}>
         <Lightformer form="rect" color={IVORY} intensity={3.4} position={[3, 3.2, 2.5]} scale={[3.4, 1.8, 1]} target={[0, 0, 0]} />
         <Lightformer form="rect" color={NEUTRAL_SECONDARY} intensity={1.6} position={[-3.2, -1.4, 2.8]} scale={[2.6, 3.2, 1]} target={[0, 0, 0]} />
         <Lightformer form="circle" color={EMBER} intensity={2.4} position={[1.6, -1.3, 3.2]} scale={1} target={[0, 0, 0]} />
         <Lightformer form="rect" color={IVORY} intensity={0.9} position={[0, -3.4, -2]} scale={[4, 2, 1]} />
       </Environment>
+      */}
+      <HeroEnvironmentImage />
 
       {/* Filaments — géométrie générée ci-dessus (biais horizontal) ;
           rendu (couleur/opacité alternée, rig, mouvement) INCHANGÉ. */}
@@ -447,15 +471,51 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
           initiales JSX = ancrage/orbite à l'angle de phase de départ,
           pour éviter tout flash de position avant le premier useFrame. */}
       <group ref={rigRef}>
+        {/* PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — les
+            3 sphères procédurales (<sphereGeometry> + sphereMaterial,
+            commentées ci-dessous chacune, jamais supprimées) sont
+            remplacées par 3 <mesh> partageant LA MÊME geometry/material
+            de BALL.glb (useHeroBallModel). Seul le `scale` diffère par
+            sphère (voir calcul plus haut) : hiérarchie de tailles Soleil >
+            Terre > Lune inchangée, position/mouvement/orbites INCHANGÉS.
+            Retrait : remplacer chaque <mesh> par le bloc commenté
+            au-dessus de lui. */}
+        {/*
         <mesh ref={largeMeshRef} position={largePos.current} material={sphereMaterial}>
           <sphereGeometry args={[LARGE_RADIUS, 40, 40]} />
         </mesh>
+        */}
+        <mesh
+          ref={largeMeshRef}
+          position={largePos.current}
+          geometry={ballGeometry}
+          material={ballMaterial}
+          scale={largeBallScale}
+        />
+        {/*
         <mesh ref={mediumMeshRef} position={mediumPos.current} material={sphereMaterial}>
           <sphereGeometry args={[MEDIUM_RADIUS, 40, 40]} />
         </mesh>
+        */}
+        <mesh
+          ref={mediumMeshRef}
+          position={mediumPos.current}
+          geometry={ballGeometry}
+          material={ballMaterial}
+          scale={mediumBallScale}
+        />
+        {/*
         <mesh ref={smallMeshRef} position={smallPos.current} material={sphereMaterial}>
           <sphereGeometry args={[SMALL_RADIUS, 32, 32]} />
         </mesh>
+        */}
+        <mesh
+          ref={smallMeshRef}
+          position={smallPos.current}
+          geometry={ballGeometry}
+          material={ballMaterial}
+          scale={smallBallScale}
+        />
       </group>
     </>
   );

@@ -1,0 +1,189 @@
+PROMPT CLAUDE CODE — TEST COMPARATIF BALL.glb DANS LE HERO 3D
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+ASSET ATTENDU
+Placer / utiliser la boule Blender ici :
+src/assets/models/BALL.glb
+
+Si le fichier existe déjà ailleurs dans le projet, réutiliser son emplacement réel.
+Ne pas dupliquer inutilement l’asset.
+
+CONTEXTE
+Le test d’environment map avec :
+src/assets/hdr/hdr.png
+fonctionne, mais les sphères procédurales actuelles ne montrent qu’une légère lueur / réflexion bleutée,
+loin du rendu observé dans Blender.
+
+Le fichier BALL.glb a été exporté depuis Blender avec un matériau très réfléchissant.
+L’objectif est maintenant de faire un test direct et réversible avec CET objet,
+dans la même scène et sous la même environment map actuelle.
+
+OBJECTIF UNIQUE
+Remplacer TEMPORAIREMENT uniquement la plus grande sphère actuelle du Hero par BALL.glb,
+afin de comparer son rendu avec les deux sphères procédurales restantes.
+
+On ne remplace PAS les 3 sphères.
+On veut un test A/B dans la même scène.
+
+======================================================================
+1. INSPECTION AVANT MODIFICATION
+======================================================================
+
+Inspecter :
+- src/components/hero/HeroScene.tsx
+- src/components/hero/HeroSpheres.tsx
+- l’intégration actuelle de l’environment map hdr.png
+
+Identifier précisément :
+- quelle sphère est la plus grande ;
+- son parent / groupe ;
+- sa position ;
+- son scale ;
+- sa logique de mouvement / scroll / rotation ;
+- comment conserver cette logique avec un GLB.
+
+Ne pas réécrire l’animation globale.
+
+======================================================================
+2. CHARGEMENT DE BALL.glb
+======================================================================
+
+Charger BALL.glb proprement avec la stack actuelle R3F/drei.
+
+Approche conseillée :
+- useGLTF si déjà disponible via @react-three/drei ;
+- asset importé de manière compatible Astro/Vite et GitHub Pages ;
+- aucun chemin Windows hardcodé dans le runtime.
+
+Le modèle ne doit être chargé qu’une fois.
+
+======================================================================
+3. TEST A/B
+======================================================================
+
+Remplacer uniquement le VISUEL / mesh de la grande sphère par BALL.glb.
+
+Conserver autant que possible :
+- sa position actuelle ;
+- sa taille visuelle actuelle ;
+- son mouvement ;
+- sa participation aux animations ;
+- le comportement au scroll ;
+- le comportement au pointeur si elle en dépend.
+
+Les 2 autres sphères actuelles restent STRICTEMENT inchangées.
+
+Le but est de voir simultanément :
+- BALL.glb avec son matériau Blender/glTF ;
+- les deux sphères actuelles ;
+sous exactement le même environnement.
+
+======================================================================
+4. MATÉRIAU GLB : NE PAS LE REMPLACER
+======================================================================
+
+Pour ce premier test :
+- conserver le matériau importé du GLB ;
+- ne pas recréer un MeshPhysicalMaterial ;
+- ne pas modifier metalness ;
+- ne pas modifier roughness ;
+- ne pas modifier couleur ;
+- ne pas ajouter de textures ;
+- ne pas modifier les lights existantes.
+
+On veut observer le matériau tel qu’il a été exporté.
+
+IMPORTANT :
+ne pas injecter manuellement hdr.png dans material.envMap si scene.environment fonctionne déjà.
+Laisser le pipeline PBR normal utiliser l’environnement global.
+
+======================================================================
+5. ENVIRONMENT MAP
+======================================================================
+
+Conserver exactement le test actuel :
+src/assets/hdr/hdr.png
+
+- utilisé comme environnement ;
+- PAS comme background visible ;
+- aucune modification de son intensité dans ce sprint.
+
+Ne pas passer à un vrai .hdr/.exr maintenant.
+Ce sera un sprint séparé après validation.
+
+======================================================================
+6. NE RIEN TOUCHER D’AUTRE
+======================================================================
+
+Ne pas modifier :
+- les deux autres sphères ;
+- les filaments ;
+- la lueur Ember ;
+- les lignes / trajectoires ;
+- Hero copy ;
+- CTA ;
+- layout ;
+- caméra ;
+- navbar ;
+- sections suivantes ;
+- DotWave.
+
+Pas de refactor global.
+
+======================================================================
+7. PERFORMANCE / RÉVERSIBILITÉ
+======================================================================
+
+Le test doit être facile à retirer.
+
+- pas de nouvelle boucle rAF ;
+- pas de nouvelle lumière ;
+- pas de texture recréée à chaque frame ;
+- pas de fuite mémoire ;
+- pas de duplication du modèle.
+
+Aucun git add / commit / push.
+
+======================================================================
+8. VALIDATION
+======================================================================
+
+Lancer :
+- npm run check
+- npm run build
+- npm run dev
+
+Contrôle visuel réel :
+http://localhost:4321/cantrellestudio
+
+Vérifier :
+- BALL.glb visible à la place de la grande sphère ;
+- les 2 autres sphères inchangées ;
+- filaments inchangés ;
+- environnement toujours invisible comme background ;
+- reflet de hdr.png clairement visible ou non sur BALL.glb ;
+- mouvement du Hero intact ;
+- aucune erreur console ;
+- fluidité correcte.
+
+======================================================================
+9. RAPPORT COURT
+======================================================================
+
+Répondre avec :
+- asset GLB utilisé : chemin ;
+- fichier(s) modifié(s) ;
+- grande sphère seule remplacée : OUI/NON ;
+- matériau GLB conservé : OUI/NON ;
+- environment map actuelle conservée : OUI/NON ;
+- reflet nettement plus visible sur BALL.glb : OUI/NON ;
+- animation / mouvement conservés : OUI/NON ;
+- npm run check : GREEN/RED ;
+- npm run build : GREEN/RED ;
+- fluidité : OK/NON ;
+- verdict visuel rapide ;
+- STOP.
+
+NE PAS remplacer ensuite les deux autres sphères sans validation de Sébastien.
