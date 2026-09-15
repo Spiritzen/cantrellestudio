@@ -3,6 +3,14 @@
 // (CS-S4 §10). Rend un <li> : à placer dans une liste (<ol>/<ul>) fournie
 // par la page qui compose la grille. Aucune icône, aucune image, aucun
 // fond flashy : préserve strictement l'apparence du wireframe CS-S3.
+//
+// CS-S12D — audit d'ancres (prompt §12) : les 3 instances de ce composant
+// rendaient le même texte visible "En savoir plus" sans nom accessible
+// distinct (3 liens identiques pour un lecteur d'écran). Copy visible
+// volontairement NON réécrite (déjà validée CS-S3/CS-S8B, prompt §12 "ne
+// pas réécrire toute la copy pour SEO") — correction via la prop
+// `ariaLabel` déjà supportée par `ActionLink`, qui donne à chaque lien un
+// nom accessible distinct sans changer un seul mot affiché à l'écran.
 import ActionLink from "./ActionLink.astro";
 
 interface Props {
@@ -20,7 +28,7 @@ const { index, title, description, href } = Astro.props;
   <span class="service-item__index" aria-hidden="true">{index}</span>
   <h3>{title}</h3>
   <p>{description}</p>
-  <ActionLink href={href} variant="text">En savoir plus</ActionLink>
+  <ActionLink href={href} variant="text" ariaLabel={`En savoir plus — ${title}`}>En savoir plus</ActionLink>
 </li>
 
 <style>

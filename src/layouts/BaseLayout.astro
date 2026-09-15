@@ -22,9 +22,16 @@ interface Props {
   description: string;
   /** CS-S2B : transmis tel quel à SeoHead, défaut false (voir SeoHead.astro). */
   noindex?: boolean;
+  /** CS-S12A : transmis tel quel à SeoHead, défaut true (voir SeoHead.astro). */
+  nofollow?: boolean;
+  /** CS-S12B : transmis tel quel à SeoHead (chemin racine, override du
+   * fallback OG global). Voir SeoHead.astro. */
+  image?: string;
+  /** CS-S12B : transmis tel quel à SeoHead (alt de `image`). */
+  imageAlt?: string;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, nofollow = true, image, imageAlt } = Astro.props;
 ---
 
 <html lang="fr">
@@ -34,12 +41,19 @@ const { title, description, noindex = false } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
     <link rel="icon" type="image/x-icon" href={withBase("/favicon.ico")} />
-    <SeoHead title={title} description={description} noindex={noindex} />
+    <SeoHead title={title} description={description} noindex={noindex} nofollow={nofollow} image={image} imageAlt={imageAlt} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Aller au contenu principal</a>
     <Header />
-    <main id="main-content">
+    {/* CS-S13 — audit clavier : sans `tabindex="-1"`, activer le lien
+        d'évitement déplace le scroll (ancre `#main-content`) mais PAS le
+        focus DOM réel (un `<main>` sans tabindex n'est pas programmatiquement
+        focusable) — vérifié réellement (`document.activeElement` restait en
+        dehors de `<main>` après activation). `tabindex="-1"` le rend
+        focusable par script/fragment sans l'ajouter à l'ordre de tabulation
+        normal (aucun changement pour la navigation Tab séquentielle). */}
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
     <Footer />

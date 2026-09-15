@@ -2,6 +2,18 @@
 // ServiceCta — CS-S9. Bloc de conclusion partagé par les 3 pages services.
 // CTA primaire commun (prompt §26 : "Parler de votre projet" → /contact/),
 // CTA secondaire contextuel par page.
+//
+// HOTFIX CS-S11D — dette accessibilité identifiée en CS-S11A/CS-S11B : les
+// pages appelantes posent un `aria-labelledby` sur la <section> qui
+// enveloppe ce composant, mais son <h2> ne portait aucun id correspondant
+// (référence ARIA cassée). Correction minimale et générique : prop
+// optionnelle `headingId`, posée sur le <h2> uniquement si fournie —
+// rétrocompatible à 100% (un appelant qui ne la passe pas garde un rendu
+// strictement identique). Chaque page appelante doit désormais passer
+// EXACTEMENT le même id que celui déjà utilisé par son propre
+// `aria-labelledby` de section (voir methode.astro, applications-metier-
+// saas.astro, sites-professionnels.astro, developpement-sur-mesure.astro,
+// a-propos.astro).
 import ActionLink from "../ui/ActionLink.astro";
 
 interface Props {
@@ -10,14 +22,15 @@ interface Props {
   text: string;
   secondaryHref: string;
   secondaryLabel: string;
+  headingId?: string;
 }
 
-const { eyebrow, title, text, secondaryHref, secondaryLabel } = Astro.props;
+const { eyebrow, title, text, secondaryHref, secondaryLabel, headingId } = Astro.props;
 ---
 
 <div class="service-cta" data-motion="cta">
   <span class="service-cta__eyebrow">{eyebrow}</span>
-  <h2 class="service-cta__title">{title}</h2>
+  <h2 id={headingId} class="service-cta__title">{title}</h2>
   <p class="service-cta__text">{text}</p>
   <div class="service-cta__actions">
     <ActionLink href="/contact/" variant="primary">Parler de votre projet</ActionLink>

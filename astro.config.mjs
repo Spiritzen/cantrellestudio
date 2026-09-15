@@ -19,7 +19,15 @@ export default defineConfig({
     sitemap({
       // CS-S2B : /design-lab/ est un outil interne (noindex, non lié depuis
       // la navigation publique) et ne doit jamais apparaître dans le sitemap.
-      filter: (page) => !page.includes('/design-lab'),
+      // CS-S12A : /mentions-legales/ et /politique-confidentialite/ passent
+      // temporairement noindex,follow (contenu encore placeholder, prompt
+      // §3/§7) — exclues du sitemap en cohérence tant qu'elles ne sont pas
+      // réellement indexables ; restent des routes normales, toujours
+      // liées depuis le Footer.
+      filter: (page) =>
+        !page.includes('/design-lab') &&
+        !page.includes('/mentions-legales') &&
+        !page.includes('/politique-confidentialite'),
     }),
   ],
 });

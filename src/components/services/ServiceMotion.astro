@@ -19,10 +19,13 @@
 // réutiliser." Le sélecteur de section a été élargi pour couvrir aussi
 // `.case-study__section` (études de cas, CS-S10) : même reveal, même
 // replay, même chunk JS partagé — zéro nouveau moteur de motion créé.
+// CS-S11A — même élargissement d'une ligne pour `.methode-page__section`
+// (page Méthode) : identique principe, aucune nouvelle logique.
 //
-// Portée : un seul ScrollTrigger par section (`.service-page__section`
-// ou `.case-study__section`), jamais un par élément — reveal groupé des
-// enfants `[data-motion]` de chaque section, avec un léger stagger.
+// Portée : un seul ScrollTrigger par section (`.service-page__section`,
+// `.case-study__section` ou `.methode-page__section`), jamais un par
+// élément — reveal groupé des enfants `[data-motion]` de chaque section,
+// avec un léger stagger.
 // Aucun scrub, aucun parallax, aucun effet agressif.
 ---
 
@@ -34,7 +37,7 @@
   gsap.registerPlugin(ScrollTrigger);
 
   if (!prefersReducedMotion()) {
-    document.querySelectorAll(".service-page__section, .case-study__section").forEach((section) => {
+    document.querySelectorAll(".service-page__section, .case-study__section, .methode-page__section").forEach((section) => {
       const targets = Array.from(section.querySelectorAll("[data-motion]"));
       if (targets.length === 0) return;
 

@@ -4,6 +4,17 @@
 // non cliquable (prompt §27). Aucune route /services/ n'existe : ce
 // composant ne prétend jamais le contraire, il relie directement à /.
 // Micro-sprint pré-déploiement GitHub Pages.
+//
+// CS-S12A — structured data BreadcrumbList (prompt §10B) : ce composant
+// est la source de vérité unique du fil d'Ariane visible sur les 7 pages
+// qui l'utilisent (méthode, à-propos, contact, 3 pages services, études de
+// cas), toujours exactement "Accueil / current" — l'émettre ICI garantit
+// que le JSON-LD ne peut jamais diverger du fil visible, sans dupliquer la
+// logique dans chaque page appelante. URLs absolues calculées de la même
+// façon que le canonical de SeoHead.astro (`new URL(path, Astro.site)`),
+// donc automatiquement cohérentes avec le `base` GitHub Pages actuel.
+// Aucune donnée inventée : uniquement le libellé déjà affiché + son URL
+// réelle.
 import { withBase } from "../../utils/paths";
 
 interface Props {
@@ -11,6 +22,18 @@ interface Props {
 }
 
 const { current } = Astro.props;
+
+const homeURL = new URL(withBase("/"), Astro.site);
+const currentURL = new URL(Astro.url.pathname, Astro.site);
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Accueil", item: homeURL.toString() },
+    { "@type": "ListItem", position: 2, name: current, item: currentURL.toString() },
+  ],
+};
 ---
 
 <nav class="service-breadcrumb" aria-label="Fil d'Ariane">
@@ -19,3 +42,4 @@ const { current } = Astro.props;
     <li aria-current="page">{current}</li>
   </ol>
 </nav>
+<script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />

@@ -15,7 +15,20 @@ import { projectMedia } from "../data/projectMedia";
 import HeroScene from "../components/hero/HeroScene";
 import HomeMotion from "../components/motion/HomeMotion.astro";
 import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
+import { withBase } from "../utils/paths";
 import "../styles/home.css";
+
+// CS-S12A — structured data `WebSite` (prompt §10A), Home uniquement : nom
+// de marque, URL canonique réelle, langue — 3 faits déjà affichés ailleurs
+// sur le site (Header, `lang="fr"` de BaseLayout), aucune donnée juridique
+// ou locale inventée. Pas de `SearchAction` (aucune recherche sur site).
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Cantrelle Studio",
+  url: new URL(withBase("/"), Astro.site).toString(),
+  inLanguage: "fr-FR",
+};
 
 // --- D. Réalisations : sélection depuis la Content Collection ------------
 // Tri featured d'abord puis order, sans muter la collection source
@@ -103,11 +116,12 @@ const capabilityGroups = [
   title="Cantrelle Studio — Applications métier, SaaS & sites professionnels"
   description="Cantrelle Studio conçoit des applications métier, SaaS, sites professionnels et développements sur mesure adaptés à votre activité."
 >
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(websiteSchema)} />
   <!-- A. HERO -->
   <section class="home-section home-hero">
     <Container class="home-hero__grid">
       <div class="home-hero__copy">
-        <span class="home-kicker home-kicker--accent" data-motion="hero-eyebrow">Studio de développement</span>
+        <span class="home-kicker home-kicker--accent" data-motion="hero-eyebrow">Conception & développement sur mesure</span>
         <h1 data-motion="hero-title">Des outils numériques conçus autour de votre activité.</h1>
         <p class="home-hero__subtext" data-motion="hero-lead">
           <strong class="home-hero__highlight">Applications métier</strong>, <strong class="home-hero__highlight">SaaS</strong> et <strong class="home-hero__highlight">sites professionnels</strong> : le studio

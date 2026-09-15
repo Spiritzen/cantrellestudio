@@ -1,0 +1,158 @@
+---
+// Landing locale — CS-S12D. Axe SEO LOCAL (Amiens / Hauts-de-France),
+// complémentaire au positionnement national existant — jamais un
+// remplacement (prompt §1 : "le local est un levier, pas une limite").
+//
+// JUSTIFICATION DE CRÉATION (prompt §3, "évaluer AVANT de créer") :
+// contenu réellement spécifique et utile disponible sans rien inventer —
+// Sébastien est réellement basé à Amiens (fait fourni par le prompt),
+// l'étude de cas Belkhir Dépannage mentionne déjà, dans son contenu
+// existant et validé (projectMedia.ts, alt text des captures), une zone
+// d'intervention client couvrant les Hauts-de-France — jamais présentée
+// ici comme un projet livré "à Amiens" spécifiquement, seulement comme un
+// projet ancré dans la même région. Aucun autre client local inventé.
+//
+// COMPOSANTS RÉUTILISÉS tels quels (génériques) : ServiceBreadcrumb,
+// ServiceHero, ServiceCta — `services.css` EST importé explicitement
+// (leçon CS-S11A/CS-S11B/hotfix). `ServiceCta` reçoit `headingId` (hotfix
+// CS-S11D) pour un `aria-labelledby` valide.
+//
+// STRUCTURED DATA : `BreadcrumbList` hérité automatiquement de
+// `ServiceBreadcrumb` (mécanisme CS-S12A, aucune ligne de plus ici).
+// AUCUN `LocalBusiness`/`ProfessionalService`/`PostalAddress` — interdit
+// tant que l'adresse professionnelle et le statut ne sont pas finalisés
+// (CS-S12C, toujours vrai). OpenGraph : fallback global CS-S12B, aucun
+// visuel dédié créé (prompt §15 : "ne pas créer un visuel OG local dédié
+// maintenant").
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import ServiceCta from "../components/services/ServiceCta.astro";
+import { withBase } from "../utils/paths";
+import "../styles/services.css";
+import "../styles/amiens.css";
+
+const audiences = [
+  { label: "PME", text: "Un outil métier ou une application à faire évoluer sans repartir de zéro." },
+  { label: "TPE", text: "Un site professionnel ou une solution simple, dimensionnée au bon niveau." },
+  { label: "Indépendants & artisans", text: "Une présence en ligne claire, pensée pour être trouvée et comprise." },
+  { label: "Porteurs de projet", text: "Une idée encore à cadrer, avant de parler technologie." },
+];
+
+const services = [
+  { label: "Applications métier & SaaS", href: "/applications-metier-saas/" },
+  { label: "Sites professionnels", href: "/sites-professionnels/" },
+  { label: "Développement sur mesure", href: "/developpement-sur-mesure/" },
+];
+---
+
+<BaseLayout
+  title="Développement web & applications sur mesure à Amiens | Cantrelle Studio"
+  description="Cantrelle Studio conçoit à Amiens des applications métier, SaaS, sites professionnels et solutions web sur mesure pour PME, indépendants et porteurs de projets."
+>
+  <div class="amiens-page">
+    <Container>
+      <ServiceBreadcrumb current="Amiens" />
+    </Container>
+
+    <!-- A. HERO -->
+    <section class="amiens-page__section">
+      <Container>
+        <ServiceHero
+          eyebrow="Amiens"
+          title="Conception & développement sur mesure à Amiens."
+          lead="Cantrelle Studio conçoit et développe, depuis Amiens, des applications métier, des SaaS, des sites professionnels et des solutions sur mesure — pour des structures locales comme pour des projets menés à distance partout en France."
+          secondaryHref="/methode/"
+          secondaryLabel="Découvrir la méthode"
+        />
+      </Container>
+    </section>
+
+    <!-- B. BESOINS LOCAUX -->
+    <section class="amiens-page__section amiens-page__section--soft" aria-labelledby="amiens-needs-title">
+      <Container>
+        <SectionHeading
+          id="amiens-needs-title"
+          eyebrow="Basé à Amiens"
+          title="Des besoins locaux, une méthode identique partout."
+          intro="PME, TPE, indépendants, artisans ou porteurs de projet : le point de départ reste le même — comprendre le besoin réel avant de choisir la solution technique."
+        />
+        <div class="amiens-audiences">
+          {audiences.map((item) => (
+            <div class="amiens-audience">
+              <span class="amiens-audience__label">{item.label}</span>
+              <p class="amiens-audience__text">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <!-- C. CE QUE LE STUDIO PEUT CONSTRUIRE -->
+    <section class="amiens-page__section" aria-labelledby="amiens-services-title">
+      <Container>
+        <SectionHeading
+          id="amiens-services-title"
+          eyebrow="Ce que le studio peut construire"
+          title="Trois points de départ possibles, selon votre besoin."
+        />
+        <ul class="amiens-services">
+          {services.map((service) => (
+            <li>
+              <a href={withBase(service.href)}>{service.label}</a>
+            </li>
+          ))}
+        </ul>
+      </Container>
+    </section>
+
+    <!-- E. PREUVES -->
+    <section class="amiens-page__section amiens-page__section--soft" aria-labelledby="amiens-proof-title">
+      <Container>
+        <SectionHeading
+          id="amiens-proof-title"
+          eyebrow="Preuves"
+          title="Un exemple concret, ancré dans la région."
+        />
+        <p class="amiens-proof__text">
+          Belkhir Dépannage, projet de refonte pour un client réel actuellement en validation, est un service
+          d'intervention d'urgence actif dans les Hauts-de-France. L'étude de cas détaille la démarche&nbsp;:
+          qualification de l'urgence, vérification de zone d'intervention et parcours pensé mobile.
+        </p>
+        <div class="amiens-proof__links">
+          <ActionLink href="/realisations/belkhir-depannage/" variant="secondary">
+            Voir l'étude de cas Belkhir Dépannage
+          </ActionLink>
+          <ActionLink href="/realisations/" variant="text">Voir toutes les réalisations</ActionLink>
+        </div>
+      </Container>
+    </section>
+
+    <!-- F. CTA CONTACT -->
+    <section class="amiens-page__section" aria-labelledby="amiens-cta-title">
+      <Container>
+        <ServiceCta
+          headingId="amiens-cta-title"
+          eyebrow="Un projet à Amiens ou ailleurs ?"
+          title="Parlons de votre projet."
+          text="Application métier, SaaS, site professionnel ou besoin sur mesure : le premier échange sert à comprendre le contexte avant de parler solution technique."
+          secondaryHref="/methode/"
+          secondaryLabel="Découvrir la méthode"
+        />
+      </Container>
+    </section>
+
+    <!-- G. ZONE -->
+    <section class="amiens-page__section amiens-page__section--soft">
+      <Container>
+        <p class="amiens-zone">
+          Basé à Amiens, Cantrelle Studio peut accompagner des projets locaux dans les Hauts-de-France ainsi que des
+          missions à distance partout en France.
+        </p>
+      </Container>
+    </section>
+  </div>
+</BaseLayout>

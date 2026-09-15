@@ -1,29 +1,287 @@
 ---
+// À propos / Studio — CS-S11B. Remplace le placeholder CS-S0 (H1 nu +
+// 1 paragraphe) par une vraie page « Studio », distincte de /methode/
+// (prompt §1/§6) : répond à « qui porte le studio, comment travaille-t-il,
+// pourquoi lui confier un projet » — jamais à « pourquoi recruter
+// Sébastien » (pas de CV, pas de portrait, pas de chronologie de carrière).
+//
+// CS-S12D — maillage SEO local (prompt §11 : "À PROPOS → ... éventuellement
+// landing Amiens si naturelle") : une 3ᵉ phrase courte ajoutée en fin de
+// bio (jamais une réécriture des 2 paragraphes déjà validés en CS-S11B),
+// mention factuelle + lien vers /developpement-web-amiens/. Rien d'autre
+// modifié sur cette page.
+//
+// Composants Services réutilisés tels quels (génériques, déjà utilisés par
+// /methode/ et les 3 pages services) : ServiceBreadcrumb, ServiceHero,
+// ServiceCta. GOTCHA vérifié par build réel avant d'écrire cette page :
+// /methode/ utilise ces 3 composants mais n'importe QUE methode.css, alors
+// que leurs classes (.service-hero/.service-cta/.service-breadcrumb) sont
+// définies dans services.css — inspection du CSS buildé
+// (dist/_astro/BaseLayout.*.css référencé par methode/index.html) confirme
+// qu'aucune de ces classes n'y est présente : /methode/ rend donc ces 3
+// blocs SANS LEURS STYLES (hero/cta/breadcrumb non stylés). Bug préexistant
+// hors périmètre (méthode.astro est interdit de modification ici, prompt
+// §13) — signalé au rapport, NON reproduit ici : cette page importe
+// explicitement services.css en plus de a-propos.css pour que ces 3
+// composants partagés s'affichent correctement.
+//
+// Section « Fondateur » (C) : aucun portrait n'existe dans le projet
+// (vérifié : src/assets/ ne contient que des captures projets + un HDR +
+// un GLB) — composition typographique pure (initiales en filigrane),
+// conformément au prompt §C "sinon : ne pas inventer/générer/substituer un
+// portrait".
+//
+// Dette ARIA (signalée CS-S11A, corrigée CS-S11D) : ServiceCta.astro pose
+// désormais un id sur son <h2> via la prop optionnelle `headingId` — la
+// section G (CTA final) passe `headingId="about-cta-title"` et porte de
+// nouveau `aria-labelledby="about-cta-title"`, qui pointe maintenant vers
+// un élément réel (voir ServiceCta.astro pour le détail du hotfix).
+//
+// Motion (§9) : le prompt demande explicitement de NE PAS élargir
+// ServiceMotion.astro par facilité et d'évaluer d'abord un mécanisme local
+// CSS/IntersectionObserver léger. C'est le choix retenu ici : un unique
+// script bas de page (aucune dépendance, aucun GSAP), reveal PAR SECTION
+// (pas par élément) — plus simple que le stagger multi-éléments des autres
+// pages, ce qui est aussi une différenciation éditoriale volontaire
+// (prompt §6). État initial masqué posé par JS uniquement (pas par CSS) :
+// sans JS, chaque section reste visible par défaut (même garantie que
+// HomeMotion/ServiceMotion).
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import ServiceCta from "../components/services/ServiceCta.astro";
+import { withBase } from "../utils/paths";
+import "../styles/services.css";
+import "../styles/a-propos.css";
+
+const axes = [
+  {
+    index: "01",
+    label: "Comprendre",
+    title: "Le contexte avant les outils",
+    text: "Les utilisateurs, les processus, les contraintes et l'existant donnent le cadre des décisions à prendre.",
+  },
+  {
+    index: "02",
+    label: "Structurer",
+    title: "Donner une forme claire au besoin",
+    text: "Parcours, données, règles métier et architecture sont organisés avant d'empiler les fonctionnalités.",
+  },
+  {
+    index: "03",
+    label: "Construire",
+    title: "Faire des choix qui restent maîtrisables",
+    text: "La technologie, l'interface et le niveau de complexité doivent rester proportionnés au produit réellement nécessaire.",
+  },
+];
+
+const workingRelationPoints = [
+  "Une continuité entre besoin et réalisation.",
+  "Des arbitrages expliqués plutôt qu'imposés.",
+  "Un périmètre qui reste lisible au fil du projet.",
+];
+
+const principles = [
+  { word: "Clarté", text: "Une solution doit pouvoir être comprise avant d'être complexifiée." },
+  { word: "Cohérence", text: "Produit, interface et architecture doivent raconter la même chose." },
+  { word: "Maîtrise", text: "Chaque ajout technique doit avoir une raison d'exister." },
+  { word: "Évolution", text: "Une base propre doit pouvoir accueillir la suite sans devenir un obstacle." },
+];
+
+const realisations = (await getCollection("realisations")).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <BaseLayout
-  title="À propos — Cantrelle Studio"
-  description="Cantrelle Studio est fondé par Sébastien Cantrelle, interlocuteur responsable du projet de bout en bout. Contenu provisoire (CS-S0)."
+  title="À propos de Cantrelle Studio | Conception & développement"
+  description="Découvrez Cantrelle Studio, studio indépendant fondé par Sébastien Cantrelle : conception, développement et solutions numériques pensées à partir du besoin réel."
 >
-  <section class="container">
-    <h1>À propos</h1>
-    <p class="provisional">Contenu provisoire (CS-S0), rédaction commerciale non définitive.</p>
-    <p>
-      Cantrelle Studio est un studio fondé par Sébastien Cantrelle, qui est
-      l'interlocuteur responsable du projet de bout en bout.
-    </p>
-  </section>
+  <div class="about-page">
+    <Container>
+      <ServiceBreadcrumb current="À propos" />
+    </Container>
+
+    <!-- A. HERO — LE STUDIO -->
+    <section class="about-page__section" data-reveal>
+      <Container>
+        <ServiceHero
+          eyebrow="Le studio"
+          title="Concevoir des solutions numériques qui partent du besoin réel."
+          lead="Cantrelle Studio est un studio indépendant de conception et de développement, fondé par Sébastien Cantrelle. Applications métier, SaaS, sites professionnels ou besoins plus spécifiques : chaque projet commence par comprendre ce qu'il faut réellement résoudre avant de choisir comment le construire."
+          secondaryHref="/methode/"
+          secondaryLabel="Découvrir la méthode"
+        />
+      </Container>
+    </section>
+
+    <!-- B. UNE FAÇON DE RELIER LES SUJETS -->
+    <section class="about-page__section about-page__section--soft" aria-labelledby="about-approach-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading
+            id="about-approach-title"
+            eyebrow="Approche"
+            title="Métier, technique et expérience ne sont pas trois sujets séparés."
+            intro="Une interface réussie ne compense pas une logique métier mal comprise. Une architecture solide ne suffit pas si le produit reste difficile à utiliser. Le rôle du studio est de relier ces dimensions pour construire une solution cohérente dans son ensemble."
+          />
+        </div>
+        <div class="about-axes" data-reveal>
+          {axes.map((axis) => (
+            <div class="about-axis">
+              <span class="about-axis__index" aria-hidden="true">{axis.index}</span>
+              <div class="about-axis__body">
+                <span class="about-axis__label">{axis.label}</span>
+                <h3 class="about-axis__title">{axis.title}</h3>
+                <p class="about-axis__text">{axis.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <!-- C. LE FONDATEUR -->
+    <section class="about-page__section" aria-labelledby="about-founder-title">
+      <Container>
+        <div class="about-founder">
+          <div class="about-founder__mark" aria-hidden="true">SC</div>
+          <div class="about-founder__content" data-reveal>
+            <span class="about-founder__eyebrow">Fondateur</span>
+            <h2 id="about-founder-title" class="about-founder__title">Sébastien Cantrelle</h2>
+            <p class="about-founder__role">Fondateur · Développeur Full Stack</p>
+            <p class="about-founder__text">
+              Mon parcours associe développement logiciel, gestion de projet et sensibilité visuelle 2D/3D. Cette
+              combinaison me pousse à regarder un projet au-delà du code&nbsp;: comprendre l'activité, structurer le
+              problème, concevoir une expérience claire puis construire une solution capable d'évoluer.
+            </p>
+            <p class="about-founder__text">
+              Cantrelle Studio est né de cette manière de travailler&nbsp;: garder une relation directe avec le
+              besoin tout en apportant la rigueur technique nécessaire à une application métier, un SaaS ou un site
+              professionnel.
+            </p>
+            <p class="about-founder__text">
+              Basé à Amiens, il accompagne des projets locaux dans les Hauts-de-France ainsi qu'à distance partout en
+              France. <ActionLink href="/developpement-web-amiens/" variant="text">Développement web à Amiens</ActionLink>
+            </p>
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    <!-- D. STRUCTURE LÉGÈRE, RESPONSABILITÉ DIRECTE -->
+    <section class="about-page__section about-page__section--soft" aria-labelledby="about-work-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading
+            id="about-work-title"
+            eyebrow="Relation de travail"
+            title="Un interlocuteur direct, du cadrage aux décisions techniques."
+            intro="Cantrelle Studio fonctionne aujourd'hui avec une structure légère : la compréhension du besoin, les arbitrages de conception et les décisions techniques restent reliés au même interlocuteur. Cela évite que le projet se dilue entre des couches d'intermédiaires et permet de garder les choix compréhensibles."
+          />
+        </div>
+        <ul class="about-work-points" data-reveal>
+          {workingRelationPoints.map((point) => (
+            <li>{point}</li>
+          ))}
+        </ul>
+      </Container>
+    </section>
+
+    <!-- E. UNE CULTURE DE LA CONSTRUCTION -->
+    <section class="about-page__section" aria-labelledby="about-culture-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading id="about-culture-title" eyebrow="Exigence" title="Faire juste avant de faire plus." />
+        </div>
+        <div class="about-principles" data-reveal>
+          {principles.map((principle) => (
+            <div class="about-principle">
+              <span class="about-principle__word">{principle.word}</span>
+              <p class="about-principle__text">{principle.text}</p>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <!-- F. LES PREUVES SONT DANS LES PROJETS -->
+    <section class="about-page__section about-page__section--soft" aria-labelledby="about-proof-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading
+            id="about-proof-title"
+            eyebrow="Réalisations"
+            title="Des contextes différents, une même exigence de cohérence."
+            intro="Applications métier, SaaS ou expérience web : les études de cas montrent plus concrètement comment les besoins, les contraintes et les choix techniques se traduisent dans les projets."
+          />
+        </div>
+        <ul class="about-proof-list" data-reveal>
+          {realisations.map((realisation) => (
+            <li>
+              <a href={withBase(`/realisations/${realisation.data.slug}/`)}>
+                <span class="about-proof-list__category">{realisation.data.category}</span>
+                <span class="about-proof-list__title">{realisation.data.shortTitle ?? realisation.data.title}</span>
+                <span class="about-proof-list__arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="about-proof-cta" data-reveal>
+          <ActionLink href="/realisations/" variant="text">Voir les réalisations</ActionLink>
+        </p>
+      </Container>
+    </section>
+
+    <!-- G. CTA FINAL -->
+    <section class="about-page__section about-page__section--soft" aria-labelledby="about-cta-title">
+      <Container>
+        <div data-reveal>
+          <ServiceCta
+            headingId="about-cta-title"
+            eyebrow="Votre projet"
+            title="Un besoin à clarifier ou une solution à construire ?"
+            text="Le premier échange sert à comprendre le contexte, le besoin et le niveau d'accompagnement pertinent avant de parler technologie."
+            secondaryHref="/methode/"
+            secondaryLabel="Voir la méthode"
+          />
+        </div>
+      </Container>
+    </section>
+  </div>
 </BaseLayout>
 
-<style>
-  section {
-    padding-block: var(--space-lg);
+<script>
+  // Reveal local, propre à /a-propos/ — voir commentaire de frontmatter
+  // (§9 du prompt) pour le choix de ne PAS élargir ServiceMotion.astro.
+  // Granularité PAR BLOC (pas par élément individuel) : plus simple que le
+  // stagger multi-éléments des autres pages, reveal groupé et léger.
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!prefersReducedMotion && "IntersectionObserver" in window) {
+    const targets = document.querySelectorAll<HTMLElement>("[data-reveal]");
+
+    targets.forEach((el) => {
+      el.style.opacity = "0";
+      el.style.transform = "translateY(16px)";
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          el.style.transition = "opacity 600ms ease, transform 600ms ease";
+          el.style.opacity = "1";
+          el.style.transform = "none";
+          observer.unobserve(el);
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+    );
+
+    targets.forEach((el) => observer.observe(el));
   }
-  .provisional {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-    border-left: 3px solid var(--color-border);
-    padding-left: var(--space-sm);
-  }
-</style>
+</script>

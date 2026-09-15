@@ -227,6 +227,29 @@
    C. APPROCHE / DIFFÉRENCIATION
    ========================================================================== */
 
+/* Voile noir léger local — PROMPT overlay noir Approche + Méthode.
+   `.home-approach` n'a pas de position propre par défaut ; `position:relative`
+   + `z-index:0` lui ouvre une stacking context LOCALE (sans effet sur
+   `.hero-scene`, qui n'est pas un descendant de cette section — voir
+   `.hero-scene` plus bas dans ce fichier) afin que `::before` (z-index:-1)
+   peigne juste derrière le contenu in-flow (`Container`, non positionné) de
+   cette section, sans jamais repasser dessus. `pointer-events:none` : ce
+   voile ne doit intercepter aucun clic. Simple et réversible : supprimer ce
+   bloc suffit à retirer entièrement le voile. */
+.home-approach {
+  position: relative;
+  z-index: 0;
+}
+
+.home-approach::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: -1;
+  pointer-events: none;
+}
+
 .home-approach__grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -362,6 +385,25 @@
 /* ==========================================================================
    E. MÉTHODE
    ========================================================================== */
+
+/* Voile noir léger local — PROMPT overlay noir Approche + Méthode. Même
+   mécanisme que `.home-approach` ci-dessus (stacking context locale via
+   `position:relative` + `z-index:0`, `::before` en `z-index:-1` peint juste
+   derrière le contenu in-flow de la section, sans toucher `.hero-scene`).
+   Réversible : supprimer ce bloc retire entièrement le voile. */
+.home-method {
+  position: relative;
+  z-index: 0;
+}
+
+.home-method::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: -1;
+  pointer-events: none;
+}
 
 /* CS-S8 §17, étendu CS-S8B §21-22 — wrapper positionné : ancre le rail
    horizontal (ligne + marqueurs) sur desktop et la ligne verticale de

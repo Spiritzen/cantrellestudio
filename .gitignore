@@ -1,6 +1,5 @@
 # build output
 dist/
-# generated types
 .astro/
 
 # dependencies
@@ -12,23 +11,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
 # environment variables
 .env
 .env.production
 .env.*
 
-# macOS-specific files
+# OS / IDE
 .DS_Store
-
-# jetbrains setting folder
 .idea/
 
+# documentation interne projet
 docs/
 
-# Micro-sprint pré-déploiement GitHub Pages — même catégorie que `docs/`
-# ci-dessus (prompt/instructions IA interne de sprint), resté par mégarde à
-# la racine du projet au lieu de docs/prompts/. Signalé dans le rapport de
-# pré-déploiement ; ajouté ici car manifestement cohérent avec la règle déjà
-# en place pour docs/.
-/AnimationCardBesoinWebAxp.txt
+# configuration locale Claude Code
+.claude/settings.local.json

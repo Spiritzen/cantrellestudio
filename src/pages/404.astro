@@ -1,22 +1,56 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-// Micro-sprint pré-déploiement GitHub Pages.
-import { withBase } from "../utils/paths";
+import ActionLink from "../components/ui/ActionLink.astro";
+// CS-S12A — cette page n'avait aucune directive robots (§3 du prompt : une
+// 404 doit être noindex au minimum, jamais indexée) ; jamais présente dans
+// le sitemap (vérifié : @astrojs/sitemap ne génère pas de route pour 404).
+//
+// CS-S13 — audit §18 : la page ne proposait qu'un seul lien ("Retour à
+// l'accueil"), le minimum demandé (Accueil + Réalisations/Services +
+// Contact) n'était pas atteint. Complétée avec `ActionLink` (déjà utilisé
+// partout ailleurs, aucun nouveau composant) — toujours pas de 3D, pas de
+// gag, contenu sobre et honnête inchangé.
 ---
 
 <BaseLayout
   title="Page non trouvée — Cantrelle Studio"
   description="La page demandée n'existe pas ou plus."
+  noindex={true}
 >
-  <section class="container">
+  <section class="container not-found">
+    <span class="not-found__eyebrow">Erreur 404</span>
     <h1>Page non trouvée</h1>
     <p>La page que vous cherchez n'existe pas ou plus.</p>
-    <p><a href={withBase("/")}>Retour à l'accueil</a></p>
+    <div class="not-found__actions">
+      <ActionLink href="/" variant="primary">Retour à l'accueil</ActionLink>
+      <ActionLink href="/realisations/" variant="secondary">Voir les réalisations</ActionLink>
+      <ActionLink href="/contact/" variant="secondary">Contact</ActionLink>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  section {
-    padding-block: var(--space-lg);
+  .not-found {
+    padding-block: var(--space-xl);
+    max-width: 40rem;
+  }
+
+  .not-found__eyebrow {
+    display: block;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm) 0;
+  }
+
+  .not-found p {
+    margin: 0 0 var(--space-lg) 0;
+  }
+
+  .not-found__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
   }
 </style>

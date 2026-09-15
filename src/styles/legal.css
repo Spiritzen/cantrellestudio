@@ -1,0 +1,160 @@
+/*
+  legal.css — CS-S12C. Feuille partagée par /mentions-legales/ et
+  /politique-confidentialite/ (même langage visuel, prompt §19 : "une seule
+  feuille partagée... si leur langage visuel est identique" — c'est le cas
+  ici). Classes namespacées `.legal-*`. Réutilise uniquement les tokens DA
+  existants (tokens.css) : aucune nouvelle couleur, aucune nouvelle police,
+  aucun nouveau rayon. Aucune 3D, aucune animation, aucune card marketing,
+  aucun Hero commercial — un vrai document, lisible, hiérarchisé.
+*/
+
+.legal-page {
+  max-width: 46rem;
+  margin-inline: auto;
+  padding-block: var(--space-lg) var(--space-xl);
+}
+
+.legal-page__eyebrow {
+  display: block;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.legal-page__lead {
+  font-size: 1.0625rem;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+  margin: var(--space-sm) 0 var(--space-lg) 0;
+}
+
+/* Bandeau honnête "en cours d'immatriculation" — jamais alarmant, jamais
+   caché non plus (prompt : une phrase qui doit pouvoir être retirée
+   facilement après immatriculation). */
+.legal-page__notice {
+  border: 1px solid var(--color-border-strong);
+  border-left: 3px solid var(--color-accent-deep);
+  background: var(--color-bg-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin: 0 0 var(--space-lg) 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.legal-page__toc {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin: 0 0 var(--space-xl) 0;
+}
+
+.legal-page__toc-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.legal-page__toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.legal-page__toc a {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.legal-page__toc a:hover,
+.legal-page__toc a:focus-visible {
+  color: var(--color-accent);
+}
+
+.legal-page__section {
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-lg);
+  scroll-margin-top: var(--space-md);
+}
+
+.legal-page__section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.legal-page__section h2 {
+  font-size: 1.375rem;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.legal-page__section h3 {
+  font-size: 1rem;
+  margin: var(--space-md) 0 var(--space-xs) 0;
+}
+
+.legal-page__section p {
+  max-width: 66ch;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.legal-page__section p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-page__section ul {
+  margin: 0 0 var(--space-sm) 0;
+  padding-left: 1.25rem;
+  max-width: 62ch;
+}
+
+.legal-page__section li {
+  margin-bottom: 0.4rem;
+  color: var(--color-text-secondary);
+}
+
+.legal-page__section a {
+  color: var(--color-text);
+}
+
+/* Champs structurés (éditeur du site, responsable du traitement) — dt/dd
+   plutôt qu'une grille de cards : une vraie liste de données, pas un
+   composant marketing. */
+.legal-page__fields {
+  margin: var(--space-sm) 0;
+}
+
+.legal-page__fields dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: var(--space-sm) 0 0.15rem 0;
+}
+
+.legal-page__fields dt:first-child {
+  margin-top: 0;
+}
+
+.legal-page__fields dd {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Valeur non encore disponible — lisible, honnête, jamais agressive. */
+.legal-page__todo {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.legal-page__back {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}

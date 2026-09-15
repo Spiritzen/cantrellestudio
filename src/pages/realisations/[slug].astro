@@ -78,9 +78,31 @@ const moduleGroups = [
 // Titres courts des blocs éditoriaux Belkhir, alignés sur l'ordre de la
 // galerie (accueil → qualification → métier → zone → mobile).
 const belkhirRowTitles = ["Accueil", "Qualifier l'urgence", "Une page par métier", "Vérifier sa zone", "Pensé mobile"];
+
+// CS-S12B — OG dédié (prompt §9) : source unique `projectMedia.ts`
+// (`ogImage`/`ogImageAlt`, déjà la source de vérité média du projet,
+// aucune deuxième source créée). Fallback vers le visuel global si absent
+// (ne devrait pas arriver, les 3 projets sont renseignés).
+const ogImage = media.ogImage;
+const ogImageAlt = media.ogImageAlt;
+
+// CS-S12B — structured data `CreativeWork` (prompt §10) : name/description/
+// url/image directement repris du contenu déjà public de la page (aucune
+// donnée inventée, aucun `creator`/`dateCreated` non confirmé). `description`
+// réutilise `seoDescription` (déjà la meta description de cette page) pour
+// ne jamais diverger d'elle.
+const creativeWorkSchema = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  name: title,
+  description: seoDescription,
+  url: new URL(Astro.url.pathname, Astro.site).toString(),
+  image: new URL(withBase(ogImage ?? "/og/cantrelle-studio-og.png"), Astro.site).toString(),
+};
 ---
 
-<BaseLayout title={seoTitle} description={seoDescription}>
+<BaseLayout title={seoTitle} description={seoDescription} image={ogImage} imageAlt={ogImageAlt}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(creativeWorkSchema)} />
   <div class:list={["case-study", `case-study--${slug === "belkhir-depannage" ? "belkhir" : slug}`]}>
     <div class="container">
       <ServiceBreadcrumb current={title} />

@@ -59,11 +59,13 @@ interface HeroSpheresProps {
   pointerRef: React.RefObject<{ x: number; y: number }>;
 }
 
-// Palette — métal graphite sombre, reflets ivoire, accent Ember ponctuel
-// via la lumière plutôt que via la couleur du matériau (une bille
-// entièrement orange serait "trop orange", interdit explicitement depuis
-// CS-S6B).
-const GRAPHITE_METAL = "#1c1f27";
+// Palette — reflets ivoire, accent Ember ponctuel via la lumière plutôt
+// que via la couleur du matériau (une bille entièrement orange serait
+// "trop orange", interdit explicitement depuis CS-S6B). Le matériau des
+// sphères vient désormais du GLB (BALL.glb, "Material.001") depuis le
+// passage aux 3 corps modélisés — plus de matériau procédural graphite
+// déclaré ici (CS-S13 : `GRAPHITE_METAL`/`sphereMaterial`, dead code,
+// supprimés).
 const IVORY = "#F1EFE8";
 const EMBER = "#E45F36";
 const NEUTRAL_SECONDARY = "#A5A8AE";
@@ -227,17 +229,6 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
   const lastScrollY = useRef(0);
   const heroHeight = useRef(600);
   const measured = useRef(false);
-
-  // Matériau unique (satiné, pas chrome miroir) partagé par les 3 sphères :
-  // la variation vient de la lumière et de leur mouvement, pas d'une
-  // teinte différente par bille. CS-S6D §7 : envMapIntensity relevée
-  // (1.5 -> 2.0) et roughness légèrement abaissée (0.28 -> 0.24) — reflets
-  // plus présents/plus nets sans franchir le chrome-miroir (resolution de
-  // l'environnement toujours volontairement basse, voir plus bas).
-  const sphereMaterial = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: GRAPHITE_METAL, metalness: 0.93, roughness: 0.24, envMapIntensity: 2.0 }),
-    [],
-  );
 
   // PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — geometry
   // + material extraits UNE SEULE FOIS de BALL.glb (cache useGLTF, un seul
@@ -479,7 +470,10 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
             sphère (voir calcul plus haut) : hiérarchie de tailles Soleil >
             Terre > Lune inchangée, position/mouvement/orbites INCHANGÉS.
             Retrait : remplacer chaque <mesh> par le bloc commenté
-            au-dessus de lui. */}
+            au-dessus de lui — ET restaurer la déclaration
+            `const sphereMaterial = useMemo(...)` retirée en CS-S13 (dead
+            code : plus aucun <mesh> actif ne la référençait, uniquement
+            ces blocs commentés). */}
         {/*
         <mesh ref={largeMeshRef} position={largePos.current} material={sphereMaterial}>
           <sphereGeometry args={[LARGE_RADIUS, 40, 40]} />

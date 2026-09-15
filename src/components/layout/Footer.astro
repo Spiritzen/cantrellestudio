@@ -3,6 +3,24 @@
 // services, studio, mentions légales. Aucune coordonnée inventée, aucun
 // réseau social, aucune newsletter, aucun second gros CTA (la Home a déjà
 // son CTA final juste avant — voir prompt CS-S4 §20/§21).
+//
+// CS-S12C — sortie du placeholder (prompt §3) : la phrase générique
+// "Coordonnées professionnelles à compléter avant mise en ligne." est
+// retirée, remplacée par l'email/téléphone confirmés (CS-S11C), affichés
+// discrètement (même traitement typographique que l'ancienne note, pas un
+// second bloc voyant). "(nom de travail)" retiré du copyright : Cantrelle
+// Studio est le nom commercial réellement utilisé publiquement (voir
+// /mentions-legales/ pour le détail du statut, encore en cours
+// d'immatriculation — cette nuance appartient à la page dédiée, pas au
+// Footer). Aucun SIRET/adresse/pavé RGPD ajouté ici : ces détails
+// appartiennent aux pages légales dédiées (prompt §3).
+//
+// CS-S12D — maillage SEO local (prompt §10/§11) : un 5ᵉ lien "Développement
+// web à Amiens" ajouté à la colonne Studio (déjà 4 liens, un 5ᵉ discret ne
+// surcharge pas). La landing locale reçoit ainsi un lien permanent
+// site-wide sans toucher au Header principal (jugé déjà complet, prompt
+// §10 : "évaluer d'abord" avant d'ajouter au Header — décision : ne pas
+// l'y ajouter, voir rapport CS-S12D).
 import Container from "../ui/Container.astro";
 // Micro-sprint pré-déploiement GitHub Pages — tous les liens internes
 // ci-dessous sont des <a> bruts (pas d'ActionLink) : passage explicite par
@@ -10,6 +28,9 @@ import Container from "../ui/Container.astro";
 import { withBase } from "../../utils/paths";
 
 const year = new Date().getFullYear();
+const STUDIO_EMAIL = "sebastien.cantrelle@hotmail.fr";
+const STUDIO_PHONE_DISPLAY = "06 29 46 45 93";
+const STUDIO_PHONE_HREF = "tel:+33629464593";
 ---
 
 <footer class="site-footer">
@@ -23,8 +44,10 @@ const year = new Date().getFullYear();
         <p class="site-footer__tagline-secondary">
           Des solutions numériques pensées autour de votre activité.
         </p>
-        <p class="site-footer__placeholder-note">
-          Coordonnées professionnelles à compléter avant mise en ligne.
+        <p class="site-footer__contact">
+          <a href={`mailto:${STUDIO_EMAIL}`}>{STUDIO_EMAIL}</a>
+          <span aria-hidden="true"> · </span>
+          <a href={STUDIO_PHONE_HREF}>{STUDIO_PHONE_DISPLAY}</a>
         </p>
       </div>
 
@@ -44,12 +67,13 @@ const year = new Date().getFullYear();
           <li><a href={withBase("/methode/")}>Méthode</a></li>
           <li><a href={withBase("/a-propos/")}>À propos</a></li>
           <li><a href={withBase("/contact/")}>Contact</a></li>
+          <li><a href={withBase("/developpement-web-amiens/")}>Développement web à Amiens</a></li>
         </ul>
       </nav>
     </div>
 
     <div class="site-footer__bottom">
-      <p>&copy; {year} Cantrelle Studio (nom de travail).</p>
+      <p>&copy; {year} Cantrelle Studio.</p>
       <nav aria-label="Liens légaux">
         <ul class="site-footer__legal">
           <li><a href={withBase("/mentions-legales/")}>Mentions légales</a></li>
@@ -109,10 +133,20 @@ const year = new Date().getFullYear();
     color: var(--color-text-secondary);
   }
 
-  .site-footer__placeholder-note {
+  .site-footer__contact {
     font-size: 0.8125rem;
     color: var(--color-text-muted);
     margin: 0;
+  }
+
+  .site-footer__contact a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .site-footer__contact a:hover,
+  .site-footer__contact a:focus-visible {
+    color: var(--color-accent);
   }
 
   .site-footer__col-title {

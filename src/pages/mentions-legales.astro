@@ -1,28 +1,148 @@
 ---
+// Mentions légales — CS-S12C. Remplace le placeholder CS-S0/CS-S12A par une
+// vraie page structurée, honnête sur l'état réel de Cantrelle Studio :
+// activité indépendante EN COURS D'IMMATRICULATION (régime micro-entreprise
+// visé), PAS une société (prompt §2 : interdiction stricte d'écrire
+// "société", SAS, SARL, capital social, siège social de société, équipe
+// constituée tant que ce n'est pas la réalité).
+//
+// RÈGLE ABSOLUE DU PROMPT : ne rien inventer. Chaque donnée administrative
+// non confirmée (SIREN, SIRET, RNE, adresse professionnelle, TVA) affiche
+// explicitement "À compléter après immatriculation" plutôt qu'une valeur
+// plausible mais fausse — voir rapport CS-S12C pour la liste exacte des
+// champs à compléter après immatriculation.
+//
+// INDEXATION (prompt §5) : tant qu'il reste au moins un "À compléter", la
+// page reste noindex,follow (jamais retiré du sitemap) — conforme au
+// mécanisme déjà posé en CS-S12A (`noindex`/`nofollow` sur BaseLayout,
+// filtre sitemap dans astro.config.mjs). NE PAS retirer ce noindex dans ce
+// sprint, même après cette réécriture éditoriale.
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils/paths";
+import "../styles/legal.css";
+
+const STUDIO_EMAIL = "sebastien.cantrelle@hotmail.fr";
+const STUDIO_PHONE_DISPLAY = "06 29 46 45 93";
+const STUDIO_PHONE_HREF = "tel:+33629464593";
 ---
 
 <BaseLayout
   title="Mentions légales — Cantrelle Studio"
-  description="Mentions légales de Cantrelle Studio — page à compléter avant mise en ligne."
+  description="Mentions légales de Cantrelle Studio, activité indépendante de Sébastien Cantrelle actuellement en cours d'immatriculation."
+  noindex={true}
+  nofollow={false}
 >
-  <section class="container">
-    <h1>Mentions légales</h1>
-    <p class="placeholder-legal">
-      Cette page est un placeholder. Aucune donnée juridique (statut, SIRET,
-      adresse, hébergeur) n'a été inventée. Ce contenu devra être complété
-      avec des informations réelles avant toute mise en ligne.
-    </p>
-  </section>
-</BaseLayout>
+  <div class="container">
+    <div class="legal-page">
+      <span class="legal-page__eyebrow">Informations légales</span>
+      <h1>Mentions légales</h1>
 
-<style>
-  section {
-    padding-block: var(--space-lg);
-  }
-  .placeholder-legal {
-    border: 1px dashed var(--color-border);
-    padding: var(--space-sm);
-    color: var(--color-text-muted);
-  }
-</style>
+      <p class="legal-page__notice">
+        Cantrelle Studio est actuellement en cours d'immatriculation. Les informations d'identification
+        administrative ci-dessous seront complétées dès leur attribution.
+      </p>
+
+      <nav class="legal-page__toc" aria-label="Sommaire">
+        <p class="legal-page__toc-title">Sommaire</p>
+        <ol>
+          <li><a href="#editeur">Éditeur du site</a></li>
+          <li><a href="#direction-publication">Directeur de la publication</a></li>
+          <li><a href="#hebergement">Hébergement</a></li>
+          <li><a href="#propriete-intellectuelle">Propriété intellectuelle</a></li>
+          <li><a href="#responsabilite">Responsabilité</a></li>
+          <li><a href="#droit-applicable">Droit applicable et contact</a></li>
+        </ol>
+      </nav>
+
+      <section class="legal-page__section" id="editeur" aria-labelledby="editeur-title">
+        <h2 id="editeur-title">A. Éditeur du site</h2>
+        <dl class="legal-page__fields">
+          <dt>Nom commercial</dt>
+          <dd>Cantrelle Studio</dd>
+
+          <dt>Responsable</dt>
+          <dd>Sébastien Cantrelle</dd>
+
+          <dt>Statut</dt>
+          <dd>Activité indépendante en cours d'immatriculation — régime micro-entreprise prévu.</dd>
+
+          <dt>SIREN</dt>
+          <dd class="legal-page__todo">À compléter après immatriculation</dd>
+
+          <dt>SIRET</dt>
+          <dd class="legal-page__todo">À compléter après immatriculation</dd>
+
+          <dt>Immatriculation RNE</dt>
+          <dd class="legal-page__todo">À compléter après immatriculation</dd>
+
+          <dt>Adresse professionnelle</dt>
+          <dd class="legal-page__todo">À compléter après immatriculation / domiciliation</dd>
+
+          <dt>TVA intracommunautaire</dt>
+          <dd class="legal-page__todo">À compléter si applicable</dd>
+
+          <dt>Email</dt>
+          <dd><a href={`mailto:${STUDIO_EMAIL}`}>{STUDIO_EMAIL}</a></dd>
+
+          <dt>Téléphone</dt>
+          <dd><a href={STUDIO_PHONE_HREF}>{STUDIO_PHONE_DISPLAY}</a></dd>
+        </dl>
+      </section>
+
+      <section class="legal-page__section" id="direction-publication" aria-labelledby="direction-publication-title">
+        <h2 id="direction-publication-title">B. Directeur de la publication</h2>
+        <p>Sébastien Cantrelle.</p>
+      </section>
+
+      <section class="legal-page__section" id="hebergement" aria-labelledby="hebergement-title">
+        <h2 id="hebergement-title">C. Hébergement</h2>
+        <p>
+          Le site est actuellement hébergé par GitHub Pages, un service de GitHub, Inc. — 88 Colin P. Kelly Jr. St.,
+          San Francisco, CA 94107, États-Unis.
+        </p>
+        <p>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a>
+        </p>
+      </section>
+
+      <section class="legal-page__section" id="propriete-intellectuelle" aria-labelledby="propriete-intellectuelle-title">
+        <h2 id="propriete-intellectuelle-title">D. Propriété intellectuelle</h2>
+        <p>
+          Les contenus originaux de ce site — textes, compositions graphiques et éléments propres à Cantrelle Studio
+          — sont protégés par les règles applicables à la propriété intellectuelle.
+        </p>
+        <p>
+          Les marques, logos, captures d'écran, logiciels ou éléments appartenant à des tiers, présentés notamment
+          dans les études de cas, restent la propriété de leurs titulaires respectifs. Leur présentation sur ce site
+          ne transfère aucun droit à leur égard.
+        </p>
+      </section>
+
+      <section class="legal-page__section" id="responsabilite" aria-labelledby="responsabilite-title">
+        <h2 id="responsabilite-title">E. Responsabilité</h2>
+        <p>
+          Les informations présentées sur ce site le sont à titre de présentation de l'activité et des réalisations
+          de Cantrelle Studio. Cantrelle Studio s'efforce de maintenir ces informations exactes et à jour.
+        </p>
+        <p>
+          Aucune page de ce site ne constitue à elle seule une offre contractuelle définitive. Les caractéristiques
+          précises d'une prestation sont détaillées dans les échanges, devis ou documents contractuels applicables à
+          chaque projet.
+        </p>
+      </section>
+
+      <section class="legal-page__section" id="droit-applicable" aria-labelledby="droit-applicable-title">
+        <h2 id="droit-applicable-title">F. Droit applicable et contact</h2>
+        <p>
+          Ce site est édité depuis la France. Le droit français applicable régit son utilisation, sous réserve des
+          règles impératives éventuellement applicables.
+        </p>
+        <p>
+          Pour toute question relative à ces mentions légales : <a href={`mailto:${STUDIO_EMAIL}`}>{STUDIO_EMAIL}</a>.
+        </p>
+      </section>
+
+      <p class="legal-page__back"><a href={withBase("/")}>← Retour à l'accueil</a></p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,368 @@
+/*
+  contact.css — CS-S11C. Styles de la page /contact/ uniquement. Classes
+  namespacées `.contact-*` (même principe que `.about-*`/`.methode-*`,
+  prompt §8) — aucun import de home.css/methode.css/a-propos.css ici.
+  `services.css` EST importé (voir contact.astro) pour que ServiceHero/
+  ServiceBreadcrumb restent stylés (leçon CS-S11A/CS-S11B, prompt §8) ;
+  cette feuille ne redéfinit jamais `.service-*`. Réutilise uniquement les
+  tokens DA existants (tokens.css) : aucune nouvelle couleur, aucune
+  nouvelle police, aucun nouveau rayon.
+
+  Différenciation volontaire de /methode/ et /a-propos/ (prompt §7) :
+  repères en badges circulaires + grille 2 colonnes (B, ni rail vertical ni
+  index fantômes géants), panneau "Contact direct" premium affirmé (C,
+  jamais vu ailleurs sur le site), liste de besoins en ligne compacte à
+  puces "·" (E, pas une liste verticale ni un triptyque Services), flux
+  "Ensuite" en ligne à numéros Ember + trait de base (F, jamais une colonne
+  vertébrale).
+*/
+
+/* ==========================================================================
+   STRUCTURE PARTAGÉE — sections
+   ========================================================================== */
+
+.contact-page__section {
+  border-top: 1px solid var(--color-border);
+  padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+.contact-page__section:first-of-type {
+  border-top: none;
+}
+
+.contact-page__section--soft {
+  background: var(--color-bg-soft);
+}
+
+/* ==========================================================================
+   B. QUELQUES ÉLÉMENTS SUFFISENT POUR COMMENCER — badges circulaires,
+   grille 2 colonnes, jamais 4 grosses cards (prompt §B).
+   ========================================================================== */
+
+.contact-points {
+  margin-top: var(--space-xl);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 700px) {
+  .contact-points {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg) var(--space-xl);
+  }
+}
+
+.contact-point {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.contact-point__index {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-strong);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.contact-point__title {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 1.0625rem;
+}
+
+.contact-point__text {
+  margin: 0;
+  font-size: 0.9375rem;
+  max-width: 32ch;
+}
+
+/* ==========================================================================
+   C. CONTACT DIRECT — panneau premium affirmé, email mis en scène (prompt
+   §7 : "bloc contact central plus affirmé").
+   ========================================================================== */
+
+.contact-direct {
+  max-width: 46rem;
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 2.5rem);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.contact-direct__eyebrow {
+  display: block;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.contact-direct__title {
+  margin: 0 0 var(--space-md) 0;
+}
+
+.contact-direct__email {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  color: var(--color-text);
+  text-decoration-color: var(--color-accent-deep);
+  text-underline-offset: 0.25em;
+  overflow-wrap: anywhere;
+  margin-bottom: var(--space-sm);
+}
+
+.contact-direct__email:hover,
+.contact-direct__email:focus-visible {
+  color: var(--color-accent);
+}
+
+.contact-direct__phone {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.contact-direct__phone a {
+  color: var(--color-text);
+}
+
+.contact-direct__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0;
+}
+
+.contact-direct__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding-inline: 1.5rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.contact-direct__copy:hover {
+  background: var(--color-bg-soft);
+  transform: translateY(-1px);
+}
+
+.contact-direct__status {
+  min-height: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--color-accent);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.contact-direct__note {
+  max-width: 58ch;
+  font-size: 0.9375rem;
+  margin: var(--space-sm) 0 0 0;
+}
+
+/* ==========================================================================
+   D. FORMULAIRE LOCAL (optionnel) — sous-bloc du panneau, jamais un
+   formulaire SaaS blanc géant (prompt §4).
+   ========================================================================== */
+
+.contact-form {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.contact-form__title {
+  font-size: 1.1875rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.contact-form__disclaimer {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.contact-form__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
+}
+
+@media (min-width: 600px) {
+  .contact-form__row {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+}
+
+.contact-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: var(--space-sm);
+}
+
+.contact-form__field--full {
+  margin-top: 0;
+}
+
+.contact-form__optional {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.contact-form__field label {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.contact-form__field input,
+.contact-form__field select,
+.contact-form__field textarea {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+}
+
+.contact-form__field textarea {
+  resize: vertical;
+  min-height: 7rem;
+}
+
+.contact-form__submit {
+  margin-top: var(--space-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding-inline: 1.5rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.contact-form__submit:hover {
+  background: var(--color-accent-soft);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   E. CE QUE LE STUDIO PEUT PRENDRE EN CHARGE — ligne compacte à puces,
+   jamais une page Services bis (prompt §E).
+   ========================================================================== */
+
+.contact-needs {
+  list-style: none;
+  margin: var(--space-lg) 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.contact-needs li {
+  display: flex;
+  align-items: center;
+}
+
+.contact-needs li:not(:last-child)::after {
+  content: "·";
+  margin-inline: var(--space-sm);
+  color: var(--color-border-strong);
+}
+
+.contact-needs a {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.contact-needs a:hover,
+.contact-needs a:focus-visible {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.contact-needs__note {
+  margin-top: var(--space-md);
+  max-width: 58ch;
+  font-size: 0.9375rem;
+}
+
+/* ==========================================================================
+   F. CE QUI SE PASSE ENSUITE — ligne à numéros Ember + trait de base,
+   jamais la colonne vertébrale de /methode/ (prompt §F).
+   ========================================================================== */
+
+.contact-next {
+  list-style: none;
+  margin: var(--space-xl) 0 0 0;
+  padding: 0 0 var(--space-md) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.contact-next__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.contact-next__num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-accent);
+}
+
+.contact-next__label {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.contact-next__text {
+  margin-top: var(--space-md);
+  max-width: 58ch;
+  font-size: 0.9375rem;
+}
+
+.contact-next__link {
+  margin-top: var(--space-sm);
+}

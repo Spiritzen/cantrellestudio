@@ -53,6 +53,13 @@ export interface ProjectMedia {
   secondaryAlt?: string;
   /** CS-S10 — galerie complète pour l'étude de cas (4-7 médias, prompt §7). */
   gallery?: GalleryMedia[];
+  /** CS-S12B — visuel de partage social dédié (1200×630 PNG), chemin racine
+   * vers `public/og/`, override du fallback OG global (voir SeoHead.astro).
+   * Fichier statique généré une fois (pas via astro:assets : il doit rester
+   * à une URL prévisible pour un crawler social) — jamais un fichier
+   * fantôme, voir rapport CS-S12B pour la méthode de génération. */
+  ogImage?: string;
+  ogImageAlt?: string;
 }
 
 export const projectMedia: Record<string, ProjectMedia> = {
@@ -61,6 +68,8 @@ export const projectMedia: Record<string, ProjectMedia> = {
     primaryAlt: "Tableau de bord de Sereno, application de facturation électronique",
     secondary: serenoFacture,
     secondaryAlt: "Interface de création d'une facture dans Sereno",
+    ogImage: "/og/sereno-og.png",
+    ogImageAlt: "Sereno — SaaS de facturation électronique, étude de cas Cantrelle Studio",
     gallery: [
       {
         image: serenoDashboard,
@@ -99,6 +108,8 @@ export const projectMedia: Record<string, ProjectMedia> = {
     primaryAlt: "Tableau de bord de la plateforme SaaS AgencyOS",
     secondary: agencyosFactures,
     secondaryAlt: "Interface de suivi des factures et paiements dans AgencyOS",
+    ogImage: "/og/agencyos-og.png",
+    ogImageAlt: "AgencyOS — SaaS multi-tenant, étude de cas Cantrelle Studio",
     gallery: [
       {
         image: agencyosDashboard,
@@ -132,6 +143,8 @@ export const projectMedia: Record<string, ProjectMedia> = {
     primaryAlt: "Hero de la maquette Belkhir Dépannage",
     secondary: belkhirUrgences,
     secondaryAlt: "Parcours de sélection d'une urgence sur la maquette Belkhir Dépannage",
+    ogImage: "/og/belkhir-depannage-og.png",
+    ogImageAlt: "Belkhir Dépannage — étude de refonte web, Cantrelle Studio",
     gallery: [
       {
         image: belkhirHero,

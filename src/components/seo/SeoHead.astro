@@ -1,15 +1,47 @@
 ---
-// Bloc <head> SEO minimal, réutilisé par BaseLayout.
-// CS-S0 : title/description/canonical/Open Graph minimal uniquement.
+// Bloc <head> SEO, réutilisé par BaseLayout.
+// CS-S0 : title/description/canonical/Open Graph minimal.
+// CS-S12A : og:site_name/og:locale, Twitter/X card générique, prop
+// `nofollow` distincte de `noindex` (une page noindex n'a pas forcément
+// besoin d'être nofollow — cas des pages légales placeholder, prompt §3 :
+// "noindex, follow" tant que le contenu n'est pas publiable, sans
+// supprimer le maillage interne vers elles).
+//
+// CS-S12B : le visuel de partage global existe désormais
+// (`public/og/cantrelle-studio-og.png`, 1200×630, voir rapport CS-S12B).
+// `image` devient un FALLBACK CENTRALISÉ ICI (prompt §6 : "ne pas répéter
+// le chemin sur 11 pages") — toute page qui ne passe pas `image` hérite
+// automatiquement du visuel global ; une page peut toujours passer son
+// propre chemin (override, utilisé par les 3 études de cas). `image` est
+// un CHEMIN RACINE (ex. "/og/sereno-og.png"), jamais une URL absolue déjà
+// construite : l'URL finale est calculée ici avec `withBase()` +
+// `new URL(..., Astro.site)`, la même mécanique déjà utilisée pour le
+// canonical — jamais de concaténation fragile (prompt §6, avertissement
+// explicite contre un lien qui oublierait `/cantrellestudio`).
+import { withBase } from "../../utils/paths";
+
+const OG_FALLBACK_IMAGE = "/og/cantrelle-studio-og.png";
+const OG_FALLBACK_ALT = "Cantrelle Studio — Conception et développement sur mesure";
+
 interface Props {
   title: string;
   description: string;
   /** CS-S2B : prop étroite pour les pages internes (ex. /design-lab/) à exclure
    * de l'indexation. Défaut false — aucune page existante n'est affectée. */
   noindex?: boolean;
+  /** CS-S12A : n'a d'effet que si `noindex` est vrai. Défaut true (comportement
+   * historique de /design-lab/, strictement inchangé). Passer `false` pour
+   * "noindex,follow" (page pas encore indexable mais dont les liens internes
+   * doivent rester suivis — pages légales placeholder). */
+  nofollow?: boolean;
+  /** CS-S12B : chemin racine (pas une URL absolue) d'un visuel de partage
+   * 1200×630 PNG propre à la page. Omis = fallback global. */
+  image?: string;
+  /** CS-S12B : alt du visuel ci-dessus. Omis = alt global. */
+  imageAlt?: string;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, nofollow = true, image, imageAlt } = Astro.props;
 
 // Canonical construit à partir de `site` (astro.config.mjs) + URL courante.
 // `Astro.url.pathname` inclut déjà le `base` configuré (`/cantrellestudio`)
@@ -17,14 +49,37 @@ const { title, description, noindex = false } = Astro.props;
 // sous-chemin n'est nécessaire ici (vérifié dans le HTML buildé — voir
 // rapport_predeploiement_github_pages_*).
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const robotsContent = noindex ? `noindex,${nofollow ? "nofollow" : "follow"}` : undefined;
+
+const ogImageURL = new URL(withBase(image ?? OG_FALLBACK_IMAGE), Astro.site);
+const ogImageAlt = imageAlt ?? OG_FALLBACK_ALT;
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonicalURL} />
-{noindex && <meta name="robots" content="noindex,nofollow" />}
+{robotsContent && <meta name="robots" content={robotsContent} />}
+{/* CS-S13 — manquait totalement (audit §17). Graphite de la DA
+    (`--color-bg`, tokens.css), cohérent avec `color-scheme: dark` déjà
+    posé sur `<html>` (global.css) : colore la barre d'adresse/l'UI système
+    sur mobile (Android Chrome) et la carte du sélecteur d'apps, sans
+    aucun effet sur le rendu de la page elle-même. */}
+<meta name="theme-color" content="#0A0B0D" />
 
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content="Cantrelle Studio" />
+<meta property="og:locale" content="fr_FR" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalURL} />
+<meta property="og:image" content={ogImageURL} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageURL} />
+<meta name="twitter:image:alt" content={ogImageAlt} />

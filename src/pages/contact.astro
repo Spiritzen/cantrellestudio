@@ -1,29 +1,359 @@
 ---
+// Contact — CS-S11C. Remplace le placeholder CS-S0 ("Coordonnées
+// professionnelles à compléter avant mise en ligne") par une vraie page de
+// contact, vrai point d'entrée commercial (prompt §1/§3) : "comment
+// démarrer une discussion sérieuse sur mon projet", pas "comment contacter
+// Sébastien pour un emploi".
+//
+// COORDONNÉES — contrôle obligatoire (prompt §1) : aucune adresse email ni
+// numéro professionnel confirmé n'existait dans le code/CONTEXT.md/README.md
+// avant ce sprint (contact.astro était encore au stade "à compléter").
+// Sébastien a explicitement confirmé en conversation, pour ce sprint,
+// l'utilisation de sebastien.cantrelle@hotmail.fr et 06 29 46 45 93,
+// "on changera plus tard si il le faut" — traité ici comme une donnée
+// commerciale confirmée, pas une donnée personnelle réutilisée sans preuve.
+//
+// Site statique : AUCUN backend, AUCUNE API, AUCUN service tiers
+// (Formspree/Netlify Forms/EmailJS), AUCUN captcha (prompt §2). Le canal
+// réel est le lien `mailto:`. Le petit formulaire local (section D du
+// prompt, fusionnée ici dans le bloc "Contact direct" en sous-bloc) ne fait
+// QUE construire un `mailto:` prérempli côté client au submit — aucune
+// requête réseau, `e.preventDefault()` explicite (voir le bloc script en
+// bas de page), bouton nommé "Préparer l'e-mail" (jamais "Envoyer"), disclaimer
+// visible en permanence, pas juste après action.
+//
+// LEÇON CS-S11A/CS-S11B (prompt §8) : ServiceHero/ServiceBreadcrumb sont
+// réutilisés ci-dessous — `services.css` EST importé explicitement pour
+// porter leurs classes (`.service-hero`, `.service-breadcrumb`), vérifié
+// par build réel (voir rapport, section CSS importé).
+//
+// ServiceCta n'est PAS utilisé ici (cette page EST déjà le point de contact,
+// pas une page qui doit renvoyer vers un CTA contact) — évite aussi
+// entièrement la dette ARIA connue du composant (id manquant sur son H2).
+//
+// Motion : mécanisme local (IntersectionObserver natif, pas de GSAP
+// supplémentaire, pas de ServiceMotion élargi — prompt §10), repris du
+// pattern déjà validé sur /a-propos/ (CS-S11B). Le bloc "Contact direct"
+// (email/téléphone/actions/formulaire) n'a VOLONTAIREMENT aucun
+// `data-reveal` : prompt §10 "le bloc email ne doit jamais être caché
+// longtemps par une animation d'entrée" — le choix le plus sûr est de ne
+// jamais l'animer du tout.
+//
+// CS-S12D — maillage SEO local (prompt §11 : "CONTACT → ... éventuellement
+// mention locale"). Une phrase factuelle ajoutée sous la note existante,
+// SANS lien (contrairement à /a-propos/, où le prompt demande
+// explicitement un lien vers la landing) : reste une simple mention de
+// zone, pas un second point d'entrée vers /developpement-web-amiens/ sur
+// cette page — évite d'empiler les liens sur une page déjà dense.
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import { withBase } from "../utils/paths";
+import "../styles/services.css";
+import "../styles/contact.css";
+
+const STUDIO_EMAIL = "sebastien.cantrelle@hotmail.fr";
+const STUDIO_PHONE_DISPLAY = "06 29 46 45 93";
+const STUDIO_PHONE_HREF = "tel:+33629464593";
+const STUDIO_MAILTO = `mailto:${STUDIO_EMAIL}`;
+
+const startingPoints = [
+  {
+    index: "01",
+    title: "Le contexte",
+    text: "Votre activité, vos utilisateurs ou l'environnement dans lequel le besoin existe.",
+  },
+  {
+    index: "02",
+    title: "Le problème",
+    text: "Ce qui prend du temps, bloque, manque aujourd'hui ou devrait fonctionner autrement.",
+  },
+  {
+    index: "03",
+    title: "L'objectif",
+    text: "Ce que la solution devrait permettre de simplifier, automatiser, structurer ou rendre possible.",
+  },
+  {
+    index: "04",
+    title: "Les contraintes connues",
+    text: "Délais souhaités, existant technique, données, outils à connecter ou cadre particulier, si vous les connaissez déjà.",
+  },
+];
+
+const needs = [
+  { label: "Application métier & SaaS", href: "/applications-metier-saas/" },
+  { label: "Site professionnel", href: "/sites-professionnels/" },
+  { label: "Développement sur mesure", href: "/developpement-sur-mesure/" },
+];
+
+const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider de la suite"];
 ---
 
 <BaseLayout
-  title="Contact — Cantrelle Studio"
-  description="Page de prise de contact avec Cantrelle Studio. Coordonnées professionnelles à compléter avant mise en ligne."
+  title="Contact | Cantrelle Studio"
+  description="Contactez Cantrelle Studio pour échanger sur une application métier, un SaaS, un site professionnel ou un besoin de développement sur mesure."
 >
-  <section class="container">
-    <h1>Contact</h1>
-    <p class="provisional">
-      Contenu provisoire (CS-S0). Aucun formulaire de contact fonctionnel
-      n'est mis en place dans ce sprint.
-    </p>
-    <p>Coordonnées professionnelles à compléter avant mise en ligne.</p>
-  </section>
+  <div class="contact-page">
+    <Container>
+      <ServiceBreadcrumb current="Contact" />
+    </Container>
+
+    <!-- A. HERO CONTACT -->
+    <section class="contact-page__section">
+      <Container>
+        <ServiceHero
+          eyebrow="Contact"
+          title="Parlons de ce qu'il faut réellement construire."
+          lead="Vous avez un besoin identifié, une idée encore à cadrer ou un outil existant à faire évoluer ? Le premier échange sert à comprendre le contexte, l'objectif et les contraintes avant de parler solution technique."
+          primaryHref={STUDIO_MAILTO}
+          primaryLabel="Écrire à Cantrelle Studio"
+          secondaryHref="/methode/"
+          secondaryLabel="Voir la méthode"
+        />
+      </Container>
+    </section>
+
+    <!-- B. PAS BESOIN D'UN CAHIER DES CHARGES PARFAIT -->
+    <section class="contact-page__section contact-page__section--soft" aria-labelledby="contact-start-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading
+            id="contact-start-title"
+            eyebrow="Premier échange"
+            title="Quelques éléments suffisent pour commencer."
+            intro="Vous n'avez pas besoin d'avoir déjà choisi une technologie ni formalisé tout le projet. Quelques éléments concrets permettent déjà de comprendre la situation et de préparer un échange utile."
+          />
+        </div>
+        <div class="contact-points" data-reveal>
+          {startingPoints.map((point) => (
+            <div class="contact-point">
+              <span class="contact-point__index" aria-hidden="true">{point.index}</span>
+              <div class="contact-point__body">
+                <h3 class="contact-point__title">{point.title}</h3>
+                <p class="contact-point__text">{point.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <!-- C. BLOC PRINCIPAL — CONTACT DIRECT (+ D. formulaire local optionnel) -->
+    <section class="contact-page__section" aria-labelledby="contact-direct-title">
+      <Container>
+        <div class="contact-direct">
+          <span class="contact-direct__eyebrow">Contact direct</span>
+          <h2 id="contact-direct-title" class="contact-direct__title">Écrivez directement au studio.</h2>
+
+          <a class="contact-direct__email" href={STUDIO_MAILTO}>{STUDIO_EMAIL}</a>
+          <p class="contact-direct__phone">
+            Téléphone&nbsp;: <a href={STUDIO_PHONE_HREF}>{STUDIO_PHONE_DISPLAY}</a>
+          </p>
+
+          <div class="contact-direct__actions">
+            <ActionLink href={STUDIO_MAILTO} variant="primary">Écrire un e-mail</ActionLink>
+            <button type="button" class="contact-direct__copy" id="contact-copy-btn" data-email={STUDIO_EMAIL}>
+              Copier l'adresse
+            </button>
+          </div>
+          <p class="contact-direct__status" id="contact-copy-status" role="status" aria-live="polite"></p>
+
+          <p class="contact-direct__note">
+            Si votre demande concerne une application métier, un SaaS, un site professionnel ou l'évolution d'un
+            produit existant, décrivez simplement le contexte et l'objectif.
+          </p>
+          <p class="contact-direct__note">
+            Basé à Amiens, le studio accompagne aussi bien des projets locaux dans les Hauts-de-France que des
+            missions à distance partout en France.
+          </p>
+
+          <div class="contact-form">
+            <h3 class="contact-form__title">Ou préparez votre message</h3>
+            <p class="contact-form__disclaimer">Aucun message n'est envoyé automatiquement par ce site.</p>
+
+            <form id="contact-form" novalidate>
+              <div class="contact-form__row">
+                <div class="contact-form__field">
+                  <label for="contact-name">Nom</label>
+                  <input type="text" id="contact-name" name="name" required autocomplete="name" />
+                </div>
+                <div class="contact-form__field">
+                  <label for="contact-org">Organisation <span class="contact-form__optional">(optionnel)</span></label>
+                  <input type="text" id="contact-org" name="org" autocomplete="organization" />
+                </div>
+              </div>
+              <div class="contact-form__row">
+                <div class="contact-form__field">
+                  <label for="contact-email">Votre e-mail</label>
+                  <input type="email" id="contact-email" name="email" required autocomplete="email" />
+                </div>
+                <div class="contact-form__field">
+                  <label for="contact-need">Type de besoin</label>
+                  <select id="contact-need" name="need" required>
+                    <option value="Application métier / SaaS">Application métier / SaaS</option>
+                    <option value="Site professionnel">Site professionnel</option>
+                    <option value="Développement sur mesure">Développement sur mesure</option>
+                    <option value="Autre / à préciser">Autre / à préciser</option>
+                  </select>
+                </div>
+              </div>
+              <div class="contact-form__field contact-form__field--full">
+                <label for="contact-message">Message</label>
+                <textarea id="contact-message" name="message" rows="5" required></textarea>
+              </div>
+              <button type="submit" class="contact-form__submit">Préparer l'e-mail</button>
+            </form>
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    <!-- E. CE QUE LE STUDIO PEUT PRENDRE EN CHARGE -->
+    <section class="contact-page__section contact-page__section--soft" aria-labelledby="contact-needs-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading
+            id="contact-needs-title"
+            eyebrow="Besoins"
+            title="Selon le projet, le point de départ peut être très différent."
+          />
+        </div>
+        <ul class="contact-needs" data-reveal>
+          {needs.map((need) => (
+            <li>
+              <a href={withBase(need.href)}>{need.label}</a>
+            </li>
+          ))}
+        </ul>
+        <p class="contact-needs__note" data-reveal>
+          Si votre besoin ne rentre pas proprement dans une catégorie, décrivez-le simplement&nbsp;: le cadrage sert
+          justement à déterminer la bonne approche.
+        </p>
+      </Container>
+    </section>
+
+    <!-- F. CE QUI SE PASSE ENSUITE -->
+    <section class="contact-page__section" aria-labelledby="contact-next-title">
+      <Container>
+        <div data-reveal>
+          <SectionHeading
+            id="contact-next-title"
+            eyebrow="Ensuite"
+            title="Le premier échange sert à cadrer, pas à forcer une solution."
+          />
+        </div>
+        <ol class="contact-next" data-reveal>
+          {nextSteps.map((step, i) => (
+            <li class="contact-next__item">
+              <span class="contact-next__num" aria-hidden="true">{i + 1}</span>
+              <span class="contact-next__label">{step}</span>
+            </li>
+          ))}
+        </ol>
+        <p class="contact-next__text" data-reveal>
+          Si le projet correspond au champ d'intervention du studio, la suite peut ensuite être cadrée plus
+          précisément. Sinon, aucune technologie ni prestation n'a besoin d'être forcée.
+        </p>
+        <p class="contact-next__link" data-reveal>
+          <ActionLink href="/methode/" variant="text">Découvrir la méthode</ActionLink>
+        </p>
+      </Container>
+    </section>
+  </div>
 </BaseLayout>
 
-<style>
-  section {
-    padding-block: var(--space-lg);
+<script>
+  // Reveal local — voir commentaire de frontmatter (mêmes principes que
+  // /a-propos/, CS-S11B) : état initial masqué posé UNIQUEMENT par JS,
+  // jamais par CSS (sans JS, tout reste visible), respecte
+  // prefers-reduced-motion, aucune dépendance.
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!prefersReducedMotion && "IntersectionObserver" in window) {
+    const targets = document.querySelectorAll<HTMLElement>("[data-reveal]");
+
+    targets.forEach((el) => {
+      el.style.opacity = "0";
+      el.style.transform = "translateY(16px)";
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          el.style.transition = "opacity 600ms ease, transform 600ms ease";
+          el.style.opacity = "1";
+          el.style.transform = "none";
+          observer.unobserve(el);
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+    );
+
+    targets.forEach((el) => observer.observe(el));
   }
-  .provisional {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-    border-left: 3px solid var(--color-border);
-    padding-left: var(--space-sm);
-  }
-</style>
+
+  // Copier l'adresse — enhancement léger, Clipboard API uniquement.
+  // HOTFIX CS-S11D : l'ancien fallback `document.execCommand('copy')`
+  // (déprécié, source d'un hint TypeScript) a été retiré sans le remplacer
+  // par un autre hack — si l'API Clipboard est indisponible ou échoue, un
+  // message honnête l'indique (aria-live), l'adresse restant de toute
+  // façon affichée en clair juste au-dessus (prompt §C : ne jamais la
+  // masquer). N'échoue jamais silencieusement.
+  const copyBtn = document.getElementById("contact-copy-btn");
+  const copyStatus = document.getElementById("contact-copy-status");
+
+  copyBtn?.addEventListener("click", async () => {
+    const email = copyBtn.getAttribute("data-email") ?? "";
+    let copied = false;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(email);
+        copied = true;
+      }
+    } catch {
+      copied = false;
+    }
+
+    if (copyStatus) {
+      copyStatus.textContent = copied
+        ? "Adresse copiée dans le presse-papiers."
+        : "Copie automatique indisponible — l'adresse reste affichée ci-dessus.";
+    }
+  });
+
+  // Préparer l'e-mail — AUCUNE requête réseau : construit un mailto:
+  // prérempli côté client et ouvre le client mail de l'utilisateur.
+  // e.preventDefault() empêche toute soumission native (GET) du <form>.
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const data = new FormData(form);
+    const name = String(data.get("name") ?? "").trim();
+    const org = String(data.get("org") ?? "").trim();
+    const senderEmail = String(data.get("email") ?? "").trim();
+    const need = String(data.get("need") ?? "").trim();
+    const message = String(data.get("message") ?? "").trim();
+
+    const subject = `Contact Cantrelle Studio — ${need || "Projet"}`;
+    const bodyLines = [
+      `Nom : ${name}`,
+      org && `Organisation : ${org}`,
+      `E-mail de contact : ${senderEmail}`,
+      `Type de besoin : ${need}`,
+      "",
+      message,
+    ].filter((line): line is string => Boolean(line) || line === "");
+    const body = bodyLines.join("\n");
+
+    const mailto = `mailto:sebastien.cantrelle@hotmail.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  });
+</script>

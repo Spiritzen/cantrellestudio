@@ -1,30 +1,209 @@
 ---
+// Méthode — CS-S11A. Remplace le contenu provisoire CS-S0 (H1 nu + <ol>
+// plate) par une vraie page commerciale : « pourquoi confier mon projet à
+// ce studio », pas un CV de développeur (prompt §1). Composants réutilisés
+// tels quels depuis les pages Services (CS-S9/CS-S9B) — ServiceBreadcrumb/
+// ServiceHero/ServiceCta sont volontairement génériques (eyebrow + titre +
+// texte + CTA), rien de spécifique-Applications/Sites/Sur-mesure n'est
+// forcé ici. La section centrale (5 étapes) est en revanche une
+// composition propre à cette page (prompt §C : "pièce maîtresse", pas un
+// simple agrandissement du rail Home) — voir methode.css.
+//
+// Aucune 3D importée (prompt §2 : la page doit fonctionner sans dépendre
+// du Hero 3D). Motion : réutilise le pattern GSAP/ScrollTrigger déjà
+// généralisé par ServiceMotion.astro (CS-S9B, étendu en CS-S10 aux études
+// de cas) — un sélecteur `.methode-page__section` de plus dans ce même
+// composant partagé, zéro nouveau moteur de motion créé (prompt §7).
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import ActionLink from "../components/ui/ActionLink.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
+import ServiceHero from "../components/services/ServiceHero.astro";
+import ServiceCta from "../components/services/ServiceCta.astro";
+import ServiceMotion from "../components/services/ServiceMotion.astro";
+// HOTFIX CS-S11A — services.css porte les styles de ServiceBreadcrumb/
+// ServiceHero/ServiceCta (.service-hero/.service-cta/.service-breadcrumb) ;
+// cet import manquait, laissant ces 3 blocs sans styles (voir rapport
+// CS-S11B, section 3, et docs/rapports/rapport_hotfix_methode_services_css.txt).
+import "../styles/services.css";
+import "../styles/methode.css";
 
-const steps = ["Comprendre", "Concevoir", "Développer", "Tester", "Livrer"];
+// --- B. Avant de coder ------------------------------------------------------
+const principles = [
+  {
+    index: "01",
+    label: "Besoin",
+    title: "Le problème avant la solution",
+    text: "Identifier ce qui doit réellement être amélioré, automatisé, simplifié ou rendu possible.",
+  },
+  {
+    index: "02",
+    label: "Contexte",
+    title: "L'existant compte",
+    text: "Outils déjà en place, données, contraintes métier, utilisateurs et environnement technique font partie de la décision.",
+  },
+  {
+    index: "03",
+    label: "Périmètre",
+    title: "Savoir ce que l'on construit",
+    text: "Définir une première portée compréhensible et maîtrisable avant d'empiler les fonctionnalités.",
+  },
+];
+
+// --- C. Les 5 étapes — enrichies pour une page dédiée (prompt §C) ----------
+const steps = [
+  { index: "01", title: "Comprendre", text: "Clarifier le besoin, les utilisateurs, les contraintes, les priorités et l'existant." },
+  { index: "02", title: "Concevoir", text: "Structurer les parcours, les données et l'architecture avant de multiplier les choix techniques." },
+  { index: "03", title: "Développer", text: "Construire progressivement, avec un périmètre lisible et des composants adaptés au besoin réel." },
+  { index: "04", title: "Tester", text: "Vérifier le comportement, le responsive, l'accessibilité et les points techniques critiques avant livraison." },
+  { index: "05", title: "Livrer", text: "Mettre en production proprement, transmettre ce qui doit l'être et garder une base capable d'évoluer." },
+];
+
+// --- D. Interlocuteur responsable -------------------------------------------
+const reassurances = [
+  "Les décisions restent reliées au besoin.",
+  "Le périmètre reste compréhensible.",
+  "Les arbitrages techniques sont expliqués.",
+];
+
+// --- E. La stack vient après -------------------------------------------------
+const stackFlow = ["Besoin", "Contraintes", "Architecture", "Technologies"];
 ---
 
 <BaseLayout
-  title="Méthode — Cantrelle Studio"
-  description="Méthode de travail du studio : comprendre, concevoir, développer, tester, livrer. Contenu provisoire (CS-S0)."
+  title="Méthode de conception & développement | Cantrelle Studio"
+  description="Découvrez la méthode Cantrelle Studio : comprendre le besoin, concevoir, développer, tester et livrer une solution numérique adaptée au projet."
 >
-  <section class="container">
-    <h1>Méthode</h1>
-    <p class="provisional">Contenu provisoire (CS-S0), rédaction commerciale non définitive.</p>
-    <ol>
-      {steps.map((step) => <li>{step}</li>)}
-    </ol>
-  </section>
-</BaseLayout>
+  <div class="methode-page">
+    <Container>
+      <ServiceBreadcrumb current="Méthode" />
+    </Container>
 
-<style>
-  section {
-    padding-block: var(--space-lg);
-  }
-  .provisional {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-    border-left: 3px solid var(--color-border);
-    padding-left: var(--space-sm);
-  }
-</style>
+    <!-- A. HERO MÉTHODE -->
+    <section class="methode-page__section">
+      <Container>
+        <ServiceHero
+          eyebrow="Méthode"
+          title="Un projet clair, de la compréhension à la livraison."
+          lead="Avant de choisir une stack ou d'écrire du code, le studio clarifie le besoin, les utilisateurs, les contraintes et l'existant. Le projet avance ensuite par étapes courtes, avec des choix techniques adaptés à ce qu'il faut réellement construire."
+          secondaryHref="/realisations/"
+          secondaryLabel="Voir les réalisations"
+        />
+      </Container>
+    </section>
+
+    <!-- B. AVANT DE CODER -->
+    <section class="methode-page__section methode-page__section--soft" aria-labelledby="methode-start-title">
+      <Container>
+        <SectionHeading
+          id="methode-start-title"
+          eyebrow="Le point de départ"
+          title="Comprendre avant de construire."
+          intro="Un besoin mal cadré reste un mauvais point de départ, quelle que soit la technologie choisie. La première étape consiste donc à rendre le problème, le contexte et les contraintes suffisamment clairs pour prendre de bonnes décisions."
+        />
+        <div class="methode-principles">
+          {principles.map((item) => (
+            <div class="methode-principle" data-motion="block">
+              <span class="methode-principle__index" aria-hidden="true">{item.index}</span>
+              <span class="methode-principle__label">{item.label}</span>
+              <h3 class="methode-principle__title">{item.title}</h3>
+              <p class="methode-principle__text">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+
+    <!-- C. SECTION CENTRALE — LES 5 ÉTAPES (pièce maîtresse de la page) -->
+    <section class="methode-page__section" aria-labelledby="methode-steps-title">
+      <Container>
+        <SectionHeading
+          id="methode-steps-title"
+          eyebrow="Déroulé"
+          title="Cinq étapes, un même fil conducteur."
+        />
+        <ol class="methode-steps">
+          {steps.map((step) => (
+            <li class="methode-step" data-motion="step">
+              <span class="methode-step__node" aria-hidden="true">{step.index}</span>
+              <div class="methode-step__content">
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Container>
+    </section>
+
+    <!-- D. INTERLOCUTEUR RESPONSABLE -->
+    <section class="methode-page__section methode-page__section--soft" aria-labelledby="methode-contact-title">
+      <Container>
+        <SectionHeading
+          id="methode-contact-title"
+          eyebrow="Suivi"
+          title="Un interlocuteur responsable du projet."
+        />
+        <p class="methode-lead" data-motion="block">
+          Le cadrage, les choix techniques et la réalisation ne doivent pas devenir une succession
+          d'intermédiaires. Cantrelle Studio privilégie une relation directe, avec un interlocuteur
+          responsable capable de relier le besoin métier aux décisions de conception et de développement.
+        </p>
+        <ul class="methode-reassurances" data-motion="block">
+          {reassurances.map((point) => (
+            <li>{point}</li>
+          ))}
+        </ul>
+      </Container>
+    </section>
+
+    <!-- E. LA STACK VIENT APRÈS -->
+    <section class="methode-page__section" aria-labelledby="methode-stack-title">
+      <Container>
+        <SectionHeading
+          id="methode-stack-title"
+          eyebrow="Choix techniques"
+          title="La stack reste un moyen, jamais la promesse."
+        />
+        <p class="methode-lead" data-motion="block">
+          Astro, React, Java, Spring Boot, Ruby on Rails, PostgreSQL, Docker ou Three.js ne sont pas un
+          catalogue à imposer au projet. Les technologies sont choisies selon le produit, l'existant, les
+          contraintes et la façon dont la solution devra évoluer.
+        </p>
+        <div
+          class="methode-flow"
+          data-motion="block"
+          role="img"
+          aria-label="Schéma : Besoin, puis Contraintes, puis Architecture, puis Technologies."
+        >
+          {stackFlow.map((word, i) => (
+            <>
+              <span class="methode-flow__step">{word}</span>
+              {i < stackFlow.length - 1 && <span class="methode-flow__arrow" aria-hidden="true">→</span>}
+            </>
+          ))}
+        </div>
+        <p class="methode-architecture__note">
+          <ActionLink href="/developpement-sur-mesure/" variant="text">Voir le développement sur mesure</ActionLink>
+        </p>
+      </Container>
+    </section>
+
+    <!-- F. CTA FINAL -->
+    <section class="methode-page__section methode-page__section--soft" aria-labelledby="methode-cta-title">
+      <Container>
+        <ServiceCta
+          headingId="methode-cta-title"
+          eyebrow="Un projet ?"
+          title="Commençons par comprendre ce qu'il faut réellement construire."
+          text="Application métier, SaaS, site professionnel ou besoin plus spécifique : le premier échange sert d'abord à clarifier le contexte et l'objectif."
+          secondaryHref="/realisations/"
+          secondaryLabel="Voir les réalisations"
+        />
+      </Container>
+    </section>
+  </div>
+
+  <ServiceMotion />
+</BaseLayout>
