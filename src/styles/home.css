@@ -36,13 +36,13 @@
 /* Micro-sprint labels — 6 petits labels de section précis (Hero, Expertises,
    Approche, Réalisations, Méthode, Capacités) passent en accent CTA à 80%
    d'opacité, sans toucher taille/typo/position/spacing (aucune propriété de
-   layout redéclarée ici). `.home-kicker--accent` cible uniquement les 2 spans
-   qui l'ont explicitement reçu dans index.astro (Hero + Approche) : le 3e
-   usage de `.home-kicker` ("Un projet ?", CTA final) n'a pas cette classe et
-   reste donc inchangé. `.section-heading__eyebrow` est un composant partagé
-   avec les 3 pages Services, mais cette règle vit dans home.css, chargé
-   uniquement par index.astro — le préfixe `.home-section` est une précaution
-   défensive supplémentaire, pas le mécanisme de scoping réel. */
+   layout redéclarée ici). `.home-kicker--accent` cible les spans qui l'ont
+   explicitement reçu dans index.astro (Hero, Approche, et depuis le
+   micro-sprint CTA final : "Un projet ?"). `.section-heading__eyebrow` est
+   un composant partagé avec les 3 pages Services, mais cette règle vit dans
+   home.css, chargé uniquement par index.astro — le préfixe `.home-section`
+   est une précaution défensive supplémentaire, pas le mécanisme de scoping
+   réel. */
 .home-kicker--accent,
 .home-section .section-heading__eyebrow {
   color: var(--color-accent);
@@ -156,18 +156,20 @@
    au sein de cette couche, les stacking contexts s'ordonnent par z-index
    croissant, donc -2 peint AVANT (derrière) -1. Aucun changement de
    position/taille/gradient/opacité : seul l'ordre de peinture change.
-   Résultat : fond du Hero -> carré orangé (-2) -> 3D/filaments (-1) ->
-   contenu normal du Hero (textes/CTA, non positionnés, couche "in-flow"
-   au-dessus des deux). */
+   Résultat à l'époque : fond du Hero -> carré orangé (-2) -> 3D/filaments
+   (-1) -> contenu normal du Hero (textes/CTA, non positionnés, couche
+   "in-flow" au-dessus des deux).
+   PROMPT_CLAUDE_CODE_MICRO_CHANGE_HERO_SUPPRIMER_BACKGROUND_RECTANGULAIRE_3D
+   — ce halo (recadré dans la boîte `.home-hero__stage`, plus petite et
+   plus proche des sphères que le halo d'ambiance de `.home-hero` ci-dessus)
+   restait visible comme un rectangle net derrière le Soleil : rendu visuel
+   neutralisé (plus de `background`). L'élément DOM et sa position/z-index
+   restent en place (fallback JS/WebGL indisponible ou <900px, cf.
+   index.astro), il ne peint simplement plus rien. */
 .home-hero__stage-glow {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: radial-gradient(
-    circle at 65% 35%,
-    rgba(228, 95, 54, 0.12),
-    rgba(228, 95, 54, 0) 60%
-  );
 }
 
 /* Seuil aligné exactement sur l'hydratation React de la scène 3D

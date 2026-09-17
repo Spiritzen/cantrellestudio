@@ -12,6 +12,7 @@ import ActionLink from "../components/ui/ActionLink.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
+import ProjectHeroVisual from "../components/services/ProjectHeroVisual.astro";
 import ServiceProofCard from "../components/services/ServiceProofCard.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
@@ -70,13 +71,21 @@ const architectureSteps = [
 
     <section class="service-page__section">
       <Container>
-        <ServiceHero
-          eyebrow="Applications métier & SaaS"
-          title="Des applications métier conçues autour de vos processus."
-          lead="CRM, facturation, planification, portails, workflows ou SaaS multi-utilisateurs : le studio part du besoin métier, modélise les règles et choisit l'architecture adaptée."
-          secondaryHref="/realisations/"
-          secondaryLabel="Voir les réalisations"
-        />
+        <!-- Micro-sprint "Test Hero PROJET" — visuel animé UNIQUEMENT sur
+             cette page (nouveau wrapper .apps-hero-layout, scopé par
+             .service-page--apps dans services.css). ServiceHero.astro
+             lui-même n'est pas modifié : Sites pro / Sur mesure gardent
+             leur hero en une seule colonne, inchangé. -->
+        <div class="apps-hero-layout">
+          <ServiceHero
+            eyebrow="Applications métier & SaaS"
+            title="Des applications métier conçues autour de vos processus."
+            lead="CRM, facturation, planification, portails, workflows ou SaaS multi-utilisateurs : le studio part du besoin métier, modélise les règles et choisit l'architecture adaptée."
+            secondaryHref="/realisations/"
+            secondaryLabel="Voir les réalisations"
+          />
+          <ProjectHeroVisual />
+        </div>
       </Container>
     </section>
 

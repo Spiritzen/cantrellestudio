@@ -94,6 +94,26 @@
   gap: var(--space-sm);
 }
 
+/* Micro-sprint "Test Hero PROJET" — grille 2 colonnes (texte / visuel
+   animé) pour le Hero de /applications-metier-saas/ UNIQUEMENT. Scopée par
+   `.service-page--apps` (classe déjà posée sur le wrapper racine de cette
+   page, jamais sur Sites pro / Sur mesure) : même si ce fichier reste
+   partagé par les 3 pages services (convention du projet), ces règles ne
+   peuvent matcher que sur cette page précise — scoping défensif identique
+   à `.home-section .section-heading__eyebrow` dans home.css. */
+.service-page--apps .apps-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+@media (max-width: 899px) {
+  .service-page--apps .apps-hero-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 .service-cta {
   position: relative;
   max-width: 46rem;

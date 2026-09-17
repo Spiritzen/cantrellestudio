@@ -1,0 +1,229 @@
+---
+// ProjectHeroVisual — micro-sprint "Test Hero PROJET" pour
+// /applications-metier-saas/ UNIQUEMENT (jamais importé par ServiceHero.astro
+// ni par les 2 autres pages services : zéro risque de régression ailleurs).
+// Utilise EXACTEMENT les 3 assets fournis par Sébastien
+// (src/assets/hero-projet/), jamais retouchés/redessinés :
+// - puce-projet.png  : image principale (chip PROJET + circuits gravés).
+// - circuit_paths_complete.svg : 24 <path> (viewBox 0 0 1254 1254, même
+//   cadre que le PNG) inlinés dans le DOM pour pouvoir appeler
+//   getTotalLength()/getPointAtLength() dessus — le SVG reste invisible
+//   (opacity:0), il ne sert que de guide de trajectoire, jamais affiché.
+// - particle-orange.png : 6 particules HTML <img> maximum (micro-sprint
+//   randomisation — doublé depuis 3), positionnées en `left/top` (%) le
+//   long d'un path choisi, recalculées à chaque frame par un simple rAF
+//   (pas de dépendance d'animation, pas de nouvelle lib). Taille et vitesse
+//   sont re-tirées aléatoirement (facteur 0.7-1.3, uniforme) à CHAQUE
+//   lancement/relance d'une particule — voir le bloc script plus bas.
+//
+// Positionnement PNG <-> SVG : les deux partagent le même conteneur carré
+// (aspect-ratio:1/1) et le même système de coordonnées (0-1254) — un point
+// SVG (x,y) se convertit donc directement en position CSS via
+// `(x/1254)*100%` / `(y/1254)*100%`, sans recalcul au resize.
+import { Picture } from "astro:assets";
+import puceProjet from "../../assets/hero-projet/puce-projet.png";
+import particleOrangeUrl from "../../assets/hero-projet/particle-orange.png?url";
+import circuitPathsMarkup from "../../assets/hero-projet/circuit_paths_complete.svg?raw";
+
+// Micro-sprint randomisation §3 — limite existante (3) lue puis doublée
+// exactement, comme demandé ("ne pas inventer une nouvelle valeur").
+const PARTICLE_COUNT = 6;
+---
+
+<div class="project-hero-visual" aria-hidden="true">
+  <Picture
+    src={puceProjet}
+    alt=""
+    formats={["avif", "webp"]}
+    widths={[320, 480, 640]}
+    sizes="(min-width: 900px) 22rem, 60vw"
+    loading="eager"
+    decoding="async"
+    class="project-hero-visual__chip"
+  />
+  <div class="project-hero-visual__paths" set:html={circuitPathsMarkup} />
+  {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
+    <img
+      src={particleOrangeUrl}
+      alt=""
+      class="project-hero-visual__particle"
+      data-particle={i}
+    />
+  ))}
+</div>
+
+<style>
+  /* Conteneur carré (même ratio que le viewBox 1254x1254) — respiration
+     visuelle dans le Hero sans dominer le texte (prompt §8), jamais collé
+     aux bords (marge via le grid parent, voir services.css). */
+  .project-hero-visual {
+    position: relative;
+    width: 100%;
+    max-width: 22rem;
+    aspect-ratio: 1 / 1;
+    margin-inline: auto;
+  }
+
+  /* Halo d'ambiance discret derrière la puce — même formule que le glow
+     ember déjà utilisé ailleurs sur le site (Hero Home, CTA final),
+     jamais une nouvelle couleur. Volontairement doux (pas de "feu
+     d'artifice", prompt §2/§9). */
+  .project-hero-visual::before {
+    content: "";
+    /* `inset: 0` (jamais négatif) — un halo qui déborde de sa propre boîte
+       poussait la page en scroll horizontal de quelques pixels sur cette
+       colonne de droite (grid track déjà à sa largeur max) : contenu
+       strictement à l'intérieur du conteneur, exigence explicite du
+       prompt ("pas de débordement", "pas de scroll horizontal"). */
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(228, 95, 54, 0.16), rgba(228, 95, 54, 0) 65%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .project-hero-visual__chip {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Le PNG source a un fond quasi noir (pas de canal alpha) : le mode de
+       fusion "screen" annule visuellement le noir (0,0,0 n'apporte rien en
+       screen) et ne laisse apparaître que les circuits lumineux, sans
+       carré visible ni retouche manuelle de l'asset. */
+    mix-blend-mode: screen;
+  }
+
+  /* Guide de trajectoire — jamais affiché graphiquement (prompt §4),
+     seulement présent dans le DOM pour que le script puisse appeler
+     getTotalLength()/getPointAtLength() sur ses <path>. opacity:0 (plutôt
+     que display:none) : garde un layout réel, nécessaire pour que ces
+     méthodes SVG restent fiables dans tous les navigateurs. */
+  .project-hero-visual__paths {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .project-hero-visual__paths :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .project-hero-visual__particle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: clamp(0.5rem, 1.6vw, 0.85rem);
+    height: auto;
+    opacity: 0;
+    pointer-events: none;
+    /* --particle-scale : facteur 0.7-1.3 re-tiré par le script à chaque
+       lancement (micro-sprint randomisation §1) — la taille CSS de base
+       (clamp responsive, INCHANGÉE) n'est jamais touchée, seule une
+       échelle relative est appliquée par-dessus le centrage existant. */
+    transform: translate(-50%, -50%) scale(var(--particle-scale, 1));
+    filter: drop-shadow(0 0 6px rgba(228, 95, 54, 0.85));
+    will-change: left, top, opacity, transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-hero-visual__particle {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Animation vanilla JS, aucune dépendance : chaque particule (max 6
+  // depuis le micro-sprint randomisation, PARTICLE_COUNT ci-dessus) suit
+  // un <path> du SVG inliné via getPointAtLength(), en boucle, avec un
+  // départ décalé par particule pour un effet de "flux entrants"
+  // désynchronisés plutôt qu'un aller-retour synchronisé/mécanique.
+  function initProjectHeroVisual(root: HTMLElement) {
+    const paths = Array.from(root.querySelectorAll<SVGPathElement>(".project-hero-visual__paths path"));
+    const particles = Array.from(root.querySelectorAll<HTMLImageElement>(".project-hero-visual__particle"));
+    if (!paths.length || !particles.length) return;
+
+    const VIEWBOX_SIZE = 1254;
+    const BASE_DURATION_MS = 3400; // "pas trop rapide, pas trop lent" (prompt §6), vitesse de référence (facteur 1)
+    const STAGGER_MS = 1250; // décalage des départs entre particules
+    const FADE_FRACTION = 0.12; // fondu entrée/sortie, évite un "pop" visuel abrupt
+
+    // Micro-sprint randomisation §1/§2 — tirage uniforme [0.7, 1.3],
+    // ré-appelé à CHAQUE lancement/relance (dans runParticle ci-dessous),
+    // jamais figé une fois pour toutes sur la durée de vie de la particule.
+    const MIN_FACTOR = 0.7;
+    const MAX_FACTOR = 1.3;
+    const randomFactor = () => MIN_FACTOR + Math.random() * (MAX_FACTOR - MIN_FACTOR);
+
+    // Ordre de parcours mélangé une seule fois au chargement (pas par
+    // frame) : suffisant pour varier les côtés d'origine sans logique
+    // d'aléatoire à gérer en continu (prompt §6, "pas d'aléatoire ingérable").
+    const shuffledPaths = [...paths].sort(() => Math.random() - 0.5);
+
+    function runParticle(el: HTMLImageElement, cycle: number) {
+      const path = shuffledPaths[cycle % shuffledPaths.length];
+      const totalLength = path.getTotalLength();
+
+      // Nouveau tirage à CHAQUE lancement (prompt §1/§2) : taille et
+      // vitesse varient indépendamment d'une particule à l'autre ET d'un
+      // cycle à l'autre pour une même particule. Vitesse plus élevée =>
+      // durée plus courte (durée = référence / facteur), comme demandé.
+      const sizeFactor = randomFactor();
+      const speedFactor = randomFactor();
+      const durationMs = BASE_DURATION_MS / speedFactor;
+      el.style.setProperty("--particle-scale", String(sizeFactor));
+
+      let start: number | null = null;
+
+      function frame(timestamp: number) {
+        if (start === null) start = timestamp;
+        const elapsed = timestamp - start;
+        const progress = Math.min(elapsed / durationMs, 1);
+        const point = path.getPointAtLength(progress * totalLength);
+
+        el.style.left = (point.x / VIEWBOX_SIZE) * 100 + "%";
+        el.style.top = (point.y / VIEWBOX_SIZE) * 100 + "%";
+        el.style.opacity =
+          progress < FADE_FRACTION
+            ? String(progress / FADE_FRACTION)
+            : progress > 1 - FADE_FRACTION
+              ? String((1 - progress) / FADE_FRACTION)
+              : "1";
+
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          const restartDelay = 400 + Math.random() * 700;
+          window.setTimeout(() => runParticle(el, cycle + particles.length), restartDelay);
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    particles.forEach((el, i) => {
+      window.setTimeout(() => runParticle(el, i), i * STAGGER_MS);
+    });
+  }
+
+  function boot() {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) return; // §7 : animation désactivée, la puce/circuits restent visibles seuls.
+
+    document.querySelectorAll<HTMLElement>(".project-hero-visual").forEach(initProjectHeroVisual);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>

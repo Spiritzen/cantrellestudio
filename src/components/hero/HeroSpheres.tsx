@@ -103,6 +103,18 @@ const SMALL_RADIUS = 0.22;
 // Lune/Soleil et la justification chiffrée de la combinaison retenue).
 const REPULSION_MARGIN = 0.16;
 
+// V2 HERO 3D RÉDUCTION 20% — au chargement (Hero, progress scroll = 0),
+// les 3 sphères sont rendues 20% plus petites et leurs orbites (rayons
+// UNIQUEMENT — angle/phase/vitesse/tilt intacts) 20% plus compactes, pour
+// une composition plus resserrée. Dès la fin du Hero (progress -> 1),
+// `heroFactor` vaut 1 et tout redevient BIT POUR BIT l'état déjà validé.
+// Volontairement un simple facteur d'échelle appliqué aux constantes de
+// rayon existantes (pas de nouvelle position/ancrage) : la logique
+// orbitale (Terre autour du Soleil, Lune autour de la Terre, phases, sens,
+// vitesse) n'est ni remplacée ni court-circuitée, seule son amplitude
+// spatiale varie temporairement.
+const HERO_SIZE_FACTOR = 0.8;
+
 // Sphère 1 — LA GROSSE ("le soleil") : centre de gravité du système.
 // CS-S6E — la dérive 3 axes quasi imperceptible de CS-S6D ("elle ne
 // semble vraiment réagir que lorsqu'une autre sphère la touche ou passe
@@ -121,7 +133,10 @@ const REPULSION_MARGIN = 0.16;
 const LARGE_ANCHOR = new THREE.Vector3(-0.05, 0.2, 0.1);
 const SUN_ELLIPSE_A = 0.32; // demi-grand axe (unités scène)
 const SUN_ELLIPSE_B = 0.16; // demi-petit axe — ratio 2:1, ellipse nettement visible, pas un cercle
-const SUN_ELLIPSE_SPEED = 0.22; // rad/s — période ≈ 28,6 s, la plus lente du système (plus lente que l'orbite moyenne à 0.5 rad/s)
+// V2 HERO 3D VITESSE/ESPACEMENT — vitesse angulaire réduite de 60% (×0.4)
+// sur les 3 orbites (soleil/terre/lune), demande explicite "ralentir
+// globalement sans figer la scène". Valeur d'origine (CS-S6E) : 0.22 rad/s.
+const SUN_ELLIPSE_SPEED = 0.088; // rad/s — période ≈ 71,4 s, la plus lente du système
 const SUN_ELLIPSE_PHASE = 0.4;
 const SUN_ELLIPSE_TILT_ANGLE = THREE.MathUtils.degToRad(25); // demande explicite : "une rotation de 25 degrés"
 const SUN_ELLIPSE_TILT_AXIS = new THREE.Vector3(0, 0, 1); // autour de l'axe caméra : rotation "à l'écran", pas de raccourci de perspective
@@ -145,8 +160,14 @@ function sunEllipseOffset(angle: number, out: THREE.Vector3) {
 // la possibilité que la Lune (orbite imbriquée, voir plus bas) s'approche
 // visuellement trop près du Soleil. Voir §ANALYSE COLLISION plus bas pour
 // le calcul exact. Vitesse et inclinaison inchangées depuis CS-S6D.
-const MEDIUM_ORBIT_RADIUS = 1.45;
-const MEDIUM_ORBIT_SPEED = 0.5; // rad/s
+// V2 HERO 3D VITESSE/ESPACEMENT — rayon encore augmenté (1.45 -> 1.9) pour
+// écarter davantage la Terre du Soleil ET, combiné à SMALL_ORBIT_RADIUS
+// inchangé, rendre la collision visuelle Soleil/Lune géométriquement
+// IMPOSSIBLE par construction (plus seulement atténuée par la répulsion
+// douce) — voir §ANALYSE COLLISION mise à jour plus bas. Vitesse réduite
+// de 60% (×0.4) comme les deux autres orbites (valeur d'origine : 0.5 rad/s).
+const MEDIUM_ORBIT_RADIUS = 1.9;
+const MEDIUM_ORBIT_SPEED = 0.2; // rad/s
 const MEDIUM_PHASE = 0.6;
 const MEDIUM_TILT_AXIS = new THREE.Vector3(1, 0.15, 0).normalize();
 const MEDIUM_TILT_ANGLE = 0.45; // rad
@@ -161,32 +182,30 @@ const MEDIUM_TILT_ANGLE = 0.45; // rad
 // l'espace selon une direction et une profondeur nettement différentes de
 // celle de la Terre ("axe/plan incliné... lecture plus spatiale...
 // profondeur plus crédible", prompt §5). Voir §ANALYSE COLLISION.
+// V2 HERO 3D VITESSE/ESPACEMENT — rayon INCHANGÉ (le sprint ne demandait pas
+// de réduire la Lune, seulement d'écarter la Terre — voir MEDIUM_ORBIT_RADIUS
+// ci-dessus). Vitesse réduite de 60% (×0.4), valeur d'origine : 1.9 rad/s.
 const SMALL_ORBIT_RADIUS = 0.72;
-const SMALL_ORBIT_SPEED = 1.9; // rad/s — nettement plus vif que la moyenne
+const SMALL_ORBIT_SPEED = 0.76; // rad/s — reste nettement plus vif que la moyenne
 const SMALL_PHASE = 2.2;
 const SMALL_TILT_AXIS = new THREE.Vector3(0.15, 0.4, 1).normalize();
 const SMALL_TILT_ANGLE = 1.05; // rad (~60°)
 
-// --- CS-S6F — ANALYSE COLLISION LUNE/SOLEIL --------------------------------
+// --- V2 HERO 3D VITESSE/ESPACEMENT — ANALYSE COLLISION LUNE/SOLEIL --------
 // La Lune orbite la Terre à rayon constant SMALL_ORBIT_RADIUS ; la Terre
 // orbite le Soleil à rayon constant MEDIUM_ORBIT_RADIUS. Par inégalité
 // triangulaire, la distance Soleil↔Lune ne peut JAMAIS descendre en
-// dessous de |MEDIUM_ORBIT_RADIUS − SMALL_ORBIT_RADIUS| = |1.45−0.72| =
-// 0.73, quel que soit l'angle des deux orbites (le plan incliné de la
-// Lune réduit la FRÉQUENCE à laquelle cette proximité minimale peut être
-// approchée, mais ne change pas la borne théorique — seule la distance
-// elle-même le peut). Un chevauchement géométriquement IMPOSSIBLE dans
-// tous les cas exigerait 0.73 > LARGE_RADIUS + SMALL_RADIUS +
-// REPULSION_MARGIN = 0.5+0.22+0.16 = 0.88, ce qui demanderait un rayon de
-// Terre d'au moins ~1.60 — au-delà de la fourchette "légère à modérée,
-// pas un éloignement extrême" demandée. Le choix retenu (1.45, marge
-// 0.16) réduit l'écart résiduel théorique à 0.15 unité (contre 0.56 unité
-// avant ce sprint : |1.0−0.72|=0.28 vs seuil 0.84) : dans ce cas résiduel
-// rare, la répulsion douce (ci-dessous) n'a plus qu'une correction très
-// faible à appliquer, quasi imperceptible, plutôt qu'un rattrapage large
-// et visible. Combinée à l'inclinaison forte du plan lunaire (qui rend ce
-// cas rare en pratique), c'est la lecture exacte de la décision produit :
-// "la combinaison des deux est plus robuste qu'un seul ajustement isolé."
+// dessous de |MEDIUM_ORBIT_RADIUS − SMALL_ORBIT_RADIUS| = |1.9−0.72| =
+// 1.18, quel que soit l'angle des deux orbites. Un chevauchement est
+// géométriquement IMPOSSIBLE dans tous les cas dès que cette borne dépasse
+// LARGE_RADIUS + SMALL_RADIUS + REPULSION_MARGIN = 0.5+0.22+0.16 = 0.88
+// (seuil de contact) : c'est désormais le cas, avec une marge de 0.30 unité
+// au-delà du seuil (contre un déficit de 0.15 unité en CS-S6F, où la
+// garantie ne reposait encore que sur la répulsion douce en filet de
+// sécurité). La paire Soleil↔Lune est donc protégée PAR CONSTRUCTION, au
+// même titre que les paires Soleil↔Terre et Terre↔Lune — plus seulement
+// "réduite en fréquence" par l'inclinaison du plan lunaire (conservée
+// telle quelle, elle enrichit toujours la lecture spatiale de l'orbite).
 
 /** Décalage circulaire à rayon CONSTANT : un cercle plat dans le plan XY,
  * incliné (rotation rigide, donc longueur préservée) autour de `tiltAxis`.
@@ -302,6 +321,10 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     const targetX = THREE.MathUtils.lerp(rightOffset, 0, progress);
     const targetZ = THREE.MathUtils.lerp(0, -1.15, progress);
     const targetScale = THREE.MathUtils.lerp(1, 0.82, progress);
+    // V2 HERO 3D RÉDUCTION 20% — 0.8 en haut du Hero -> 1.0 une fois le
+    // Hero défilé. À progress=1 ceci vaut exactement 1 : aucune section
+    // suivante n'est affectée.
+    const heroFactor = THREE.MathUtils.lerp(HERO_SIZE_FACTOR, 1, progress);
 
     if (reducedMotion) {
       // CS-S6B §14 — pose stable/apaisée, INCHANGÉ dans son principe :
@@ -318,14 +341,26 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
 
       sunEllipseOffset(SUN_ELLIPSE_PHASE, largeOffsetVec.current);
       largePos.current.copy(LARGE_ANCHOR).add(largeOffsetVec.current);
-      orbitOffset(MEDIUM_ORBIT_RADIUS, MEDIUM_PHASE, MEDIUM_TILT_AXIS, MEDIUM_TILT_ANGLE, mediumOffsetVec.current);
+      // V2 HERO 3D RÉDUCTION 20% — seul le RAYON passé à orbitOffset est mis
+      // à l'échelle par heroFactor ; angle (phase de référence ici), axe et
+      // inclinaison INCHANGÉS.
+      orbitOffset(MEDIUM_ORBIT_RADIUS * heroFactor, MEDIUM_PHASE, MEDIUM_TILT_AXIS, MEDIUM_TILT_ANGLE, mediumOffsetVec.current);
       mediumPos.current.copy(largePos.current).add(mediumOffsetVec.current);
-      orbitOffset(SMALL_ORBIT_RADIUS, SMALL_PHASE, SMALL_TILT_AXIS, SMALL_TILT_ANGLE, smallOffsetVec.current);
+      orbitOffset(SMALL_ORBIT_RADIUS * heroFactor, SMALL_PHASE, SMALL_TILT_AXIS, SMALL_TILT_ANGLE, smallOffsetVec.current);
       smallPos.current.copy(mediumPos.current).add(smallOffsetVec.current);
 
-      if (largeMeshRef.current) largeMeshRef.current.position.copy(largePos.current);
-      if (mediumMeshRef.current) mediumMeshRef.current.position.copy(mediumPos.current);
-      if (smallMeshRef.current) smallMeshRef.current.position.copy(smallPos.current);
+      if (largeMeshRef.current) {
+        largeMeshRef.current.position.copy(largePos.current);
+        largeMeshRef.current.scale.setScalar(largeBallScale * heroFactor);
+      }
+      if (mediumMeshRef.current) {
+        mediumMeshRef.current.position.copy(mediumPos.current);
+        mediumMeshRef.current.scale.setScalar(mediumBallScale * heroFactor);
+      }
+      if (smallMeshRef.current) {
+        smallMeshRef.current.position.copy(smallPos.current);
+        smallMeshRef.current.scale.setScalar(smallBallScale * heroFactor);
+      }
       return;
     }
 
@@ -372,14 +407,19 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     );
 
     // --- CS-S6D — Sphère 2 (MOYENNE) : orbite la grosse, rayon amplifié
-    // légèrement par l'énergie de scroll (gonflement, pas accélération). --
-    const mediumRadius = MEDIUM_ORBIT_RADIUS * (1 + energy.current * ENERGY_ORBIT_BOOST);
+    // légèrement par l'énergie de scroll (gonflement, pas accélération).
+    // V2 HERO 3D RÉDUCTION 20% — rayon mis à l'échelle par heroFactor
+    // (angle t*MEDIUM_ORBIT_SPEED+MEDIUM_PHASE, axe, inclinaison : INCHANGÉS,
+    // donc la Terre continue de tourner autour du Soleil exactement pareil,
+    // juste sur un cercle temporairement plus petit près du chargement). --
+    const mediumRadius = MEDIUM_ORBIT_RADIUS * heroFactor * (1 + energy.current * ENERGY_ORBIT_BOOST);
     orbitOffset(mediumRadius, t * MEDIUM_ORBIT_SPEED + MEDIUM_PHASE, MEDIUM_TILT_AXIS, MEDIUM_TILT_ANGLE, mediumOffsetVec.current);
     mediumPos.current.copy(largePos.current).add(mediumOffsetVec.current);
 
     // --- CS-S6D — Sphère 3 (PETITE) : orbite la moyenne, hérite donc
-    // indirectement de son mouvement (et de celui de la grosse). ---------
-    const smallRadius = SMALL_ORBIT_RADIUS * (1 + energy.current * ENERGY_ORBIT_BOOST);
+    // indirectement de son mouvement (et de celui de la grosse). Même
+    // principe heroFactor que ci-dessus, même logique inchangée. ---------
+    const smallRadius = SMALL_ORBIT_RADIUS * heroFactor * (1 + energy.current * ENERGY_ORBIT_BOOST);
     orbitOffset(smallRadius, t * SMALL_ORBIT_SPEED + SMALL_PHASE, SMALL_TILT_AXIS, SMALL_TILT_ANGLE, smallOffsetVec.current);
     smallPos.current.copy(mediumPos.current).add(smallOffsetVec.current);
 
@@ -393,7 +433,11 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     // faible désormais (0.56 unité de dépassement possible avant ce sprint,
     // 0.15 après). ----------------------------------------------------------
     const positions = [largePos.current, mediumPos.current, smallPos.current];
-    const radii = [LARGE_RADIUS, MEDIUM_RADIUS, SMALL_RADIUS];
+    // V2 HERO 3D RÉDUCTION 20% — rayons de sécurité mis à l'échelle par
+    // heroFactor pour rester cohérents avec la taille RENDUE des sphères
+    // (20% plus petites près du chargement). À progress=1, heroFactor=1 :
+    // radii strictement INCHANGÉS, comme le reste du filet de sécurité.
+    const radii = [LARGE_RADIUS * heroFactor, MEDIUM_RADIUS * heroFactor, SMALL_RADIUS * heroFactor];
     for (let a = 0; a < positions.length; a++) {
       for (let b = a + 1; b < positions.length; b++) {
         const pa = positions[a];
@@ -409,9 +453,18 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
       }
     }
 
-    if (largeMeshRef.current) largeMeshRef.current.position.copy(largePos.current);
-    if (mediumMeshRef.current) mediumMeshRef.current.position.copy(mediumPos.current);
-    if (smallMeshRef.current) smallMeshRef.current.position.copy(smallPos.current);
+    if (largeMeshRef.current) {
+      largeMeshRef.current.position.copy(largePos.current);
+      largeMeshRef.current.scale.setScalar(largeBallScale * heroFactor);
+    }
+    if (mediumMeshRef.current) {
+      mediumMeshRef.current.position.copy(mediumPos.current);
+      mediumMeshRef.current.scale.setScalar(mediumBallScale * heroFactor);
+    }
+    if (smallMeshRef.current) {
+      smallMeshRef.current.position.copy(smallPos.current);
+      smallMeshRef.current.scale.setScalar(smallBallScale * heroFactor);
+    }
   });
 
   return (
@@ -484,7 +537,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
           position={largePos.current}
           geometry={ballGeometry}
           material={ballMaterial}
-          scale={largeBallScale}
+          scale={largeBallScale * HERO_SIZE_FACTOR}
         />
         {/*
         <mesh ref={mediumMeshRef} position={mediumPos.current} material={sphereMaterial}>
@@ -496,7 +549,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
           position={mediumPos.current}
           geometry={ballGeometry}
           material={ballMaterial}
-          scale={mediumBallScale}
+          scale={mediumBallScale * HERO_SIZE_FACTOR}
         />
         {/*
         <mesh ref={smallMeshRef} position={smallPos.current} material={sphereMaterial}>
@@ -508,7 +561,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
           position={smallPos.current}
           geometry={ballGeometry}
           material={ballMaterial}
-          scale={smallBallScale}
+          scale={smallBallScale * HERO_SIZE_FACTOR}
         />
       </group>
     </>
