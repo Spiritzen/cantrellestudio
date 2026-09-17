@@ -9,7 +9,15 @@ import ActionLink from "../ui/ActionLink.astro";
 interface Props {
   eyebrow: string;
   title: string;
-  lead: string;
+  lead?: string;
+  // Micro-change "Hero mots clés" (Applications métier & SaaS) — variante
+  // avec balisage (ex. <strong>) pour surligner 2-3 mots précis dans le
+  // lead, sans dépendre de contenu utilisateur (toujours une chaîne
+  // statique écrite dans le frontmatter de la page). Optionnelle : les
+  // 2 autres pages Services continuent de passer `lead` en texte brut,
+  // rendu échappé comme avant, comportement strictement inchangé pour
+  // elles.
+  leadHtml?: string;
   primaryHref?: string;
   primaryLabel?: string;
   secondaryHref: string;
@@ -20,6 +28,7 @@ const {
   eyebrow,
   title,
   lead,
+  leadHtml,
   primaryHref = "/contact/",
   primaryLabel = "Parler de votre projet",
   secondaryHref,
@@ -30,7 +39,11 @@ const {
 <div class="service-hero" data-motion="hero">
   <span class="service-hero__eyebrow">{eyebrow}</span>
   <h1 class="service-hero__title">{title}</h1>
-  <p class="service-hero__lead">{lead}</p>
+  {leadHtml ? (
+    <p class="service-hero__lead" set:html={leadHtml} />
+  ) : (
+    <p class="service-hero__lead">{lead}</p>
+  )}
   <div class="service-hero__actions">
     <ActionLink href={primaryHref} variant="primary">{primaryLabel}</ActionLink>
     <ActionLink href={secondaryHref} variant="secondary">{secondaryLabel}</ActionLink>

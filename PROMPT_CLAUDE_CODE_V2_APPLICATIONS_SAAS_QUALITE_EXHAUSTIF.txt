@@ -1,0 +1,531 @@
+PROMPT CLAUDE CODE — V2 QUALITÉ / ÉTAPE BLOQUÉE À FINALISER
+Page Applications métier & SaaS — Hero + section « Le point de départ »
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+Page cible UNIQUE :
+/applications-metier-saas/
+
+IMPORTANT
+Nous sommes TOUJOURS sur la même étape de la V2.
+Cette étape n’est pas validée visuellement.
+Ne cherche pas à aller vite.
+Je veux une intervention réfléchie, propre, premium, réversible et cohérente avec la landing page.
+
+Il y a 2 problèmes à résoudre ensemble, mais uniquement sur cette page :
+
+1. Le Hero ne reprend pas fidèlement le système de lignes animées de la landing.
+2. La section « Le point de départ » manque de qualité visuelle, de mouvement et de clarté métier.
+
+Ne passe à aucune autre section après cela.
+STOP après rapport.
+
+==================================================
+0. RÈGLE DE TRAVAIL — AUDIT AVANT MODIFICATION
+==================================================
+
+Avant de modifier quoi que ce soit :
+
+1. Inspecter le code actuel de :
+- src/pages/index.astro
+- le Hero de la Home / landing
+- les composants utilisés pour les filaments / lignes animées
+- les styles associés au Hero Home
+- la logique de biais horizontal
+- les composants / styles de DotWave utilisés derrière « Expertises »
+- src/pages/applications-metier-saas.astro
+- src/components/services/ProjectHeroVisual.astro
+- les styles spécifiques de cette page / des services
+
+2. Identifier précisément :
+- quel code produit les lignes animées de la landing ;
+- comment leur mouvement est calculé ;
+- comment la majorité des tracés est orientée plutôt horizontalement ;
+- comment leur animation reste fluide ;
+- comment `prefers-reduced-motion` est géré ;
+- quel code produit le DotWave / points animés de la landing ;
+- quel code produit les cards premium déjà validées ailleurs.
+
+3. Vérifier l’état Git en lecture seule :
+- `git status`
+- `git diff -- src/pages/applications-metier-saas.astro`
+- `git diff -- src/components/services/ProjectHeroVisual.astro`
+- diff des styles spécifiques réellement concernés
+
+BUT :
+comprendre exactement ce qui a été ajouté lors des essais précédents,
+afin de pouvoir remplacer proprement le mauvais essai au lieu d’empiler des hacks.
+
+AUCUN :
+git add
+git commit
+git push
+git checkout
+git reset
+git restore
+
+==================================================
+1. HERO — PROBLÈME À CORRIGER
+==================================================
+
+État actuel REFUSÉ :
+- les lignes ne donnent pas le même rendu que la landing ;
+- certaines trajectoires paraissent trop verticales ;
+- le mouvement paraît saccadé ;
+- le résultat ressemble à une imitation plutôt qu’à la vraie signature visuelle de la Home.
+
+OBJECTIF :
+le Hero de `/applications-metier-saas/` doit reprendre le MÊME langage visuel que le Hero de la landing.
+
+Je ne demande pas :
+« fais quelque chose dans le même style ».
+
+Je demande :
+« inspecte l’implémentation réelle de la landing et réutilise-la / adapte-la proprement ».
+
+==================================================
+2. HERO — LIGNES / FILAMENTS
+==================================================
+
+Les lignes doivent reprendre le comportement réel de la landing :
+
+- mêmes types de courbes ;
+- même sensation de mouvement ;
+- même fluidité ;
+- même sobriété ;
+- même opacité générale ;
+- même logique de génération ;
+- même préférence pour les trajectoires horizontales ;
+- même gestion du reduced-motion.
+
+Référence connue dans le projet :
+`HORIZONTAL_BIAS_PROBABILITY = 0.75`
+
+Mais :
+si le code actuel de la landing utilise aujourd’hui une autre valeur ou une autre logique,
+LE CODE ACTUEL DE LA LANDING FAIT FOI.
+
+Attendu visuel :
+- majorité de filaments plutôt horizontaux ;
+- quelques trajectoires plus libres ;
+- mouvement continu et fluide ;
+- aucune sensation de saut / repositionnement brutal ;
+- aucune animation verticale dominante ;
+- aucune boucle qui paraît mécanique ou répétitive.
+
+IMPORTANT :
+si l’essai actuel utilise des lignes statiques ou un système différent,
+le supprimer proprement avant d’installer la vraie solution.
+
+NE PAS empiler deux systèmes de lignes.
+
+==================================================
+3. HERO — BACKGROUND / PROFONDEUR
+==================================================
+
+Le background du Hero Applications doit reprendre la profondeur de la landing :
+
+- fond graphite/noir ;
+- présence Ember/cuivre diffuse ;
+- pas d’aplat orange ;
+- pas de rectangle visible ;
+- glow large, doux et intégré ;
+- lignes derrière le contenu.
+
+Hiérarchie z-index obligatoire :
+
+1. fond sombre / glow Ember
+2. filaments animés
+3. contenu texte
+4. carte PROJET interactive
+
+La carte PROJET reste visuellement au-dessus des filaments.
+
+==================================================
+4. HERO — PROTECTION ABSOLUE DE LA CARTE PROJET
+==================================================
+
+La carte PROJET est VALIDÉE.
+
+NE PAS MODIFIER :
+- `puce-projet.png`
+- `circuit_paths_complete.svg`
+- `particle-orange.png`
+- taille de la carte
+- border-radius
+- box-shadow / glow
+- hover 3D
+- rotateX / rotateY
+- scale
+- perspective
+- animation des particules
+- randomisation taille 0.7 → 1.3
+- randomisation vitesse 0.7 → 1.3
+- nombre de particules
+- logique de spawn
+- fade-out
+- reduced-motion existant
+
+Le seul ajustement autorisé sur la carte :
+- z-index / contexte d’empilement si nécessaire pour la garder au-dessus des filaments.
+
+==================================================
+5. SECTION « LE POINT DE DÉPART » — PROBLÈME À RÉSOUDRE
+==================================================
+
+État actuel :
+- deux cards présentes ;
+- fond DotWave / points animés ;
+- mais trop de vide visuel ;
+- card droite trop creuse ;
+- pas de hover suffisamment vivant ;
+- composition pas encore au niveau premium de la landing ;
+- vocabulaire trop technique pour des prospects non spécialistes du numérique.
+
+Le visiteur cible n’est PAS un développeur.
+
+Le visiteur peut être :
+- artisan ;
+- indépendant ;
+- dirigeant de TPE ;
+- PME ;
+- porteur de projet ;
+- responsable métier.
+
+Il doit comprendre immédiatement les besoins et les solutions,
+sans connaître le jargon informatique.
+
+==================================================
+6. SECTION « LE POINT DE DÉPART » — COMPOSITION À CONSERVER
+==================================================
+
+Conserver le principe de 2 cards côte à côte sur desktop :
+
+CARD A :
+« Des situations qui reviennent souvent »
+
+CARD B :
+« Des familles de solutions possibles »
+
+Mais les retravailler profondément en présentation.
+
+Ne pas revenir à deux colonnes de texte simples.
+
+Sur mobile :
+1 colonne propre.
+
+==================================================
+7. CARD A — SITUATIONS FRÉQUENTES
+==================================================
+
+Conserver le sens des situations actuelles.
+
+Tu peux reformuler légèrement pour :
+- raccourcir ;
+- rendre plus direct ;
+- rendre plus humain ;
+- faciliter le scan.
+
+Exemples de sens à préserver :
+- tableau partagé devenu difficile à maintenir ;
+- mêmes données saisies plusieurs fois ;
+- règles métier dispersées / non formalisées ;
+- outil générique mal adapté ;
+- tâches répétitives automatisables ;
+- rôles / droits utilisateurs peu clairs.
+
+Présentation recommandée :
+- 6 items bien structurés ;
+- numérotation discrète ou petits marqueurs ;
+- espacement régulier ;
+- séparateurs subtils ;
+- pas de gros vide inutile.
+
+==================================================
+8. CARD B — SOLUTIONS EN LANGAGE CLIENT
+==================================================
+
+Le jargon actuel est à corriger.
+
+TERMES À NE PAS LAISSER SEULS SANS EXPLICATION :
+- CRM métier
+- portail
+- back-office
+- SaaS multi-utilisateurs
+
+Le prospect doit comprendre immédiatement.
+
+Préférence :
+utiliser des formulations simples et orientées usage.
+
+Exemples d’intention :
+- Suivi des clients et des demandes
+- Devis, factures et paiements
+- Planning et organisation
+- Espace client ou espace équipe
+- Tableaux de bord et suivi d’activité
+- Outil en ligne partagé entre plusieurs utilisateurs
+
+Si tu veux conserver un terme technique,
+le mettre en second niveau et l’expliquer.
+
+Exemples acceptables :
+- « Suivi clients et demandes — type CRM »
+- « Espace d’administration — back-office »
+- « Outil partagé en ligne — SaaS multi-utilisateurs »
+
+Mais ne jamais présenter le jargon comme le message principal.
+
+==================================================
+9. CARD B — REMPLIR LE VIDE DE FAÇON INTELLIGENTE
+==================================================
+
+Ne pas agrandir artificiellement les éléments juste pour remplir.
+
+Le vide doit être corrigé par une meilleure composition.
+
+Idées autorisées :
+- 6 items répartis proprement ;
+- micro-description d’une ligne sous certains items ;
+- pictogrammes minimalistes existants si le projet en possède déjà ;
+- regroupement en mini-blocs ;
+- structure en 2 colonnes internes si cela reste lisible ;
+- petite phrase de conclusion utile en bas de card.
+
+Exemple de conclusion possible :
+« L’outil s’adapte à votre façon de travailler, pas l’inverse. »
+
+Ne pas ajouter de marketing creux.
+
+==================================================
+10. HOVER DES 2 CARDS
+==================================================
+
+Ajouter un hover PREMIUM et SOBRE.
+
+Objectif :
+faire sentir que la section est vivante.
+
+Comportement recommandé :
+- lift léger : environ -4px à -6px ;
+- très légère accentuation de la bordure Ember ;
+- glow diffus très modéré ;
+- éventuellement micro-déplacement interne très subtil ;
+- transition douce.
+
+Éviter :
+- grosse rotation 3D ;
+- effet gaming ;
+- pulsation agressive ;
+- scale important ;
+- animation permanente.
+
+Le hover doit être plus discret que la carte PROJET.
+
+==================================================
+11. DOTWAVE / POINTS ANIMÉS
+==================================================
+
+Le DotWave derrière « Le point de départ » est conservé.
+
+MAIS :
+- les cards doivent suffisamment isoler le texte du motif ;
+- le contraste doit rester excellent ;
+- le DotWave reste arrière-plan ;
+- pas de points passant visuellement devant les cards ;
+- pas d’opacité excessive.
+
+Réutiliser exactement le composant / pattern de la landing,
+pas une copie approximative.
+
+==================================================
+12. DESIGN DES CARDS
+==================================================
+
+S’inspirer des meilleures surfaces déjà validées sur Cantrelle Studio :
+
+- graphite / surface élevée ;
+- bordure très fine ;
+- rayon cohérent avec les tokens ;
+- accent Ember subtil ;
+- typographie claire ;
+- espacements généreux mais maîtrisés ;
+- pas de grandes zones mortes ;
+- hiérarchie nette.
+
+Possibilité :
+- top border / petit liseré Ember ;
+- titre fort ;
+- sous-structure interne ;
+- hover léger.
+
+Ne pas inventer une nouvelle direction graphique.
+
+==================================================
+13. RESPONSIVE
+==================================================
+
+Tester réellement :
+
+- 1440px
+- 1024px
+- 768px
+- 390px
+
+Desktop :
+- 2 cards équilibrées ;
+- aucune card visuellement vide ;
+- hauteur cohérente.
+
+Tablette :
+- adaptation fluide.
+
+Mobile :
+- 1 colonne ;
+- aucun débordement ;
+- aucun texte tassé ;
+- hover non indispensable sur tactile ;
+- DotWave discret.
+
+==================================================
+14. ACCESSIBILITÉ / REDUCED MOTION
+==================================================
+
+Conserver / respecter :
+`prefers-reduced-motion: reduce`
+
+Sous reduced-motion :
+- filaments statiques ou désactivés selon la logique Home ;
+- DotWave respecte son comportement existant ;
+- hover ne doit pas produire de mouvement inutile.
+
+Contraste :
+- texte principal lisible ;
+- jargon reformulé ;
+- labels Ember lisibles.
+
+==================================================
+15. RÉVERSIBILITÉ
+==================================================
+
+Cette intervention doit être facile à annuler.
+
+Donc :
+- modifications localisées ;
+- pas de refactor global ;
+- pas de changement des composants partagés si cela crée un risque de régression ;
+- si extraction nécessaire, garder un périmètre minimal ;
+- ne pas modifier les autres pages.
+
+Avant de terminer :
+fournir la liste exacte des fichiers modifiés.
+
+==================================================
+16. VALIDATION VISUELLE OBLIGATOIRE
+==================================================
+
+Comparer dans le navigateur :
+
+A. Hero landing
+B. Hero Applications métier & SaaS
+
+Le Hero Applications doit clairement reprendre :
+- même fluidité des lignes ;
+- même horizontalité majoritaire ;
+- même profondeur ;
+- même langage visuel.
+
+Puis inspecter « Le point de départ » :
+
+Critères GREEN :
+- 2 cards équilibrées ;
+- plus de grande zone vide gênante ;
+- hover premium ;
+- contenu immédiatement compréhensible ;
+- aucun jargon isolé ;
+- DotWave discret ;
+- rendu clairement plus premium qu’avant.
+
+==================================================
+17. VALIDATION TECHNIQUE
+==================================================
+
+Exécuter :
+- npm run check
+- npm run build
+
+Puis ouvrir :
+- /
+- /applications-metier-saas/
+
+Vérifier :
+- Home inchangée ;
+- aucune erreur console ;
+- aucune erreur réseau ;
+- aucun overflow.
+
+==================================================
+18. RAPPORT CLAUDE CODE OBLIGATOIRE
+==================================================
+
+Créer un rapport dans :
+
+docs/rapports/rapport_v2_applications_saas_hero_point_depart.txt
+
+Le rapport doit contenir :
+
+1. résumé du problème initial
+2. fichiers inspectés sur la landing
+3. fichiers modifiés
+4. ancien système de lignes supprimé/remplacé : OUI/NON
+5. mécanisme exact réutilisé depuis la Home
+6. valeur / logique du biais horizontal
+7. correction apportée à la fluidité
+8. ordre final des z-index
+9. carte PROJET modifiée : NON (sauf z-index si nécessaire)
+10. DotWave utilisé sur « Le point de départ »
+11. choix final de design des 2 cards
+12. hover appliqué
+13. ancien vocabulaire technique
+14. nouveau vocabulaire simplifié
+15. éventuels termes techniques conservés + explication
+16. responsive 1440 / 1024 / 768 / 390
+17. reduced-motion
+18. accessibilité / contraste
+19. `npm run check`
+20. `npm run build`
+21. erreurs console / réseau
+22. régressions Home : OUI/NON
+23. réversibilité / comment revenir à l’état précédent
+24. Git exécuté : NON
+
+CONCLUSION OBLIGATOIRE :
+- HERO VALIDÉ TECHNIQUEMENT : OUI/NON
+- SECTION POINT DE DÉPART VALIDÉE TECHNIQUEMENT : OUI/NON
+- PRÊT POUR VALIDATION VISUELLE SÉBASTIEN : OUI/NON
+- points restant à arbitrer visuellement
+
+Puis STOP.
+
+==================================================
+19. INTERDICTIONS
+==================================================
+
+Ne pas :
+- passer à la section suivante ;
+- toucher à une autre page ;
+- faire git add ;
+- faire git commit ;
+- faire git push ;
+- redessiner la Home ;
+- modifier la carte PROJET ;
+- ajouter une dépendance ;
+- inventer un troisième système de lignes ;
+- laisser du texte/commentaire français brut dans un `<script>` JavaScript.
+
+Dernier point IMPORTANT :
+nous avons déjà eu plusieurs PARSE_ERROR causés par du texte libre mal commenté.
+Toute prose dans un `<script>` doit être dans un commentaire JS valide.
+
+Puis STOP.

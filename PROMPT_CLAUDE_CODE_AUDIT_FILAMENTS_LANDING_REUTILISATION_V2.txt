@@ -1,0 +1,564 @@
+PROMPT CLAUDE CODE — AUDIT SOURCE DE VÉRITÉ
+Système de filaments / lignes animées de la landing Cantrelle Studio
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+MISSION
+STOPPER les essais visuels sur `/applications-metier-saas/`.
+
+Le système de lignes actuellement adapté sur cette page n’est PAS validé :
+- les traits partent progressivement vers la droite ;
+- ils quittent la zone visible ;
+- ils ne reviennent pas correctement ;
+- le comportement ne correspond toujours pas à la landing ;
+- nous avons déjà tenté plusieurs approximations.
+
+Nous ne voulons PLUS corriger par essais successifs.
+
+OBJECTIF DE CE SPRINT :
+faire un AUDIT TECHNIQUE EXHAUSTIF du système ORIGINAL de filaments / lignes animées de la LANDING / HOME afin de comprendre exactement comment il fonctionne et disposer de toutes les informations nécessaires pour le reproduire proprement et le rendre réutilisable sur d’autres pages.
+
+CE SPRINT EST UN AUDIT UNIQUEMENT.
+
+AUCUNE MODIFICATION DE CODE.
+AUCUN DESIGN.
+AUCUN REFACTOR.
+AUCUN GIT.
+
+==================================================
+1. CONTEXTE VISUEL À COMPRENDRE
+==================================================
+
+Sur la landing page, les lignes ne sont pas seulement un décor du Hero.
+
+Elles restent perceptibles lorsque l’on descend dans la page :
+- derrière le Hero ;
+- derrière la section Approche ;
+- plus bas au fil du scroll ;
+- elles participent à la profondeur globale de la page.
+
+C’est CE comportement que nous voulons comprendre.
+
+Sur `/applications-metier-saas/`, à terme, nous voulons pouvoir retrouver le même principe :
+- dans le Hero ;
+- dans Méthode ;
+- dans Cadrage ;
+- derrière le CTA final « Un projet d'application métier ? » ;
+- et potentiellement sur les autres pages Services.
+
+Nous ne voulons donc pas un composant limité à un Hero de 500px de haut.
+Nous voulons comprendre la vraie architecture de la landing avant de décider comment la reproduire.
+
+==================================================
+2. SOURCES À INSPECTER
+==================================================
+
+Commencer par retrouver TOUS les fichiers réellement impliqués.
+
+À inspecter au minimum :
+
+- src/pages/index.astro
+- src/components/hero/HeroScene.tsx
+- src/components/hero/HeroSpheres.tsx
+- src/components/hero/useHeroBallModel.ts
+- src/components/hero/HeroEnvironmentImage.tsx
+- src/styles/home.css
+- src/styles/global.css
+- BaseLayout / layout parent si pertinent
+
+Puis suivre toutes les dépendances réellement utilisées par le système de filaments.
+
+Chercher notamment :
+- `filament`
+- `filamentsRig`
+- `CatmullRomCurve3`
+- `Line`
+- `BufferGeometry`
+- `useFrame`
+- `position: fixed`
+- `z-index`
+- Canvas
+- camera
+- scroll
+- scroll progress
+- `visibilitychange`
+- reduced motion
+- resize
+- viewport
+- `HORIZONTAL_BIAS_PROBABILITY`
+- toute fonction générant les points / courbes
+
+Ne pas se contenter des noms connus.
+Tracer réellement l’architecture.
+
+==================================================
+3. QUESTION FONDAMENTALE À RÉPONDRE
+==================================================
+
+Nous voulons savoir exactement :
+
+« Pourquoi les lignes de la landing restent présentes et cohérentes pendant le scroll, alors que l’implémentation actuelle sur Applications métier & SaaS s’échappe de l’écran ? »
+
+Le rapport doit répondre techniquement à cette question.
+
+==================================================
+4. ARCHITECTURE GLOBALE
+==================================================
+
+Documenter précisément :
+
+- Où le Canvas est monté.
+- S’il est `fixed`, `absolute`, `sticky` ou dans le flux.
+- Sa largeur / hauteur réelle.
+- Son rapport au viewport.
+- Son rapport aux sections de la Home.
+- Son z-index.
+- Le z-index des contenus au-dessus.
+- S’il couvre uniquement le Hero ou toute la page.
+- S’il reste monté pendant tout le scroll.
+- S’il est déplacé / transformé pendant le scroll.
+- Si la caméra bouge.
+- Si le groupe 3D bouge.
+- Si les sphères bougent indépendamment.
+- Si les filaments sont attachés au même rig que les sphères.
+- Ce qui reste fixe par rapport au viewport.
+- Ce qui évolue par rapport au scroll.
+
+Faire un schéma ASCII clair de la hiérarchie DOM / Canvas / scène 3D.
+
+==================================================
+5. GÉNÉRATION DES FILAMENTS
+==================================================
+
+Documenter ligne par ligne la logique de génération.
+
+Pour chaque filament :
+- nombre de points ;
+- point de départ ;
+- point d’arrivée ;
+- espace de coordonnées utilisé ;
+- unités ;
+- amplitude X / Y / Z ;
+- ordre des points ;
+- type de courbe ;
+- tension / interpolation ;
+- matériau ;
+- couleur ;
+- opacité ;
+- largeur ;
+- nombre total de filaments ;
+- randomisation.
+
+Documenter EXACTEMENT :
+`HORIZONTAL_BIAS_PROBABILITY`
+
+Préciser :
+- valeur réelle actuelle ;
+- où elle est utilisée ;
+- comment le tirage aléatoire fonctionne ;
+- ce qui change entre un filament « horizontalement biaisé » et un filament « libre » ;
+- quelles amplitudes sont appliquées dans chaque cas.
+
+Ne pas paraphraser vaguement.
+Donner les constantes et formules réelles.
+
+==================================================
+6. MOUVEMENT DES FILAMENTS
+==================================================
+
+C’est un point CRITIQUE.
+
+Documenter exactement :
+- qu’est-ce qui est animé ?
+- chaque ligne ?
+- le rig entier ?
+- la scène ?
+- la caméra ?
+- plusieurs niveaux ?
+
+Pour chaque mouvement :
+- axe ;
+- formule ;
+- vitesse ;
+- delta ;
+- facteur lié au scroll ou à l’énergie ;
+- interpolation ;
+- sens ;
+- périodicité ;
+- boucle réelle ou rotation continue ;
+- comportement après plusieurs minutes.
+
+Répondre explicitement :
+
+1. Les filaments quittent-ils mathématiquement le viewport ?
+2. Si non, pourquoi restent-ils visibles ?
+3. Si oui ponctuellement, pourquoi d’autres reviennent-ils ?
+4. Le système est-il circulaire / orbital plutôt que translationnel ?
+5. Y a-t-il réellement une notion de « réapparition », ou voit-on simplement une autre partie du rig ?
+6. La caméra et la perspective jouent-elles un rôle essentiel dans cette impression ?
+
+==================================================
+7. SCROLL — COMPORTEMENT ENTRE LES SECTIONS
+==================================================
+
+Documenter précisément le comportement au scroll.
+
+Nous voulons comprendre pourquoi, sur la Home, les traits sont encore visibles derrière « Approche ».
+
+Chercher :
+- progress de scroll ;
+- calcul de section ;
+- positions cibles ;
+- lerp ;
+- offsets ;
+- recentrage ;
+- changement d’échelle ;
+- changement de rotation ;
+- changement de profondeur Z ;
+- déplacement du rig ;
+- déplacement des sphères ;
+- déplacement des filaments.
+
+Créer un tableau :
+
+| Zone de page | État Canvas | Sphères | Filaments | Position / mouvement | Z-index |
+| Hero | ... | ... | ... | ... | ... |
+| Expertises | ... | ... | ... | ... | ... |
+| Approche | ... | ... | ... | ... | ... |
+| Réalisations | ... | ... | ... | ... | ... |
+| Méthode | ... | ... | ... | ... | ... |
+| Capacités | ... | ... | ... | ... | ... |
+| CTA final | ... | ... | ... | ... | ... |
+
+Si le code ne raisonne pas explicitement par sections,
+indiquer la vraie logique à la place.
+
+==================================================
+8. COORDONNÉES / CAMERA / PERSPECTIVE
+==================================================
+
+Documenter :
+- type de caméra ;
+- position caméra ;
+- FOV ;
+- near / far ;
+- aspect ;
+- resize ;
+- DPR ;
+- coordonnées monde ;
+- coordonnées écran ;
+- projection.
+
+Expliquer pourquoi une transposition naïve en SVG 2D ne peut PAS forcément reproduire le même rendu.
+
+C’est important :
+le rapport actuel sur Applications métier & SaaS a tenté de convertir le principe en SVG 2D avec rotation CSS.
+
+Nous voulons savoir précisément quelles propriétés du rendu Home ont été perdues dans cette adaptation.
+
+==================================================
+9. AUDIT DE L’IMPLÉMENTATION ACTUELLE APPLICATIONS MÉTIER & SAAS
+==================================================
+
+Lire SANS MODIFIER :
+- `ServiceHeroFilaments.astro`
+- son CSS
+- son script
+- son montage dans `/applications-metier-saas/`
+
+Comparer avec la Home.
+
+Créer un tableau :
+
+| Élément | Home originale | Version Applications actuelle | Écart / conséquence |
+| ... | ... | ... | ... |
+
+Analyser spécialement :
+- SVG 2D vs Three.js ;
+- rotation CSS ;
+- `transform-origin`;
+- durée 240s/tour si toujours utilisée ;
+- clipping / overflow ;
+- dimensions du conteneur ;
+- viewBox ;
+- rotation du groupe ;
+- pourquoi les lignes partent vers la droite ;
+- pourquoi elles ne reviennent pas visuellement ;
+- pourquoi le mouvement paraît saccadé ou incohérent.
+
+Donner la CAUSE RACINE,
+pas seulement le symptôme.
+
+==================================================
+10. PERSISTANCE MULTI-SECTIONS
+==================================================
+
+C’est la partie la plus importante pour la V2.
+
+Nous voulons à terme un système réutilisable sur une page Service entière.
+
+Exemple Applications métier & SaaS :
+- Hero
+- Méthode
+- Cadrage
+- Stack
+- CTA final « Un projet d'application métier ? »
+
+Évaluer 3 architectures possibles :
+
+A. Réutiliser un Canvas Three.js fixe sur toute la page Service.
+B. Extraire uniquement un système de filaments Three.js réutilisable.
+C. Reproduire visuellement le comportement en SVG/Canvas 2D.
+
+Pour chacune :
+- fidélité visuelle ;
+- complexité ;
+- performance ;
+- maintenance ;
+- responsive ;
+- reduced-motion ;
+- risque de régression ;
+- facilité de réutilisation sur d’autres pages.
+
+IMPORTANT :
+ne pas implémenter.
+Seulement analyser.
+
+==================================================
+11. RECOMMANDATION DE FUTURE ARCHITECTURE
+==================================================
+
+À partir de l’audit,
+proposer UNE architecture recommandée pour la V2.
+
+Le futur système doit idéalement permettre :
+
+- une instance persistante de filaments sur une page ;
+- visible derrière plusieurs sections ;
+- variations de visibilité / position possibles selon le scroll ;
+- aucun reset brutal entre sections ;
+- aucune sortie définitive du viewport ;
+- même fluidité que la Home ;
+- préférence horizontale ;
+- z-index bas ;
+- contenus toujours lisibles ;
+- possibilité de réutilisation sur :
+  - Applications métier & SaaS
+  - Sites professionnels
+  - Développement sur mesure
+  - éventuellement pages Studio
+
+Donner un nom de composant suggéré, par exemple :
+`PageFilaments.tsx`
+ou meilleur nom si pertinent.
+
+Mais NE PAS LE CRÉER.
+
+==================================================
+12. API FUTURE POSSIBLE
+==================================================
+
+Proposer une API simple, conceptuelle uniquement.
+
+Exemple :
+
+<PageFilaments
+  horizontalBias={0.75}
+  density={5}
+  intensity={0.12}
+  variant="ember"
+  reducedMotion="static"
+/>
+
+Ou une meilleure proposition adaptée au code réel.
+
+Décrire :
+- props utiles ;
+- defaults ;
+- ce qui ne doit PAS être configurable pour éviter une dérive visuelle.
+
+==================================================
+13. PERFORMANCE
+==================================================
+
+Documenter :
+- coût actuel des filaments de la Home ;
+- nombre de lignes ;
+- allocations par frame ;
+- géométrie ;
+- matériaux ;
+- draw calls si déductible ;
+- Canvas déjà chargé ou non sur pages Services ;
+- coût potentiel si on réutilise Three.js sur toutes les pages.
+
+Prendre en compte :
+- desktop ;
+- mobile ;
+- DPR ;
+- client:media actuel ;
+- reduced-motion ;
+- onglet masqué.
+
+Ne pas inventer de chiffres impossibles à mesurer.
+Distinguer mesures et estimations.
+
+==================================================
+14. RESPONSIVE
+==================================================
+
+Documenter le comportement actuel Home :
+- desktop ;
+- tablette ;
+- mobile.
+
+Vérifier notamment si la 3D / filaments sont :
+- hydratés ou non sous 900px ;
+- masqués ;
+- simplifiés ;
+- statiques.
+
+Cela déterminera la future stratégie Pages Services.
+
+==================================================
+15. REDUCED MOTION
+==================================================
+
+Documenter exactement :
+- comment Home détecte `prefers-reduced-motion` ;
+- ce que devient `frameloop`;
+- si les filaments restent statiques ;
+- si la scène continue à rendre ;
+- ce qu’il faudrait réutiliser.
+
+==================================================
+16. Z-INDEX / SURFACES
+==================================================
+
+Créer un schéma clair de l’empilement Home :
+
+- page background ;
+- Canvas ;
+- filaments ;
+- sphères ;
+- overlays ;
+- sections ;
+- surfaces/cartes ;
+- textes.
+
+Puis proposer le schéma équivalent souhaitable pour les pages Services.
+
+==================================================
+17. POINTS ANIMÉS / DOTWAVE — HORS SUJET PRINCIPAL MAIS À DOCUMENTER
+==================================================
+
+Ne pas réauditer tout DotWave.
+
+Mais noter clairement :
+- il s’agit d’un système différent ;
+- il peut rester local à certaines sections ;
+- il ne remplace pas les filaments persistants.
+
+Exemple cible Applications :
+- filaments persistants = couche globale page ;
+- DotWave = décor local uniquement sur certaines sections comme Point de départ / Stack.
+
+Cette séparation doit être claire dans le rapport.
+
+==================================================
+18. AUCUNE MODIFICATION
+==================================================
+
+INTERDICTION ABSOLUE de modifier :
+- Home
+- Applications métier & SaaS
+- ServiceHeroFilaments
+- CSS
+- composants
+- dépendances
+- config
+
+Ne créer QUE le rapport.
+
+Aucun :
+git add
+git commit
+git push
+git restore
+git checkout
+git reset
+
+==================================================
+19. RAPPORT À CRÉER
+==================================================
+
+Créer :
+
+docs/rapports/rapport_audit_filaments_landing_reutilisation_v2.txt
+
+Le rapport doit être EXHAUSTIF et structuré avec au minimum :
+
+1. Résumé exécutif
+2. Architecture réelle du système Home
+3. Fichiers source impliqués
+4. Hiérarchie DOM / Canvas
+5. Génération des filaments
+6. Constantes exactes
+7. Biais horizontal
+8. Courbes / géométrie
+9. Matériaux / couleurs / opacités
+10. Animation réelle
+11. useFrame / delta / vitesses
+12. Caméra / perspective
+13. Scroll / persistence
+14. Comportement par zones de page
+15. Z-index
+16. Responsive
+17. Reduced-motion
+18. Performance
+19. Pourquoi les traits restent visibles sur la Home
+20. Audit de ServiceHeroFilaments actuel
+21. Cause exacte du défaut actuel
+22. Tableau Home vs Applications actuel
+23. Pourquoi l’adaptation SVG/CSS diverge
+24. Architectures possibles pour réutilisation
+25. Architecture recommandée
+26. API future proposée
+27. Stratégie multi-sections
+28. Stratégie multi-pages
+29. Risques
+30. Plan de migration futur en micro-sprints
+31. Fichiers qui seraient probablement concernés
+32. Ce qu’il ne faudra surtout pas modifier
+33. Git exécuté : NON
+
+==================================================
+20. CONCLUSION OBLIGATOIRE
+==================================================
+
+Terminer le rapport par :
+
+- CAUSE RACINE DU DÉFAUT ACTUEL :
+  [réponse précise]
+
+- LE SYSTÈME HOME EST-IL DIRECTEMENT RÉUTILISABLE :
+  OUI / NON / PARTIELLEMENT
+
+- ARCHITECTURE RECOMMANDÉE :
+  [nom + résumé]
+
+- PEUT-ELLE COUVRIR HERO + MÉTHODE + CADRAGE + CTA FINAL :
+  OUI / NON + explication
+
+- PEUT-ELLE ÊTRE RÉUTILISÉE SUR LES AUTRES PAGES SERVICES :
+  OUI / NON + explication
+
+- RISQUE DE RÉGRESSION HOME :
+  FAIBLE / MOYEN / ÉLEVÉ + justification
+
+- PRÊT À ÉCRIRE LE FUTUR PROMPT D’IMPLÉMENTATION :
+  OUI / NON
+
+Puis STOP.
+
+NE RIEN IMPLÉMENTER.

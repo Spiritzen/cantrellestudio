@@ -1,0 +1,299 @@
+PROMPT CLAUDE CODE — V2 APPLICATIONS MÉTIER & SAAS
+Extension du background Ember derrière les filaments
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+Page cible UNIQUE :
+/applications-metier-saas/
+
+SOURCE DE VÉRITÉ :
+docs/rapports/rapport_v2_page_filaments_applications_saas.txt
+
+CONTEXTE
+Le nouveau système `PageFilaments.tsx` est validé.
+Il est monté UNE SEULE FOIS sur la page, en fixed plein viewport, et doit rester strictement inchangé.
+
+Nous voulons maintenant étendre la signature visuelle de la landing / du Hero Applications à plusieurs sections plus bas dans la page.
+
+OBJECTIF UNIQUE
+Appliquer le même traitement de background sombre + glow Ember/orangé déjà utilisé dans :
+- le Hero Applications métier & SaaS
+- les zones de la DA « Conception & développement sur mesure »
+
+aux sections suivantes de `/applications-metier-saas/` :
+
+1. MÉTHODE
+2. CADRAGE
+3. CTA FINAL :
+   « Un projet d'application métier ? »
+
+Le background orange doit rester DERRIÈRE les filaments.
+
+Les filaments doivent donc continuer à être visibles par-dessus ce fond,
+mais derrière tout le contenu HTML de chaque section.
+
+==================================================
+1. AVANT MODIFICATION
+==================================================
+
+Inspecter :
+- src/pages/applications-metier-saas.astro
+- src/styles/services.css
+- le background actuel du Hero Applications
+- les traitements de fond déjà validés dans la landing / les sections « Conception & développement sur mesure »
+- docs/rapports/rapport_v2_page_filaments_applications_saas.txt
+
+Identifier les classes exactes des sections :
+- Méthode
+- Cadrage
+- CTA « Un projet d'application métier ? »
+
+NE PAS deviner les sélecteurs.
+
+==================================================
+2. TRAITEMENT VISUEL À REPRENDRE
+==================================================
+
+Ne pas inventer un nouveau gradient.
+
+Réutiliser le même langage visuel déjà validé :
+- fond graphite / noir Cantrelle Studio
+- halo Ember / orange diffus
+- grande zone lumineuse douce
+- aucune bordure visible du gradient
+- aucun rectangle orange
+- aucune saturation excessive
+- aucune rupture franche entre les sections
+
+Le résultat doit donner l'impression que la même profondeur visuelle se poursuit dans la page.
+
+==================================================
+3. COUCHE / Z-INDEX — POINT CRITIQUE
+==================================================
+
+Ordre visuel attendu :
+
+1. fond sombre de page / background Ember de la section
+2. `PageFilaments` / filaments Three.js
+3. éventuels décors locaux autorisés
+4. contenu texte / cards / CTA
+
+IMPORTANT :
+le background Ember doit être SOUS les filaments.
+
+Donc :
+- ne pas rendre les sections opaques au point de masquer le Canvas fixed ;
+- utiliser un background / pseudo-element / voile TRANSLUCIDE approprié ;
+- vérifier réellement dans le navigateur que les filaments restent visibles à travers ces 3 sections.
+
+Si la structure actuelle du z-index empêche cela :
+- appliquer la correction minimale ;
+- ne pas modifier `PageFilaments.tsx` sauf nécessité absolue ;
+- ne pas créer un nouveau Canvas.
+
+==================================================
+4. SECTIONS CIBLES UNIQUEMENT
+==================================================
+
+Modifier uniquement :
+
+A. MÉTHODE
+- background Ember subtil
+- filaments visibles
+- contenu inchangé
+
+B. CADRAGE
+- même logique
+- même intensité générale
+- filaments visibles
+- contenu inchangé
+
+C. CTA FINAL « Un projet d'application métier ? »
+- même continuité visuelle
+- filaments visibles derrière le bloc CTA
+- le CTA doit rester parfaitement lisible
+- conserver sa hiérarchie et ses boutons
+
+NE PAS appliquer ce traitement automatiquement aux autres sections.
+
+==================================================
+5. PAGEFILAMENTS — INTOUCHABLE
+==================================================
+
+NE PAS MODIFIER :
+- src/components/hero/PageFilaments.tsx
+- caméra
+- 5 filaments
+- CatmullRomCurve3
+- horizontal bias 0.75
+- rotation
+- énergie de scroll
+- DPR
+- reduced-motion
+- Page Visibility
+- client:media >=900px
+
+Le système de filaments est VALIDÉ.
+
+==================================================
+6. DOTWAVE — NE PAS FUSIONNER
+==================================================
+
+Les sections avec DotWave existant restent indépendantes.
+
+Ne pas fusionner :
+- PageFilaments
+- ExpertiseDotWave
+
+Ne pas toucher aux points animés dans ce sprint.
+
+==================================================
+7. CONTENU / LAYOUT
+==================================================
+
+NE PAS modifier :
+- textes
+- titres
+- labels
+- cards
+- boutons
+- spacing général
+- structure HTML
+- responsive existant
+
+Ce sprint concerne UNIQUEMENT le traitement de background / profondeur des 3 zones ciblées.
+
+==================================================
+8. TRANSITIONS ENTRE SECTIONS
+==================================================
+
+Soigner les transitions visuelles.
+
+Éviter :
+- une bande orange qui commence brutalement
+- une fin nette du gradient
+- des halos identiques copiés comme 3 rectangles
+
+Préférer :
+- gradients larges
+- transparence
+- continuité visuelle
+- variation légère de position du halo si nécessaire, tout en gardant la même DA
+
+Mais :
+NE PAS créer 3 styles différents.
+Ils doivent clairement appartenir au même système visuel.
+
+==================================================
+9. RESPONSIVE
+==================================================
+
+Tester :
+- 1440px
+- 1024px
+- 768px
+- 390px
+
+Sous 900px :
+`PageFilaments` n'est pas hydraté, conformément au système validé.
+
+Le background Ember doit malgré tout rester élégant sur mobile,
+sans dépendre de la présence du Canvas.
+
+Aucun overflow.
+
+==================================================
+10. REDUCED MOTION
+==================================================
+
+Aucune logique supplémentaire nécessaire.
+
+Le background est statique.
+`PageFilaments` gère déjà reduced-motion.
+
+Ne pas modifier ce comportement.
+
+==================================================
+11. VALIDATION VISUELLE
+==================================================
+
+Sur desktop >=900px, scroller lentement la page et vérifier :
+
+- Hero : filaments visibles
+- Méthode : filaments visibles + fond Ember derrière
+- Cadrage : filaments visibles + fond Ember derrière
+- CTA « Un projet d'application métier ? » :
+  filaments visibles + fond Ember derrière
+
+Les filaments doivent donner la sensation d'être le même fond persistant sur toute la page,
+exactement comme sur la landing lorsque l'on passe du Hero à Approche / Méthode.
+
+Le contenu doit toujours rester au-dessus et parfaitement lisible.
+
+==================================================
+12. VALIDATION TECHNIQUE
+==================================================
+
+Exécuter :
+- npm run check
+- npm run build
+
+Vérifier :
+- aucune erreur console
+- aucune erreur réseau nouvelle
+- aucun scroll horizontal
+- Home inchangée
+- PageFilaments inchangé
+
+==================================================
+13. GIT
+==================================================
+
+Aucun :
+- git add
+- git commit
+- git push
+- git checkout
+- git restore
+- git reset
+
+==================================================
+14. RAPPORT CLAUDE CODE OBLIGATOIRE
+==================================================
+
+Créer :
+
+docs/rapports/rapport_v2_applications_saas_backgrounds_ember_sections.txt
+
+Le rapport doit indiquer :
+
+1. fichiers inspectés
+2. fichiers modifiés
+3. classes exactes ciblées
+4. formule/background Ember réutilisé
+5. méthode de layering retenue
+6. ordre réel des z-index
+7. Méthode : filaments visibles OUI/NON
+8. Cadrage : filaments visibles OUI/NON
+9. CTA final : filaments visibles OUI/NON
+10. PageFilaments modifié : NON
+11. DotWave modifié : NON
+12. Home modifiée : NON
+13. responsive 1440/1024/768/390
+14. comportement <900px
+15. npm run check
+16. npm run build
+17. console/network
+18. Git exécuté : NON
+19. rollback précis si Sébastien refuse le rendu
+
+CONCLUSION :
+- BACKGROUNDS EMBER APPLIQUÉS : OUI/NON
+- FILAMENTS VISIBLES SUR LES 3 ZONES : OUI/NON
+- CONTINUITÉ VISUELLE AVEC LA LANDING : OUI/NON
+- PRÊT POUR VALIDATION VISUELLE SÉBASTIEN : OUI/NON
+
+Puis STOP.
+
+NE PAS CONTINUER SUR UNE AUTRE SECTION APRÈS CE SPRINT.

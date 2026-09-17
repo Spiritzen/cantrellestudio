@@ -1,0 +1,18 @@
+PROMPT CLAUDE CODE — MICRO-CHANGE / MÉTHODE
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+Page :
+/applications-metier-saas/
+
+OBJECTIF UNIQUE
+Dans la section MÉTHODE, remplacer la phrase actuelle par :
+
+`Le studio part de ce qui doit fonctionner, puis choisit la technologie la plus adaptée au projet.`
+
+Ne rien modifier d’autre.
+
+Aucun git add / commit / push.
+
+Puis STOP.

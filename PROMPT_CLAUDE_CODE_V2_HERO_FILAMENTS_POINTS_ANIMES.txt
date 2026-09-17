@@ -1,0 +1,190 @@
+PROMPT CLAUDE CODE — MICRO-SPRINT V2
+Hero Applications métier & SaaS + points animés sur sections ciblées
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+PÉRIMÈTRE STRICT
+Page / zone concernées :
+- /applications-metier-saas/
+- Hero de cette page
+- section « Le point de départ »
+- section « Stack »
+
+OBJECTIF
+Il y a 2 corrections à faire, et uniquement celles-ci :
+
+1) Dans le Hero de /applications-metier-saas/, les traits/filaments actuellement visibles sont fixes.
+   Je veux le même comportement que sur la landing page : traits animés, même langage visuel, même logique, même sobriété.
+
+2) Ajouter sur les sections « Le point de départ » et « Stack » le même motif de points animés que celui déjà utilisé derrière la section « Expertises » sur la landing page.
+   Il faut reprendre le système existant, pas en inventer un nouveau.
+
+IMPORTANT
+- On ne veut pas une approximation.
+- On ne veut pas de décor statique.
+- On ne veut pas une nouvelle variante maison.
+- Il faut d’abord INSPECTER la landing et RÉUTILISER / RECOPIER proprement ce qui existe déjà.
+
+==================================================
+1. HERO APPLICATIONS MÉTIER & SAAS — FILAMENTS ANIMÉS
+==================================================
+
+Constat actuel :
+- le fond général est maintenant plus proche de la landing,
+- mais les traits visibles dans le Hero sont statiques / figés,
+- ce n’est pas conforme à la demande.
+
+Action attendue :
+- reprendre exactement le mécanisme des filaments/lignes animées de la landing,
+- même logique de mouvement,
+- même discrétion,
+- même style,
+- même esprit de trajectoires majoritairement horizontales,
+- même gestion reduced-motion si elle existe déjà.
+
+Source de vérité :
+- la Home / landing actuelle.
+
+À faire :
+- inspecter l’implémentation actuelle de la landing,
+- identifier le composant / la logique / les styles réellement utilisés pour les filaments animés,
+- brancher cette même logique sur le Hero de /applications-metier-saas/.
+
+À ne pas faire :
+- ne pas laisser les traits en pur décor CSS statique,
+- ne pas dessiner de nouvelles lignes « à la main »,
+- ne pas casser la carte PROJET,
+- ne pas changer les textes.
+
+Z-index attendu :
+1. background Hero
+2. filaments animés
+3. texte du Hero
+4. carte PROJET interactive
+
+Les filaments doivent rester derrière le texte et derrière la carte.
+
+==================================================
+2. MOTIF DE POINTS ANIMÉS — LE POINT DE DÉPART + STACK
+==================================================
+
+Je veux le même motif de points animés que derrière « Expertises » sur la landing.
+
+Sections cibles UNIQUEMENT :
+- « Le point de départ »
+- « Stack »
+
+Action attendue :
+- inspecter la landing,
+- localiser le système de points animés déjà en place,
+- le réutiliser / recopier proprement sur ces deux sections,
+- conserver le même rendu visuel et la même animation.
+
+Important :
+- même langage visuel que la landing,
+- même discrétion,
+- même DA,
+- pas un motif de points statiques si la landing les anime,
+- pas de nouvelle variante plus grosse ou plus voyante.
+
+Placement attendu :
+- les points doivent rester en arrière-plan,
+- derrière le contenu,
+- sans gêner la lecture,
+- comme sur la section « Expertises ».
+
+==================================================
+3. RÈGLE DE RÉUTILISATION
+==================================================
+
+Avant de coder :
+- inspecter la landing page,
+- réutiliser au maximum le code existant,
+- si possible utiliser les mêmes composants / mêmes utilitaires,
+- sinon extraire le minimum proprement,
+- sinon recopier localement la logique utile sans régression.
+
+Priorité absolue :
+- aucune régression sur la landing.
+
+==================================================
+4. ACCESSIBILITÉ / MOTION
+==================================================
+
+Conserver le comportement existant si la landing gère déjà :
+- prefers-reduced-motion
+- opacité / animation raisonnables
+- rendu lisible sur desktop/tablette/mobile
+
+Ne pas sur-animer.
+On reste premium, sobre, Cantrelle Studio.
+
+==================================================
+5. RESPONSIVE
+==================================================
+
+Vérifier au minimum :
+- desktop 1440px
+- tablette 768px
+- mobile 390px
+
+Attendus :
+- aucun overflow,
+- aucun masquage gênant,
+- points visibles mais subtils,
+- filaments visibles mais discrets,
+- carte PROJET inchangée.
+
+==================================================
+6. PÉRIMÈTRE — NE PAS TOUCHER
+==================================================
+
+Ne pas modifier :
+- la carte PROJET et son hover 3D,
+- les textes marketing,
+- les autres pages services,
+- la Home visuellement,
+- le Hero Soleil/Terre/Lune de la landing,
+- le SEO,
+- le header,
+- le footer,
+- les autres sections hors « Le point de départ » et « Stack ».
+
+Aucune nouvelle dépendance.
+
+==================================================
+7. VALIDATION OBLIGATOIRE
+==================================================
+
+Exécuter :
+- npm run check
+- npm run build
+
+Puis vérifier dans le navigateur :
+- Home : aucune régression,
+- /applications-metier-saas/ :
+  - Hero avec traits ANIMÉS comme la landing,
+  - points animés sur « Le point de départ »,
+  - points animés sur « Stack »,
+  - carte PROJET intacte,
+  - aucune erreur console.
+
+Aucun git add / commit / push.
+
+==================================================
+8. RAPPORT COURT ATTENDU
+==================================================
+
+Dans la réponse finale, indiquer :
+- fichiers modifiés,
+- filaments Hero désormais animés : OUI/NON,
+- système repris depuis quel composant / quelle logique,
+- points animés ajoutés sur « Le point de départ » : OUI/NON,
+- points animés ajoutés sur « Stack » : OUI/NON,
+- Home inchangée : OUI/NON,
+- check,
+- build,
+- Git : NON.
+
+Puis STOP.

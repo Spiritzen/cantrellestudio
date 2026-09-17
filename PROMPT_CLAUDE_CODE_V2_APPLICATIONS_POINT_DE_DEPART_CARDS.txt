@@ -1,0 +1,228 @@
+PROMPT CLAUDE CODE — MICRO-SPRINT V2
+Page Applications métier & SaaS — refonte section « Le point de départ »
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+PÉRIMÈTRE STRICT
+Page concernée :
+- /applications-metier-saas/
+
+Section concernée uniquement :
+- « Le point de départ »
+
+OBJECTIF
+La section « Le point de départ » ne fonctionne pas assez bien visuellement dans sa forme actuelle.
+Le fond à points animés gêne un peu la lecture et l’ensemble manque d’impact premium.
+
+Je veux que tu refondes cette section en t’appuyant sur la DA Cantrelle Studio, avec une proposition plus éditoriale, plus lisible et plus forte visuellement.
+
+==================================================
+1. DIRECTION CRÉATIVE ATTENDUE
+==================================================
+
+Je te laisse une petite liberté de direction, mais avec une préférence claire :
+- partir sur 2 cards premium côte à côte,
+- ou exceptionnellement 1 seul bloc très fort SI tu estimes que c’est meilleur.
+
+Ma préférence à ce stade :
+- 2 cards distinctes,
+- une pour « Des situations qui reviennent souvent »
+- une pour « Des familles de solutions possibles »
+
+Je veux un rendu qui :
+- améliore la lisibilité,
+- garde la DA du site,
+- apporte plus de présence visuelle,
+- ressemble à une vraie section pensée, pas à deux colonnes de texte posées sur un fond.
+
+==================================================
+2. RECOMMANDATION DE BASE À SUIVRE
+==================================================
+
+Sauf meilleure idée franchement supérieure, pars sur ceci :
+
+A. Une intro de section conservée
+- label orange « LE POINT DE DÉPART »
+- grand titre conservé
+- petit texte d’introduction conservé ou légèrement resserré si cela aide
+
+B. Sous l’intro, 2 cards premium
+
+Card 1
+- titre : « Des situations qui reviennent souvent »
+- contient la liste des situations fréquentes
+- traitement plus éditorial que la version actuelle
+
+Card 2
+- titre : « Des familles de solutions possibles »
+- contient la liste des solutions
+- doit répondre visuellement à la première card
+
+==================================================
+3. LANGAGE VISUEL ATTENDU
+==================================================
+
+Je veux un rendu cohérent avec la landing page et les meilleures sections déjà présentes sur le site.
+
+Tu peux t’appuyer sur :
+- les surfaces sombres légèrement vitrées / premium
+- bordures fines
+- coins arrondis
+- liserés ou accents orange subtils
+- hiérarchie typographique claire
+- respirations généreuses
+- micro-contraste sobre
+
+Mais attention :
+- pas de surcharge visuelle
+- pas de carte « gadget »
+- pas d’effet trop clinquant
+- on reste élégant, technique, premium, lisible
+
+Le fond à points animés peut rester au niveau de la section,
+MAIS le contenu principal doit être bien isolé visuellement via les cards.
+Les cards doivent donc protéger le texte du bruit de fond.
+
+==================================================
+4. CONTENU — ADAPTATION AUTORISÉE
+==================================================
+
+Tu peux retravailler légèrement le contenu pour améliorer le rendu.
+
+Autorisé :
+- raccourcir certaines lignes
+- reformuler légèrement pour homogénéiser
+- mieux répartir les listes
+- améliorer la scannabilité
+- transformer les listes en items plus propres visuellement
+
+Interdit :
+- changer le sens métier
+- affaiblir le message commercial
+- inventer des promesses excessives
+
+Idée recommandée :
+- chaque item peut être présenté comme une ligne propre avec espacement et structure nette
+- si pertinent, tu peux utiliser de petits marqueurs / puces / numéros / traits / pastilles
+- priorité absolue à la lisibilité
+
+==================================================
+5. COMPOSITION CONSEILLÉE
+==================================================
+
+Je te propose cette intention de composition, à appliquer si elle fonctionne bien :
+
+- Intro de section sur toute la largeur utile
+- En dessous : grille 2 colonnes sur desktop
+- Passage en 1 colonne sur tablette/mobile
+- Cards de hauteur équilibrée si possible
+- Espacement intérieur généreux
+- Titres de cards plus affirmés que maintenant
+- Contenus mieux aérés que la version actuelle
+
+Si tu peux subtilement donner à ces 2 cards une sensation de dialogue / miroir, c’est un plus.
+Exemple :
+- card de gauche = problème / tension / friction
+- card de droite = réponses possibles / pistes / familles de solutions
+
+==================================================
+6. RÉUTILISATION INTELLIGENTE
+==================================================
+
+Avant de créer quoi que ce soit, inspecte les composants et styles existants.
+Je préfère :
+- réutilisation de patterns existants,
+- ou adaptation légère,
+- plutôt qu’une nouvelle mini-usine inutile.
+
+Tu peux t’inspirer de :
+- cards de la landing
+- cards de capacités / expertises si utile
+- surfaces premium déjà présentes sur le site
+
+Mais n’introduis pas une grosse complexité technique pour une seule section.
+
+==================================================
+7. RÉVERSIBILITÉ / SÉCURITÉ
+==================================================
+
+IMPORTANT : on veut pouvoir revenir en arrière facilement.
+
+Donc :
+- pas de refactor large hors périmètre
+- pas de réécriture de toute la page
+- pas de changement global risqué
+- intervention ciblée sur cette section
+- si tu crées du style, garde-le localisé et propre
+- ne touche pas à d’autres sections sans nécessité absolue
+
+Aucun git add / commit / push.
+
+==================================================
+8. RESPONSIVE
+==================================================
+
+Vérifier au minimum :
+- desktop 1440px
+- tablette 768px
+- mobile 390px
+
+Attendus :
+- 2 cards côte à côte en desktop si pertinent
+- 1 colonne propre sur mobile
+- aucune surcharge
+- aucune collision de texte
+- lecture confortable partout
+
+==================================================
+9. ACCESSIBILITÉ / QUALITÉ
+==================================================
+
+Veiller à :
+- contraste correct
+- structure HTML propre
+- lisibilité des titres
+- pas d’effet qui gêne la lecture
+
+Exécuter :
+- npm run check
+- npm run build
+
+==================================================
+10. PÉRIMÈTRE — NE PAS TOUCHER
+==================================================
+
+Ne pas modifier :
+- le hero de la page
+- la carte PROJET
+- les autres sections hors « Le point de départ »
+- la landing page
+- les autres pages services
+- le SEO
+- le header/footer
+
+==================================================
+11. LIVRABLE ATTENDU
+==================================================
+
+À la fin, je veux :
+- une section « Le point de départ » nettement plus qualitative visuellement
+- 2 cards premium (ou 1 seule si ta proposition est objectivement meilleure)
+- une meilleure lisibilité que la version actuelle
+- un rendu cohérent avec Cantrelle Studio
+
+==================================================
+12. RAPPORT FINAL COURT
+==================================================
+
+Dans ta réponse finale, indique :
+- choix retenu : 2 cards ou 1 bloc
+- fichiers modifiés
+- contenu légèrement retravaillé : OUI/NON
+- responsive OK : OUI/NON
+- check
+- build
+- Git : NON
+
+Puis STOP.

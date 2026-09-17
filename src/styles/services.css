@@ -87,6 +87,29 @@
   margin: 0 0 var(--space-md) 0;
 }
 
+/* Micro-change "Hero mots clés" (Applications métier & SaaS) — "métier" /
+   "règles" / "architecture" mis en avant dans le lead via <strong>
+   (ServiceHero.astro, prop `leadHtml`). Scopé `.service-page--apps` :
+   n'a d'effet que sur cette page (Sites pro / Sur mesure passent toujours
+   `lead` en texte brut, sans balise). Tokens existants uniquement :
+   `--color-text` (#F1EFE8, ivoire) est légèrement plus blanc que
+   `--color-text-secondary` (#A5A8AE) déjà utilisé par le paragraphe —
+   aucune nouvelle couleur inventée. */
+.service-page--apps .service-hero__lead strong {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Micro-change "mot-clé projet" (section "Le point de départ") — "projet"
+   mis en avant en gras + orange Ember officiel de la DA. Token existant
+   uniquement (`--color-accent`, #E45F36, déjà utilisé pour tous les
+   accents Ember du site) : aucune nouvelle couleur. Scopé
+   `.service-page--apps`, sans effet sur les autres pages. */
+.service-page--apps .apps-problems__highlight {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
 .service-hero__actions {
   display: flex;
   flex-wrap: wrap;
@@ -106,12 +129,105 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
   align-items: center;
   gap: clamp(2rem, 5vw, 4rem);
+  /* Micro-sprint "Hero aligné sur la landing" — au-dessus du fond/filaments
+     (.apps-hero-section, z-index 0 ci-dessous) : texte ET carte PROJET
+     restent tous deux visibles et lisibles par-dessus. */
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 899px) {
   .service-page--apps .apps-hero-layout {
     grid-template-columns: 1fr;
   }
+}
+
+/* Micro-sprint "Hero aligné sur la landing"
+   (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_COPIE_DA_LANDING_HERO), mise à
+   jour au micro-sprint "PageFilaments" — `overflow: hidden`/`position:
+   relative` datent de l'ancien décor SVG local (ServiceHeroFilaments,
+   retiré de cette page) et restent inertes désormais (plus aucun enfant
+   positionné/débordant à contenir ici), mais sans effet indésirable :
+   laissés tels quels par prudence (changement minimal). Glow Ember du
+   Hero — formule IDENTIQUE à `.home-hero` (home.css), reprise ici
+   directement puisque ServiceHeroFilaments (qui la portait) n'est plus
+   monté sur cette page : aucune nouvelle valeur, "NE PAS supprimer le
+   glow" (prompt §14). Scopée `.service-page--apps` : Sites pro / Sur
+   mesure n'ont pas cette classe sur leur <section> Hero, donc strictement
+   aucun effet ailleurs. */
+.service-page--apps .apps-hero-section {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+/* Micro-sprint "backgrounds Ember sections"
+   (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_BACKGROUNDS_EMBER_SECTIONS) —
+   étend le même langage visuel que `.apps-hero-section` ci-dessus
+   (Méthode, Cadrage, CTA final UNIQUEMENT — pas les autres sections).
+   Même formule de `radial-gradient` (rgba Ember existant, jamais une
+   nouvelle couleur), TOUJOURS translucide (alpha max 0.14, jamais opaque)
+   pour que `PageFilaments` (Canvas fixed, z-index:-1, voir
+   PageFilaments.tsx — NON MODIFIÉ) reste visible AU TRAVERS de ces
+   sections : un simple `background` CSS sur la section ne crée aucun
+   contexte d'empilement et ne peut donc jamais masquer un descendant
+   `position:fixed` d'un ancêtre commun — la même mécanique déjà vérifiée
+   en navigateur sur `.apps-hero-section`.
+   Intensité/position légèrement variées par section (0.14 -> 0.12 -> 0.10
+   -> 0.14 en CTA final) pour éviter "3 halos identiques copiés comme des
+   rectangles" (prompt §8) tout en restant clairement le même système
+   (même teinte, même formule de fondu à 60-65%, jamais de bord net). Le
+   CTA final reprend exactement la formule du `.home-final-cta__glow` de
+   la Home (même bookend visuel qu'en fin de landing). */
+.service-page--apps .apps-architecture-section {
+  background: radial-gradient(circle at 50% 20%, rgba(228, 95, 54, 0.12), rgba(228, 95, 54, 0) 65%);
+}
+
+.service-page--apps .apps-cadrage-section {
+  background: radial-gradient(circle at 30% 50%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 65%);
+}
+
+.service-page--apps .apps-final-cta-section {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+/* Micro-sprint "CTA footer spacing" — bande noire entre le CTA final et le
+   Footer. CAUSE EXACTE (mesurée) : `footer { margin-top: var(--space-xl) }`
+   (global.css, RÈGLE GÉNÉRIQUE appliquée par-dessus le `padding-block`
+   déjà généreux de `.service-page__section` sur CETTE section — les deux
+   s'additionnent, exactement le même défaut déjà résolu sur la Home.
+   CORRECTION : même principe déjà validé sur la Home (`main:has(.home-
+   final-cta) + footer { margin-top: 0; }`, home.css) — jamais une marge
+   négative/position/transform arbitraire. `.apps-final-cta-section`
+   n'existe QUE sur cette page (ajoutée au micro-sprint précédent), donc ce
+   sélecteur ne peut matcher nulle part ailleurs : aucun effet sur Sites
+   pro / Sur mesure / Méthode / À propos, qui gardent l'espacement
+   générique du footer. Le footer lui-même (Footer.astro, global.css)
+   n'est pas touché — seule sa marge est neutralisée pour CETTE page,
+   exactement comme pour la Home. */
+main:has(.apps-final-cta-section) + footer {
+  margin-top: 0;
+}
+
+/* Micro-sprint "Hero aligné sur la landing" §4 — petits labels/eyebrows en
+   Ember, MÊME formule que `.home-kicker--accent`/`.section-heading__eyebrow`
+   dans home.css (color: var(--color-accent); opacity: .8), token existant
+   uniquement. Scopée `.service-page--apps` : `.service-hero__eyebrow` et
+   `.service-cta__eyebrow` sont partagés par les 3 pages services (import
+   commun de services.css), `.section-heading__eyebrow` est en plus stylé
+   par le bloc style scopé de SectionHeading.astro lui-même — le préfixe
+   `html` ci-dessous n'est pas cosmétique : sans lui, la spécificité de
+   cette règle externe est à égalité avec le sélecteur auto-scopé du
+   composant (`.section-heading__eyebrow[data-astro-cid-xxx]`), et l'ordre
+   d'injection des feuilles de style déciderait alors laquelle gagne (piège
+   déjà rencontré, voir CS-S4B/CS-S8B) — `html` ajoute un sélecteur d'élément
+   qui fait gagner cette règle de façon déterministe, sans dépendre de
+   l'ordre de compilation. */
+.service-page--apps .service-hero__eyebrow,
+.service-page--apps .service-cta__eyebrow,
+html .service-page--apps .section-heading__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
 }
 
 .service-cta {
@@ -123,6 +239,23 @@
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-lg);
+}
+
+/* Micro-sprint "CTA footer spacing"
+   (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_CTA_FOOTER_SPACING) — `.service-
+   cta` est PARTAGÉ par 5 pages (Applications, Sites pro, Sur mesure,
+   Méthode, À propos) : cette règle ne doit donc PAS toucher la règle de
+   base ci-dessus, seulement la SURCHARGER sur /applications-metier-saas/
+   (scopée `.service-page--apps`, 2 classes > 1 : gagne sans ambiguïté).
+   `color-mix()` (pas `opacity`) : seul le BACKGROUND devient translucide à
+   90% du token existant — texte/boutons/bordure restent à leur opacité
+   pleine, contrairement à un `opacity:.9` sur tout le conteneur.
+   Micro-sprint "CTA + panneaux STACK" (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_
+   SAAS_CTA_STACK_SURFACES) — alpha encore réduit de 90% à 80% (10 points
+   de moins), même technique `color-mix()`, même token, seul le chiffre
+   change. */
+.service-page--apps .service-cta {
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
 }
 
 .service-cta__eyebrow {
@@ -485,6 +618,19 @@
   background: var(--color-surface);
 }
 
+/* Micro-sprint "CTA + panneaux STACK"
+   (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_CTA_STACK_SURFACES) — `.service-
+   faq` est PARTAGÉ par 3 pages (Applications, Sites pro, Sur mesure) :
+   règle de base ci-dessus non touchée, seulement SURCHARGÉE sur
+   /applications-metier-saas/ (scopée `.service-page--apps`). Reprend le
+   MÊME token que `.service-tech-choice__col` juste au-dessus dans cette
+   page ("Backend & données" / "Frontend & qualité", micro-sprint "Stack
+   cards hover") : `var(--color-surface-elevated)`, jamais une nuance
+   proche. Bordure/radius/padding/comportement d'ouverture non touchés. */
+.service-page--apps .service-faq details {
+  background: var(--color-surface-elevated);
+}
+
 .service-faq summary {
   cursor: pointer;
   font-weight: 600;
@@ -534,14 +680,55 @@
   }
 }
 
-.service-page--apps .service-problems h2,
-.service-page--apps .service-solutions h2 {
-  font-size: 1.375rem;
-  margin: 0 0 var(--space-sm) 0;
+/* Micro-sprint "refonte Le point de départ"
+   (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_POINT_DE_DEPART_CARDS) — remplace
+   les 2 colonnes de texte nu (ancienne version : pas de surface, pas de
+   bordure, posées directement sur le fond à points animés de la section)
+   par 2 cards premium. Formule RÉUTILISÉE telle quelle depuis `.service-
+   cta` plus bas dans ce même fichier (surface-elevated + bordure forte +
+   radius-lg) : aucune nouvelle esthétique inventée. Grid en une seule
+   ligne (voir .service-problems-solutions ci-dessus) => hauteur des 2
+   cards déjà égalisée par `align-items: stretch` (comportement par défaut
+   de CSS Grid, non redéclaré). */
+.service-page--apps .service-poc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 3vw, var(--space-lg));
 }
 
-.service-page--apps .service-problems ul,
-.service-page--apps .service-solutions ul {
+/* Liseré fin en tête de carte — même principe que `.service-triptych__item`
+   (Sites pro, bordure d'accent 2px), tokens existants uniquement. Neutre
+   pour "problèmes" (constat/friction), Ember pour "solutions" (réponse) :
+   légère sensation de dialogue entre les 2 cards, sans dépendre de la
+   couleur du texte. */
+.service-page--apps .service-poc-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-md);
+  right: var(--space-md);
+  height: 2px;
+  border-radius: 999px;
+}
+
+.service-page--apps .service-poc-card--problems::before {
+  background: var(--color-border-strong);
+}
+
+.service-page--apps .service-poc-card--solutions::before {
+  background: var(--color-accent-deep);
+}
+
+.service-page--apps .service-poc-card h3 {
+  font-size: 1.375rem;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.service-page--apps .service-poc-card__list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -549,58 +736,112 @@
   gap: var(--space-xs);
 }
 
-.service-page--apps .service-problems li {
-  padding-block: var(--space-xs);
+/* Card "problèmes" — lignes numérotées (marqueur discret, prompt §4 :
+   "petits marqueurs / numéros"), plus éditorial qu'une puce générique.
+   Copy INCHANGÉE (6 lignes existantes), seul le traitement visuel change. */
+.service-page--apps .service-poc-card__list--numbered li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding-block: 0.6rem;
   border-top: 1px solid var(--color-border);
   color: var(--color-text-secondary);
 }
 
-.service-page--apps .service-problems li:first-child {
+.service-page--apps .service-poc-card__list--numbered li:first-child {
   border-top: none;
+  padding-top: 0;
 }
 
-.service-page--apps .service-solutions li {
-  display: inline-block;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  padding: 0.4rem 0.85rem;
-  margin: 0 var(--space-xs) var(--space-xs) 0;
-  font-size: 0.9375rem;
-}
-
-.service-architecture {
-  margin-top: var(--space-lg);
-  display: grid;
-  gap: 0;
-  max-width: 32rem;
-}
-
-.service-architecture__step {
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  padding: var(--space-sm) var(--space-md);
+.service-page--apps .service-poc-card__index {
+  flex: none;
   font-family: var(--font-display);
+  font-size: 0.75rem;
   font-weight: 700;
-  font-size: 0.9375rem;
+  color: var(--color-text-muted);
   letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-align: center;
 }
 
-.service-architecture__step--accent {
-  border-color: var(--color-accent-deep);
-  color: var(--color-accent);
-}
-
-.service-architecture__arrow {
+/* Micro-sprint "V2 qualité exhaustif" §9 — la card "solutions" passait en
+   chips repliées (ancienne version) : rendu correct mais visuellement
+   creux dès que le texte est court (grand vide résiduel sous les chips).
+   Remplacée par des LIGNES pleine largeur, même rythme vertical que la
+   card "problèmes" (padding-block/border-top identiques) : les 2 cards se
+   remplissent maintenant de façon comparable, sans agrandir artificiellement
+   le texte. Le marqueur est un point Ember (pas un numéro) : distingue
+   visuellement "réponse" de "constat" sans nouvelle couleur. */
+.service-page--apps .service-poc-card__list--solutions li {
   display: flex;
-  justify-content: center;
-  color: var(--color-border-strong);
-  font-size: 1.25rem;
-  line-height: 1;
-  padding-block: 0.35rem;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding-block: 0.6rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
 }
+
+.service-page--apps .service-poc-card__list--solutions li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.service-page--apps .service-poc-card__marker {
+  flex: none;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+/* Terme technique en second niveau (prompt §8 : "jamais le message
+   principal") — même ligne, discret, jamais la même emphase que le
+   libellé en langage client qui le précède. */
+.service-page--apps .service-poc-card__technical {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* Phrase de conclusion (prompt §9) — sépare visuellement la liste de sa
+   synthèse, sans nouvelle couleur ni emphase excessive ("pas de marketing
+   creux") : italique discret + bordure de séparation fine. */
+.service-page--apps .service-poc-card__closing {
+  margin: var(--space-md) 0 0 0;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+/* Micro-sprint "V2 qualité exhaustif" §10 — hover premium et sobre : léger
+   lift + accentuation fine de la bordure Ember + glow diffus modéré.
+   Jamais de scale ni de rotation (réservés à la carte PROJET, prompt §10 :
+   "le hover doit être plus discret que la carte PROJET"). */
+.service-page--apps .service-poc-card {
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
+}
+
+.service-page--apps .service-poc-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(228, 95, 54, 0.4);
+  box-shadow: 0 18px 40px -28px rgba(228, 95, 54, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page--apps .service-poc-card {
+    transition: border-color 260ms ease, box-shadow 260ms ease;
+  }
+
+  .service-page--apps .service-poc-card:hover {
+    transform: none;
+  }
+}
+
+/* .service-architecture / __step / __step--accent / __arrow — micro-sprint
+   "Méthode interactive" : schéma statique retiré, remplacé par
+   ServiceMethodJourney.astro (voir son propre bloc de styles). Ces 4 règles
+   n'étaient utilisées que sur applications-metier-saas.astro (vérifié par
+   grep) et sont donc supprimées ; .service-architecture__note reste car
+   partagée avec Sites pro / Sur mesure. */
 
 .service-architecture__note {
   margin-top: var(--space-md);
@@ -717,6 +958,40 @@
   padding-left: 1.1em;
   font-size: 0.9375rem;
   color: var(--color-text-secondary);
+}
+
+/* Micro-sprint "Stack cards hover"
+   (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_STACK_CARDS_HOVER) — surcharge
+   scopée `.service-page--apps` UNIQUEMENT (2 classes > 1, sans dépendre de
+   l'ordre de compilation, même principe que la surcharge `.service-cta`
+   plus haut) : `.service-tech-choice__col` est partagée avec Sites pro
+   (sites-professionnels.astro), donc jamais éditée directement — Sites pro
+   garde son style d'origine (fond neutre, sans hover), inchangé. Valeurs
+   reprises À L'IDENTIQUE de `.service-poc-card` ("Le point de départ",
+   plus haut dans ce fichier) : même surface, même bordure, même
+   border-radius, même hover (lift + bordure Ember + glow), même
+   comportement reduced-motion — aucun nouvel effet inventé. */
+.service-page--apps .service-tech-choice__col {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
+}
+
+.service-page--apps .service-tech-choice__col:hover {
+  transform: translateY(-5px);
+  border-color: rgba(228, 95, 54, 0.4);
+  box-shadow: 0 18px 40px -28px rgba(228, 95, 54, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page--apps .service-tech-choice__col {
+    transition: border-color 260ms ease, box-shadow 260ms ease;
+  }
+
+  .service-page--apps .service-tech-choice__col:hover {
+    transform: none;
+  }
 }
 
 .service-honesty {

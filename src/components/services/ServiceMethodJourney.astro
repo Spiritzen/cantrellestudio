@@ -1,0 +1,381 @@
+---
+// ServiceMethodJourney — micro-sprint "Méthode interactive"
+// (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_METHODE_INTERACTIVE), pour la
+// section "Méthode" de /applications-metier-saas/ UNIQUEMENT. Remplace le
+// schéma statique `.service-architecture` (6 pastilles reliées par des
+// flèches, dont "API / Services" avait `accent: true` codé en dur dans
+// `architectureSteps` — applications-metier-saas.astro — d'où l'orange
+// permanent sans lien avec une interaction) par un parcours interactif en
+// 6 étapes : liste à gauche (desktop) / accordéon (mobile-tablette), et un
+// panneau explicatif qui affiche le détail de l'étape survolée/focus
+// (desktop) ou ouverte au tap (mobile) — jamais d'étape orange au repos.
+//
+// Vocabulaire technique retiré des intitulés PRINCIPAUX (Besoin, Règles
+// métier, Données, API / Services, Interface, Tests / Livraison) : les 6
+// nouveaux libellés sont orientés client. Les termes techniques (CRM, API,
+// back-office…) n'apparaissent plus qu'en second niveau, dans le texte
+// explicatif, seulement là où ils restent immédiatement compréhensibles.
+//
+// Implémentation : Astro + JS vanilla (aucune dépendance ajoutée, cohérent
+// avec ExpertiseDotWave.astro/ProjectHeroVisual.astro/PageFilaments.tsx —
+// ce dernier est React/R3F car il pilote un vrai Canvas 3D ; ici, un simple
+// état d'interaction ne justifie aucun framework). Mêmes 6 panneaux de
+// contenu RENDUS DEUX FOIS (accordéon mobile inline + panneau desktop
+// partagé), chacun affiché/masqué exclusivement par CSS selon la largeur —
+// un `<div>` ne peut être placé dans 2 colonnes de grille différentes que
+// s'il est un enfant direct commun, ce qui casserait l'accordéon (le
+// panneau doit rester juste sous CHAQUE bouton sur mobile) : la double
+// structure est le compromis le plus simple et le plus robuste, pas une
+// sur-ingénierie.
+const steps = [
+  {
+    label: "Votre besoin",
+    panelTitle: "Comprendre ce qui doit vraiment être amélioré",
+    panelText:
+      "On commence par identifier ce qui vous fait perdre du temps, ce qui crée des erreurs ou ce qui complique votre organisation : suivi clients, doubles saisies, planning, facturation ou circulation de l'information.",
+  },
+  {
+    label: "Votre façon de travailler",
+    panelTitle: "Respecter votre fonctionnement métier",
+    panelText:
+      "On observe comment votre activité fonctionne réellement : qui fait quoi, dans quel ordre, avec quelles règles et quelles contraintes. L'outil doit s'adapter à votre métier, pas l'inverse.",
+  },
+  {
+    label: "Les informations utiles",
+    panelTitle: "Structurer les bonnes données",
+    panelText:
+      "Clients, produits, rendez-vous, documents ou historiques : on détermine quelles informations sont réellement utiles et comment elles doivent être organisées.",
+  },
+  {
+    label: "Connexions avec vos outils",
+    panelTitle: "Faire communiquer ce qui doit l'être",
+    panelText:
+      "Si nécessaire, votre application peut échanger avec votre site, votre comptabilité, un système de paiement ou d'autres services déjà utilisés.",
+  },
+  {
+    label: "L'interface",
+    panelTitle: "Concevoir des écrans simples à utiliser",
+    panelText:
+      "On construit les écrans autour des usages quotidiens : retrouver une information, créer un document, suivre une activité ou réaliser une action sans complexité inutile.",
+  },
+  {
+    label: "Vérification & mise en ligne",
+    panelTitle: "Tester avant de livrer",
+    panelText:
+      "Les parcours importants, les droits d'accès et le bon fonctionnement sont vérifiés avant la mise en ligne, puis ajustés si nécessaire.",
+  },
+];
+---
+
+<div class="service-method-journey">
+  <ol class="service-method-journey__list" data-motion="block">
+    {steps.map((step, i) => (
+      <li class="service-method-journey__item">
+        <button
+          type="button"
+          class="service-method-journey__step"
+          aria-expanded="false"
+          aria-controls={`method-panel-mobile-${i}`}
+          data-step-index={i}
+          data-panel-title={step.panelTitle}
+          data-panel-text={step.panelText}
+        >
+          <span class="service-method-journey__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          <span class="service-method-journey__label">{step.label}</span>
+        </button>
+        <div id={`method-panel-mobile-${i}`} class="service-method-journey__panel service-method-journey__panel--mobile" hidden>
+          <p class="service-method-journey__panel-title">{step.panelTitle}</p>
+          <p class="service-method-journey__panel-text">{step.panelText}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  <div class="service-method-journey__panel service-method-journey__panel--desktop" data-motion="block" aria-live="polite">
+    <span class="service-method-journey__panel-eyebrow" data-role="eyebrow">Notre méthode</span>
+    <p class="service-method-journey__panel-title" data-role="title">Chaque choix technique part d'un besoin concret.</p>
+    <p class="service-method-journey__panel-text" data-role="text">
+      Survolez une étape pour voir comment le projet se construit, du besoin initial jusqu'à la mise en ligne.
+    </p>
+  </div>
+</div>
+
+<style>
+  .service-method-journey {
+    margin-top: var(--space-lg);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 900px) {
+    .service-method-journey {
+      grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+      align-items: start;
+      gap: clamp(2rem, 4vw, 3rem);
+    }
+  }
+
+  .service-method-journey__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .service-method-journey__item {
+    display: contents;
+  }
+
+  /* Étape au repos — surface sombre neutre, AUCUN orange par défaut
+     (contrairement à l'ancien `.service-architecture__step--accent` codé
+     en dur sur "API / Services"). Vrai `<button>` (accessibilité §10) :
+     `font`/`text-align`/`cursor` réinitialisés explicitement. */
+  .service-method-journey__step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    transition: border-color 240ms ease, box-shadow 240ms ease, transform 240ms ease, background-color 240ms ease;
+  }
+
+  .service-method-journey__index {
+    flex: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    transition: color 240ms ease;
+  }
+
+  .service-method-journey__label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9375rem;
+  }
+
+  /* Hover/focus ET état "ouvert" (accordéon mobile, `aria-expanded="true"`)
+     partagent le même traitement visuel — jamais uniquement une couleur de
+     texte (prompt §10) : bordure Ember + léger lift + glow discret. */
+  .service-method-journey__step:hover,
+  .service-method-journey__step:focus-visible,
+  .service-method-journey__step[aria-expanded="true"] {
+    border-color: var(--color-accent);
+    background: var(--color-surface-elevated);
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px -24px rgba(228, 95, 54, 0.45);
+  }
+
+  .service-method-journey__step:hover .service-method-journey__index,
+  .service-method-journey__step:focus-visible .service-method-journey__index,
+  .service-method-journey__step[aria-expanded="true"] .service-method-journey__index {
+    color: var(--color-accent);
+  }
+
+  .service-method-journey__step:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Panneau mobile (accordéon) — masqué sur desktop, où seul le panneau
+     partagé de droite est utilisé. */
+  .service-method-journey__panel--mobile {
+    margin-top: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+
+  @media (min-width: 900px) {
+    .service-method-journey__panel--mobile {
+      display: none;
+    }
+  }
+
+  /* Panneau partagé desktop — masqué sous 900px (remplacé par l'accordéon
+     inline ci-dessus). Surface légèrement translucide + liseré, cohérent
+     avec `.service-poc-card`/`.service-cta` déjà validés sur cette page. */
+  .service-method-journey__panel--desktop {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .service-method-journey__panel--desktop {
+      display: block;
+      position: sticky;
+      top: 6rem;
+      background: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-lg);
+      padding: clamp(1.75rem, 3vw, var(--space-lg));
+      transition: opacity 260ms ease, transform 260ms ease;
+    }
+
+    .service-method-journey__panel--desktop.is-updating {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  .service-method-journey__panel-eyebrow {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    opacity: 0.8;
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .service-method-journey__panel-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .service-method-journey__panel-text {
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .service-method-journey__step {
+      transition: border-color 240ms ease, background-color 240ms ease;
+    }
+
+    .service-method-journey__step:hover,
+    .service-method-journey__step:focus-visible,
+    .service-method-journey__step[aria-expanded="true"] {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .service-method-journey__panel--desktop {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // État d'interaction — vanilla JS, aucune dépendance. Desktop (pointeur
+  // fin) : survol/focus met à jour le panneau partagé de droite. Mobile/
+  // tablette : tap ouvre l'accordéon inline correspondant (une seule
+  // étape ouverte à la fois), jamais de dépendance au hover (prompt §9).
+  function initMethodJourney(root: HTMLElement) {
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>(".service-method-journey__step"));
+    const desktopPanel = root.querySelector<HTMLElement>(".service-method-journey__panel--desktop");
+    if (!buttons.length || !desktopPanel) return;
+
+    const eyebrowEl = desktopPanel.querySelector<HTMLElement>('[data-role="eyebrow"]');
+    const titleEl = desktopPanel.querySelector<HTMLElement>('[data-role="title"]');
+    const textEl = desktopPanel.querySelector<HTMLElement>('[data-role="text"]');
+    if (!eyebrowEl || !titleEl || !textEl) return;
+
+    const introContent = { eyebrow: eyebrowEl.textContent ?? "", title: titleEl.textContent ?? "", text: textEl.textContent ?? "" };
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const desktopMedia = window.matchMedia("(min-width: 900px)");
+
+    function renderDesktopPanel(content: { eyebrow: string; title: string; text: string }) {
+      eyebrowEl!.textContent = content.eyebrow;
+      titleEl!.textContent = content.title;
+      textEl!.textContent = content.text;
+    }
+
+    // Micro-transition (opacity/translateY, prompt §7) : instantanée sous
+    // reduced-motion, sinon un court fondu enchaîné (prompt §18).
+    function updateDesktopPanel(content: { eyebrow: string; title: string; text: string } | null) {
+      const next = content ?? introContent;
+      if (reducedMotion) {
+        renderDesktopPanel(next);
+        return;
+      }
+      desktopPanel!.classList.add("is-updating");
+      window.setTimeout(() => {
+        renderDesktopPanel(next);
+        desktopPanel!.classList.remove("is-updating");
+      }, 150);
+    }
+
+    function closeAllAccordions(except?: HTMLButtonElement) {
+      buttons.forEach((btn) => {
+        if (btn === except) return;
+        btn.setAttribute("aria-expanded", "false");
+        const panel = root.querySelector<HTMLElement>(`#${btn.getAttribute("aria-controls")}`);
+        if (panel) panel.hidden = true;
+      });
+    }
+
+    buttons.forEach((btn) => {
+      const content = {
+        eyebrow: `Étape ${String(Number(btn.dataset.stepIndex) + 1).padStart(2, "0")}`,
+        title: btn.dataset.panelTitle ?? "",
+        text: btn.dataset.panelText ?? "",
+      };
+
+      // Desktop — survol/focus (prompt §2/§10).
+      btn.addEventListener("mouseenter", () => {
+        if (desktopMedia.matches) updateDesktopPanel(content);
+      });
+      btn.addEventListener("mouseleave", () => {
+        if (desktopMedia.matches && document.activeElement !== btn) updateDesktopPanel(null);
+      });
+
+      // Mobile/tablette — accordéon (prompt §9), une seule étape ouverte.
+      btn.addEventListener("click", () => {
+        if (desktopMedia.matches) return; // desktop : le survol suffit, le clic n'a pas d'effet dédié
+        const expanded = btn.getAttribute("aria-expanded") === "true";
+        closeAllAccordions();
+        if (!expanded) {
+          btn.setAttribute("aria-expanded", "true");
+          const panel = root.querySelector<HTMLElement>(`#${btn.getAttribute("aria-controls")}`);
+          if (panel) panel.hidden = false;
+        }
+      });
+    });
+
+    // Clavier desktop (prompt §10) : focus déclenche la même explication
+    // que le survol ; le retour à l'état neutre se fait via `focusout`
+    // délégué (évite les races entre le blur d'un bouton et le focus du
+    // suivant lors de la navigation Tab).
+    root.addEventListener(
+      "focusin",
+      (event) => {
+        const btn = (event.target as HTMLElement)?.closest(".service-method-journey__step");
+        if (btn && desktopMedia.matches) {
+          const content = {
+            eyebrow: `Étape ${String(Number((btn as HTMLElement).dataset.stepIndex) + 1).padStart(2, "0")}`,
+            title: (btn as HTMLElement).dataset.panelTitle ?? "",
+            text: (btn as HTMLElement).dataset.panelText ?? "",
+          };
+          updateDesktopPanel(content);
+        }
+      },
+      true,
+    );
+    root.addEventListener(
+      "focusout",
+      (event) => {
+        if (!desktopMedia.matches) return;
+        const next = (event as FocusEvent).relatedTarget as Node | null;
+        if (next && root.contains(next)) return;
+        updateDesktopPanel(null);
+      },
+      true,
+    );
+  }
+
+  document.querySelectorAll<HTMLElement>(".service-method-journey").forEach(initMethodJourney);
+</script>

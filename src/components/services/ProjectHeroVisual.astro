@@ -55,19 +55,43 @@ const PARTICLE_COUNT = 6;
 <style>
   /* Conteneur carré (même ratio que le viewBox 1254x1254) — respiration
      visuelle dans le Hero sans dominer le texte (prompt §8), jamais collé
-     aux bords (marge via le grid parent, voir services.css). */
+     aux bords (marge via le grid parent, voir services.css).
+     Micro-sprint "Hover 3D" — devient l'enveloppe carte + le wrapper
+     GLOBAL du tilt : border-radius/overflow/box-shadow habillent la carte,
+     et c'est CET élément (pas un enfant) qui reçoit le `transform`
+     perspective/rotate/scale en JS (voir le bloc script plus bas), de sorte que puce +
+     SVG + particules bougent comme un seul objet rigide sans qu'aucune de
+     leurs logiques internes (positions %, échelle particule) n'ait besoin
+     d'être modifiée : un transform sur le parent entraîne tous ses
+     descendants avec lui, tel quel. */
   .project-hero-visual {
     position: relative;
     width: 100%;
     max-width: 22rem;
     aspect-ratio: 1 / 1;
     margin-inline: auto;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    /* Contour cuivré discret (anneau 1px) + ombre Ember premium, sobres —
+       tokens existants uniquement (--radius-xl, alpha du Ember officiel
+       #E45F36 déjà utilisé tel quel ailleurs sur le site, ex. home.css),
+       aucune nouvelle couleur/valeur de radius inventée. */
+    box-shadow:
+      0 22px 48px -26px rgba(228, 95, 54, 0.45),
+      0 0 0 1px rgba(228, 95, 54, 0.18);
+    will-change: transform;
   }
 
   /* Halo d'ambiance discret derrière la puce — même formule que le glow
      ember déjà utilisé ailleurs sur le site (Hero Home, CTA final),
      jamais une nouvelle couleur. Volontairement doux (pas de "feu
-     d'artifice", prompt §2/§9). */
+     d'artifice", prompt §2/§9). Micro-sprint "Hover 3D" §5 (option légère,
+     secondaire) : le centre du halo suit maintenant `--px`/`--py` (mis à
+     jour au pointermove, recentrés à 50%/50% au repos) pour un léger
+     déplacement du glow avec le pointeur — aucune transition ajoutée sur
+     ce fond : le pointermove met déjà à jour ces variables à haute
+     fréquence, un `radial-gradient` à position dynamique reste subtil sans
+     complexifier avec une interpolation de propriété personnalisée. */
   .project-hero-visual::before {
     content: "";
     /* `inset: 0` (jamais négatif) — un halo qui déborde de sa propre boîte
@@ -77,7 +101,11 @@ const PARTICLE_COUNT = 6;
        prompt ("pas de débordement", "pas de scroll horizontal"). */
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle, rgba(228, 95, 54, 0.16), rgba(228, 95, 54, 0) 65%);
+    background: radial-gradient(
+      circle at var(--px, 50%) var(--py, 50%),
+      rgba(228, 95, 54, 0.16),
+      rgba(228, 95, 54, 0) 65%
+    );
     z-index: 0;
     pointer-events: none;
   }
@@ -136,6 +164,13 @@ const PARTICLE_COUNT = 6;
   @media (prefers-reduced-motion: reduce) {
     .project-hero-visual__particle {
       display: none;
+    }
+
+    /* Micro-sprint "Hover 3D" §8 — filet CSS pur en complément du garde-fou
+       JS (initTilt ne s'attache même pas dans ce cas) : la carte reste
+       strictement figée à l'état neutre, jamais de tilt. */
+    .project-hero-visual {
+      transform: none !important;
     }
   }
 </style>
@@ -214,11 +249,78 @@ const PARTICLE_COUNT = 6;
     });
   }
 
+  // Micro-sprint "Hover 3D" (PROMPT_CLAUDE_CODE_V2_HOVER_3D_PROJET_CANTRELLE)
+  // — effet de carte 3D inspiré du mécanisme HeliFan (calcul pointeur ->
+  // normalisation -1..1 -> rotate/scale), adapté à la DA sobre du studio.
+  // Fonction totalement INDÉPENDANTE de `initProjectHeroVisual` ci-dessus :
+  // elle ne lit/modifie AUCUN état des particules (positions, tailles,
+  // vitesses, timings, anti-répétition, fade-out INCHANGÉS) et applique son
+  // `transform` sur `.project-hero-visual` lui-même — le même élément qui
+  // contient déjà la puce, le SVG et les particules, donc les trois bougent
+  // mécaniquement comme un seul objet sans synchronisation à coder.
+  function initTilt(root: HTMLElement) {
+    // §7/§8 — pas de tilt sur tactile/pointeur imprécis, et jamais si
+    // prefers-reduced-motion (vérifié par l'appelant, voir boot() plus bas).
+    const pointerFine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (!pointerFine) return;
+
+    const MAX_TILT_DEG = 8; // ±8deg (prompt §3)
+    const HOVER_SCALE = 1.025; // prompt §3
+    const PERSPECTIVE_PX = 1100; // prompt §3, "environ 1000 à 1200px"
+    const TRACK_TRANSITION = "transform 90ms linear"; // §4 — quasi direct pendant le suivi
+    const RETURN_TRANSITION = "transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94)"; // §4 — retour au repos
+
+    function applyTransform(rotateXDeg: number, rotateYDeg: number, scale: number) {
+      root.style.transform = `perspective(${PERSPECTIVE_PX}px) rotateX(${rotateXDeg}deg) rotateY(${rotateYDeg}deg) scale(${scale})`;
+    }
+
+    function onPointerMove(event: PointerEvent) {
+      const rect = root.getBoundingClientRect();
+      // Position du pointeur relative au CENTRE du composant, normalisée
+      // entre -1 et 1 (prompt §3, mécanisme HeliFan repris conceptuellement).
+      const x = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width) * 2 - 1));
+      const y = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
+
+      root.style.transition = TRACK_TRANSITION;
+      // rotateY = x * max ; rotateX = y * -max (exemple conceptuel du prompt §3).
+      applyTransform(y * -MAX_TILT_DEG, x * MAX_TILT_DEG, HOVER_SCALE);
+
+      // §5 — glow léger réactif à la position pointeur, option secondaire :
+      // simple mise à jour de 2 custom properties consommées par le
+      // radial-gradient du halo (::before, voir le bloc style plus haut).
+      root.style.setProperty("--px", `${((x + 1) / 2) * 100}%`);
+      root.style.setProperty("--py", `${((y + 1) / 2) * 100}%`);
+    }
+
+    function onPointerLeave() {
+      root.style.transition = RETURN_TRANSITION;
+      applyTransform(0, 0, 1);
+      root.style.setProperty("--px", "50%");
+      root.style.setProperty("--py", "50%");
+    }
+
+    root.addEventListener("pointermove", onPointerMove);
+    root.addEventListener("pointerleave", onPointerLeave);
+  }
+
   function boot() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) return; // §7 : animation désactivée, la puce/circuits restent visibles seuls.
+    const roots = document.querySelectorAll<HTMLElement>(".project-hero-visual");
 
-    document.querySelectorAll<HTMLElement>(".project-hero-visual").forEach(initProjectHeroVisual);
+    // Particules : comportement STRICTEMENT inchangé — reducedMotion
+    // continue de désactiver entièrement `initProjectHeroVisual` (même
+    // condition qu'avant ce micro-sprint, seulement restructurée pour
+    // pouvoir aussi initialiser le tilt ci-dessous indépendamment). §7/§8.
+    if (!reducedMotion) {
+      roots.forEach(initProjectHeroVisual);
+    }
+
+    // Hover 3D : nouveau, indépendant. Ne s'attache pas du tout en
+    // reduced-motion (§8) ; se désactive lui-même si le pointeur n'est pas
+    // fin (§7, tactile).
+    if (!reducedMotion) {
+      roots.forEach(initTilt);
+    }
   }
 
   if (document.readyState === "loading") {

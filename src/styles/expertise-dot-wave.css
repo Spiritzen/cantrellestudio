@@ -47,16 +47,31 @@
   patterns, keyframes) cible uniquement les classes `.home-expertise__
   dot-wave*` du décor lui-même, indépendantes de la section qui
   l'accueille — aucune duplication nécessaire pour ce second usage.
+
+  Micro-sprint "filaments/points animés" (PROMPT_CLAUDE_CODE_V2_HERO_
+  FILAMENTS_POINTS_ANIMES) — DEUX hôtes de plus, sur /applications-metier-
+  saas/ UNIQUEMENT : `.apps-problems-section` ("Le point de départ") et
+  `.apps-stack-section` ("Stack"), toujours le même composant
+  ExpertiseDotWave.astro réutilisé tel quel (DOM identique, aucun nom de
+  section codé en dur côté JS). Scopés en plus par `.service-page--apps`
+  par précaution défensive (convention du projet, ces 2 classes sont déjà
+  page-spécifiques mais la double dérivation coûte rien et documente
+  l'intention). Home INCHANGÉE : ces 2 sélecteurs s'ajoutent, aucun des
+  deux existants n'est modifié ni retiré.
 */
 
 .home-expertise,
-.home-capabilities {
+.home-capabilities,
+.service-page--apps .apps-problems-section,
+.service-page--apps .apps-stack-section {
   position: relative;
   isolation: isolate;
 }
 
 .home-expertise > .container,
-.home-capabilities > .container {
+.home-capabilities > .container,
+.service-page--apps .apps-problems-section > .container,
+.service-page--apps .apps-stack-section > .container {
   position: relative;
   z-index: 1;
 }

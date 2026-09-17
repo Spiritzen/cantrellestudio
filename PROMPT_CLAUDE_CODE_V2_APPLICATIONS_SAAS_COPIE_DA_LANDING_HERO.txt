@@ -1,0 +1,323 @@
+PROMPT CLAUDE CODE — V2 APPLICATIONS MÉTIER & SAAS — HERO ALIGNÉ SUR LA LANDING
+
+Projet :
+D:/CreaSite/CantrelleStudio
+
+Page cible UNIQUE :
+/applications-metier-saas/
+
+OBJECTIF
+Le Hero de cette page doit reprendre la MÊME signature visuelle que le Hero de la landing/Home.
+
+IMPORTANT :
+Ne pas réinventer un décor.
+Ne pas créer une variante approximative.
+Tout ce qui est demandé existe déjà sur la landing page.
+Il faut d’abord INSPECTER l’implémentation actuelle de la Home et RÉUTILISER / RECOPIER proprement les mécanismes existants.
+
+Le rendu actuel du Hero Applications métier & SaaS avec des traits statiques est REFUSÉ.
+
+==================================================
+1. SOURCE DE VÉRITÉ VISUELLE
+==================================================
+
+Avant toute modification, inspecter la Home / landing actuelle :
+
+- src/pages/index.astro
+- les composants Hero utilisés par la Home
+- les styles Home / Hero
+- la logique des filaments / lignes animées
+- la logique de background / glow Ember
+- les tokens réellement utilisés
+
+Identifier précisément :
+- comment le fond sombre + Ember est construit
+- comment les lignes/filaments animés sont générés
+- leur z-index
+- leur opacité
+- leur animation
+- la probabilité de biais horizontal
+- leur responsive
+- leur comportement reduced-motion
+
+NE PAS inventer une nouvelle implémentation si celle de la Home peut être réutilisée ou adaptée localement.
+
+==================================================
+2. LIGNES / FILAMENTS — COPIER LE COMPORTEMENT DE LA LANDING
+==================================================
+
+Je veux dans le Hero de `/applications-metier-saas/` les MÊMES lignes animées que sur la landing.
+
+Ce ne sont PAS des lignes statiques.
+
+Le comportement attendu est celui de la Home :
+- lignes/filaments fins
+- mouvement subtil
+- génération procédurale / aléatoire comme actuellement
+- animation discrète et premium
+- distribution non uniforme
+- majorité de trajectoires plutôt horizontales
+
+IMPORTANT :
+la Home possède déjà une logique de biais horizontal.
+Réutiliser la valeur / logique existante.
+
+Référence connue du projet :
+`HORIZONTAL_BIAS_PROBABILITY = 0.75`
+
+Donc environ :
+- 75 % des lignes plutôt horizontales
+- 25 % plus libres
+
+Ne pas modifier cette logique sur la Home.
+Le Hero Applications métier & SaaS doit simplement reprendre ce comportement.
+
+Si le code réel actuel diffère de cette valeur, le CODE DE LA HOME fait foi.
+
+==================================================
+3. BACKGROUND — IDENTIQUE À LA LANDING
+==================================================
+
+Le fond du Hero Applications métier & SaaS doit reprendre le MÊME traitement que le Hero de la Home :
+
+- graphite / noir de la DA
+- profondeur sombre
+- présence Ember / cuivre subtile
+- glow / voile diffus identique dans l’esprit et autant que possible dans les valeurs
+- pas de rectangle orange visible
+- pas d’aplat orange
+- pas de nouveau gradient inventé
+
+L’objectif :
+quand on passe de la Home à cette page Service, on reconnaît immédiatement la même identité Cantrelle Studio.
+
+Inspecter les styles existants de la Home et reprendre les valeurs/tokens utilisés.
+
+==================================================
+4. PETITS TITRES / EYEBROWS EN ORANGE
+==================================================
+
+Sur `/applications-metier-saas/`, passer les petits labels / eyebrows en Ember, comme sur la landing.
+
+Cela inclut notamment les libellés réellement présents du type :
+- APPLICATIONS MÉTIER & SAAS
+- LE POINT DE DÉPART
+- MÉTHODE
+- PREUVE
+- CADRAGE
+- STACK
+- autres petits labels équivalents présents sur cette page
+
+IMPORTANT :
+- uniquement les petits labels / eyebrows / kickers
+- les gros titres restent ivoire / blanc
+- les paragraphes restent inchangés
+- ne pas réécrire la copy
+
+Utiliser le token Ember existant de la DA.
+Ne pas inventer une nouvelle couleur.
+
+==================================================
+5. HIÉRARCHIE Z-INDEX
+==================================================
+
+Dans le Hero Applications métier & SaaS :
+
+Couche la plus basse :
+1. background Hero sombre / Ember
+
+Puis :
+2. filaments / lignes animées de la landing
+
+Puis :
+3. texte du Hero
+
+Puis :
+4. carte interactive PROJET
+
+Les filaments doivent donc passer :
+- derrière le texte
+- derrière la carte PROJET
+
+Ils doivent rester visibles dans les espaces libres du Hero sans gêner la lecture.
+
+==================================================
+6. CARTE PROJET — STRICTEMENT INTACTE
+==================================================
+
+La carte PROJET actuelle est VALIDÉE.
+
+NE PAS MODIFIER :
+- sa taille
+- son positionnement global sauf ajustement de z-index strictement nécessaire
+- son border-radius
+- son box-shadow / glow
+- son hover 3D
+- rotateX / rotateY
+- scale
+- perspective
+- image `puce-projet.png`
+- SVG paths
+- `particle-orange.png`
+- randomisation taille 0.7 → 1.3
+- randomisation vitesse 0.7 → 1.3
+- nombre de particules
+- spawn
+- fade-out
+- reduced-motion existant
+
+La carte doit simplement rester AU-DESSUS des filaments animés.
+
+==================================================
+7. RETIRER LE MAUVAIS ESSAI ACTUEL
+==================================================
+
+Le Hero actuel contient des lignes décoratives statiques / approximation issue du précédent micro-sprint.
+
+Identifier exactement ce qui a été ajouté lors de ce précédent essai pour :
+- fond Hero approximatif
+- lignes statiques / décoratives
+
+Supprimer ou remplacer uniquement ces éléments refusés.
+
+Ne pas empiler la nouvelle solution sur l’ancienne.
+
+IMPORTANT :
+on ne veut pas plusieurs couches concurrentes.
+On veut UNE implémentation propre, issue de la landing.
+
+==================================================
+8. RÉUTILISATION DU CODE
+==================================================
+
+Priorité :
+réutiliser les composants / utilitaires déjà existants si cela peut être fait sans effet de bord.
+
+Si le système de filaments Home est actuellement trop couplé au Hero Home :
+- extraire uniquement le minimum nécessaire dans un composant réutilisable propre
+OU
+- recopier localement la petite logique utile si l’extraction risque de casser la Home.
+
+Choisir la solution la moins risquée.
+
+RÈGLE ABSOLUE :
+la Home ne doit subir AUCUNE régression visuelle ou fonctionnelle.
+
+==================================================
+9. MOTION / ACCESSIBILITÉ
+==================================================
+
+Reprendre le comportement Home pour :
+`prefers-reduced-motion: reduce`
+
+Sous reduced-motion :
+- pas de mouvement permanent inutile
+- aucun contenu masqué
+- carte PROJET garde son comportement reduced-motion actuel
+- filaments se figent ou se désactivent exactement selon la logique retenue sur la Home
+
+==================================================
+10. RESPONSIVE
+==================================================
+
+Tester :
+- desktop 1440px
+- tablette 768px
+- mobile 390px
+
+Sur mobile :
+- aucun overflow
+- texte toujours lisible
+- carte intacte
+- filaments très discrets si nécessaire
+- pas de surcharge visuelle
+
+Ne pas modifier le responsive général de la page.
+
+==================================================
+11. PÉRIMÈTRE STRICT
+==================================================
+
+Modifier uniquement ce qui est nécessaire pour :
+- Hero `/applications-metier-saas/`
+- petits eyebrows de cette page
+- réutilisation locale du système de filaments/background Home
+
+NE PAS TOUCHER :
+- autres pages Services
+- Home visuellement
+- Hero 3D Soleil/Terre/Lune
+- orbites
+- HDR/WebP
+- Header
+- Footer
+- SEO
+- Réalisations
+- Méthode
+- À propos
+- Contact
+- contenus commerciaux
+
+Aucune nouvelle dépendance.
+
+==================================================
+12. VALIDATION VISUELLE OBLIGATOIRE
+==================================================
+
+Comparer réellement :
+A. Hero Home / landing
+B. Hero `/applications-metier-saas/`
+
+Le Hero Applications doit reprendre clairement :
+- même langage de fond
+- même Ember
+- mêmes filaments animés
+- même sensation de profondeur
+- même biais majoritairement horizontal
+- même sobriété
+
+Mais conserver :
+- son propre texte
+- sa carte PROJET
+- sa mise en page spécifique
+
+Le résultat ne doit PAS être une copie pixel-perfect du Hero Home.
+Il doit être la même DA appliquée à cette page Service.
+
+==================================================
+13. VALIDATION TECHNIQUE
+==================================================
+
+Exécuter :
+- npm run check
+- npm run build
+
+Puis vérifier dans le navigateur :
+- Home : aucune régression
+- `/applications-metier-saas/` : rendu attendu
+- aucune erreur console
+- aucune erreur réseau
+
+Aucun git add / commit / push.
+
+==================================================
+14. RAPPORT COURT
+==================================================
+
+Réponse finale :
+- fichiers modifiés
+- ancien essai statique supprimé : OUI/NON
+- code Home réutilisé comment
+- background repris de quel fichier / quelle règle
+- filaments repris de quel composant / quelle logique
+- probabilité de biais horizontal finale
+- ordre z-index final
+- carte PROJET inchangée : OUI/NON
+- Home inchangée : OUI/NON
+- check
+- build
+- Git : NON
+
+Puis STOP.
+
+NE PAS CONTINUER LA V2 DE LA PAGE APRÈS CE MICRO-SPRINT.

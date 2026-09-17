@@ -1,0 +1,170 @@
+---
+// ServiceHeroFilaments — micro-sprint "V2 qualité exhaustif" (PROMPT_
+// CLAUDE_CODE_V2_APPLICATIONS_SAAS_QUALITE_EXHAUSTIF), corrige les 2 défauts
+// identifiés sur le premier essai (PROMPT_CLAUDE_CODE_V2_APPLICATIONS_SAAS_
+// COPIE_DA_LANDING_HERO puis PROMPT_CLAUDE_CODE_V2_HERO_FILAMENTS_POINTS_
+// ANIMES) pour /applications-metier-saas/ UNIQUEMENT :
+//
+// DÉFAUT 1 (trajectoires "trop verticales") — cause exacte identifiée à
+// l'audit : l'ancienne version générait les points dans un viewBox FIXE
+// 1200x480 puis l'étirait sur la vraie boîte du Hero via
+// preserveAspectRatio="none". Si la vraie boîte n'a pas le ratio 2.5:1 du
+// viewBox (cas réel du Hero), cet étirement NON UNIFORME déforme les
+// pentes : une ligne quasi plate dans le viewBox peut devenir nettement
+// plus verticale une fois étirée. Correction : plus de viewBox fixe ni de
+// preserveAspectRatio="none" — le script mesure la vraie boîte
+// (getBoundingClientRect) et génère les points DIRECTEMENT dans ce
+// système de coordonnées réel (1 unité de viewBox = 1px CSS réel,
+// viewBox="0 0 width height" avec width/height mesurés). Aucune
+// déformation possible, quel que soit le ratio réel du Hero.
+//
+// DÉFAUT 2 (mouvement "saccadé", "imitation" plutôt que la vraie
+// signature) — cause exacte : chaque ligne animait INDÉPENDAMMENT via un
+// aller-retour CSS (0% -> 50% -> 0%), alors que sur la Home
+// (HeroSpheres.tsx) c'est le RIG ENTIER qui tourne en continu, sans jamais
+// revenir en arrière (`filamentsRig.rotation.y += delta * (0.012 +
+// energy*0.01)`, un angle qui augmente perpétuellement, jamais un
+// va-et-vient) — les 5 lignes bougent TOUJOURS ensemble, rigidement, comme
+// un seul objet. Correction : une seule rotation CSS continue et
+// PARFAITEMENT BOUCLÉE (0deg -> 360deg, `linear`, `infinite` — 360°≡0°,
+// donc aucun saut visible au rebouclage, contrairement à un aller-retour)
+// appliquée au groupe entier, jamais par ligne. Le pivot est placé loin
+// sous la boîte (`transform-origin: 50% 650%`) : à cette distance, l'arc
+// de cercle traversé en quelques secondes est visuellement quasi rectiligne
+// et HORIZONTAL (le rayon, quasi vertical, rend la vitesse tangentielle
+// quasi horizontale) — même lecture "dérive horizontale continue" que la
+// Home, sans jamais de retour en arrière ni de saut.
+//
+// Le reste (glow de fond identique à `.home-hero`, biais horizontal 0.75,
+// palette/opacités ivoire/Ember, régénération à chaque chargement de page,
+// aucune dépendance 3D ajoutée — voir le rapport détaillé pour la
+// justification complète) reste inchangé depuis le premier essai.
+---
+
+<div class="service-hero-bg" aria-hidden="true">
+  <svg class="service-hero-bg__filaments" preserveAspectRatio="none"></svg>
+</div>
+
+<style>
+  .service-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    /* Formule identique à `.home-hero` (home.css) : halo Ember diffus,
+       aucune nouvelle couleur/valeur inventée. */
+    background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+  }
+
+  .service-hero-bg__filaments {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* Rotation CONTINUE, jamais un aller-retour — voir le commentaire de
+       frontmatter (DÉFAUT 2) pour la justification complète. 240s pour un
+       tour complet : à cette vitesse, le rebouclage 360deg->0deg (pourtant
+       mathématiquement invisible, 360°≡0°) n'est de toute façon jamais
+       perçu pendant une visite normale. */
+    transform-origin: 50% 650%;
+    animation: service-hero-filaments-rotate 240s linear infinite;
+  }
+
+  .service-hero-bg__filaments path {
+    fill: none;
+    stroke-width: 1;
+  }
+
+  @keyframes service-hero-filaments-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .service-hero-bg__filaments {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // Recopie locale (règle de réutilisation du prompt) de la génération
+  // procédurale à biais horizontal de src/components/hero/HeroSpheres.tsx
+  // — constante et probabilité INCHANGÉES (0.75, vérifiée à l'audit avant
+  // ce micro-sprint). Les bornes x/y sont exprimées en FRACTION de la
+  // largeur/hauteur réelles du conteneur (mesurées au chargement), jamais
+  // en valeurs absolues arbitraires : le résultat reste correctement
+  // proportionné quel que soit le ratio réel du Hero (voir DÉFAUT 1 dans
+  // le commentaire de frontmatter). Recalculé une seule fois par
+  // chargement de page, comme le useMemo de la Home.
+  function catmullRomPath(points: { x: number; y: number }[]): string {
+    if (points.length < 2) return "";
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i - 1] ?? points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2] ?? p2;
+      const c1x = p1.x + (p2.x - p0.x) / 6;
+      const c1y = p1.y + (p2.y - p0.y) / 6;
+      const c2x = p2.x - (p3.x - p1.x) / 6;
+      const c2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
+    }
+    return d;
+  }
+
+  function buildFilaments(svg: SVGSVGElement) {
+    const rect = svg.getBoundingClientRect();
+    const width = rect.width || 1;
+    const height = rect.height || 1;
+    // Coordonnées réelles (1 unité = 1px CSS) : aucun étirement possible,
+    // contrairement à l'ancien viewBox fixe + preserveAspectRatio="none".
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const rand = (min: number, max: number) => min + Math.random() * (max - min);
+    // Référence connue du projet (HeroSpheres.tsx, Home) — reprise telle
+    // quelle : ne pas modifier cette valeur ici ni sur la Home.
+    const HORIZONTAL_BIAS_PROBABILITY = 0.75;
+    const IVORY = "#F1EFE8";
+    const EMBER = "#E45F36";
+    const svgNamespace = "http://www.w3.org/2000/svg";
+
+    for (let i = 0; i < 5; i++) {
+      const horizontalBias = Math.random() < HORIZONTAL_BIAS_PROBABILITY;
+      const pointCount = Math.random() < 0.5 ? 3 : 4;
+      // Étendue horizontale large (largement au-delà des 2 bords), même
+      // intention que la Home : "traverse tout le champ de vision".
+      const xStart = rand(-0.08, 0.03) * width;
+      const xEnd = rand(0.97, 1.08) * width;
+      const yCenter = rand(0.15, 0.85) * height;
+      // Amplitude verticale, exprimée en fraction de la HAUTEUR réelle :
+      // contrainte (biais horizontal, "tendues, peu pentues") ou libre —
+      // même logique que la Home. Exprimer cette borne en fraction de la
+      // hauteur réelle (jamais en pixels absolus) est ce qui garantit que
+      // la majorité des lignes reste visuellement quasi horizontale quel
+      // que soit le ratio du Hero (correction du DÉFAUT 1).
+      const verticalSpread = (horizontalBias ? rand(0.02, 0.06) : rand(0.12, 0.24)) * height;
+
+      const points = Array.from({ length: pointCount }, (_, p) => {
+        const t = p / (pointCount - 1);
+        const x = xStart + (xEnd - xStart) * t + rand(-0.012, 0.012) * width;
+        const y = yCenter + rand(-verticalSpread, verticalSpread);
+        return { x, y };
+      });
+
+      const path = document.createElementNS(svgNamespace, "path");
+      path.setAttribute("d", catmullRomPath(points));
+      path.setAttribute("stroke", i % 2 === 0 ? IVORY : EMBER);
+      path.setAttribute("opacity", i % 2 === 0 ? "0.12" : "0.09");
+      svg.appendChild(path);
+    }
+  }
+
+  document.querySelectorAll<SVGSVGElement>(".service-hero-bg__filaments").forEach(buildFilaments);
+</script>

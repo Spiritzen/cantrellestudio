@@ -13,6 +13,9 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
 import ProjectHeroVisual from "../components/services/ProjectHeroVisual.astro";
+import ServiceMethodJourney from "../components/services/ServiceMethodJourney.astro";
+import PageFilaments from "../components/hero/PageFilaments";
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
 import ServiceProofCard from "../components/services/ServiceProofCard.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
@@ -32,32 +35,36 @@ import "../styles/services.css";
 // rapport, section arbitrages.
 const appsProofs = getProofsForService("applications-metier-saas");
 
+// Micro-sprint "V2 qualité exhaustif" §7 — reformulation légère (sens
+// métier strictement préservé, voir §7 du prompt : tableur partagé dur à
+// maintenir / ressaisie multiple / règles dispersées / outil générique mal
+// adapté / tâches répétitives automatisables / rôles-droits flous), juste
+// plus courte et plus directe pour une meilleure scannabilité.
 const problems = [
-  "Quand un tableur devient difficile à maintenir à plusieurs.",
-  "Quand les mêmes données sont ressaisies dans plusieurs outils.",
-  "Quand les règles métier ne sont formalisées nulle part.",
-  "Quand un outil générique ne correspond plus à la façon de travailler.",
-  "Quand des étapes répétitives pourraient être automatisées.",
-  "Quand il manque des rôles et des droits clairs entre utilisateurs.",
+  "Un tableau partagé de plus en plus dur à maintenir à plusieurs.",
+  "Les mêmes informations ressaisies dans plusieurs outils.",
+  "Des règles métier qui ne sont écrites nulle part.",
+  "Un outil générique qui ne colle plus à votre façon de travailler.",
+  "Des tâches répétitives qui pourraient être automatisées.",
+  "Des rôles et des droits flous entre utilisateurs.",
 ];
 
-const solutionFamilies = [
-  "CRM métier",
-  "Facturation",
-  "Planning",
-  "Portails & back-office",
-  "Tableaux de bord",
-  "SaaS multi-utilisateurs",
+// Micro-sprint "V2 qualité exhaustif" §8 — le jargon (CRM métier, back-
+// office, SaaS multi-utilisateurs) n'est plus le message principal : chaque
+// item mène par l'usage concret, en langage client. Le terme technique
+// reste disponible en second niveau (`technical`), seulement pour les 3
+// items où le prompt l'identifie explicitement comme un anglicisme à ne
+// pas laisser seul ; "Facturation"/"Planning"/"Tableaux de bord" sont déjà
+// des mots courants, aucun second niveau nécessaire pour eux.
+const solutionFamilies: { label: string; technical?: string }[] = [
+  { label: "Suivi des clients et des demandes", technical: "CRM" },
+  { label: "Devis, factures et paiements" },
+  { label: "Planning et organisation" },
+  { label: "Espace client ou espace d'équipe", technical: "back-office" },
+  { label: "Tableaux de bord et suivi d'activité" },
+  { label: "Outil partagé, accessible à toute l'équipe", technical: "SaaS multi-utilisateurs" },
 ];
 
-const architectureSteps = [
-  { label: "Besoin", accent: false },
-  { label: "Règles métier", accent: false },
-  { label: "Données", accent: false },
-  { label: "API / Services", accent: true },
-  { label: "Interface", accent: false },
-  { label: "Tests / Livraison", accent: false },
-];
 ---
 
 <BaseLayout
@@ -65,11 +72,29 @@ const architectureSteps = [
   description="Applications métier et SaaS sur mesure : cadrage, architecture, API, sécurité, interfaces et logique métier adaptées à votre activité."
 >
   <div class="service-page service-page--apps">
+    <!-- Micro-sprint "PageFilaments"
+         (PROMPT_CLAUDE_CODE_V2_PAGE_FILAMENTS_APPLICATIONS_SAAS) — couche
+         de fond persistante pour TOUTE la page, montée UNE SEULE FOIS ici
+         (jamais par section) : reprend fidèlement le mécanisme réel des
+         filaments de la Home (rotation continue du rig, énergie de
+         scroll, reduced-motion) en Canvas Three.js fixed plein viewport —
+         voir src/components/hero/PageFilaments.tsx et le rapport d'audit
+         docs/rapports/rapport_audit_filaments_landing_reutilisation_v2.txt.
+         Aligné sur la Home : aucune hydratation sous 900px. -->
+    <PageFilaments client:media="(min-width: 900px)" />
     <Container>
       <ServiceBreadcrumb current="Applications métier & SaaS" />
     </Container>
 
-    <section class="service-page__section">
+    <section class="service-page__section apps-hero-section">
+      <!-- Micro-sprint "PageFilaments" — l'ancien décor SVG/CSS local au
+           Hero (ServiceHeroFilaments) a été retiré : le fond de filaments
+           vient désormais de <PageFilaments/>, monté une seule fois au
+           niveau de la page (voir plus haut, juste après <BaseLayout>),
+           en Canvas fixed plein viewport — pas un conteneur borné à cette
+           section. Le glow Ember du Hero (formule identique à `.home-hero`,
+           que ServiceHeroFilaments portait jusqu'ici) est repris tel quel
+           directement sur `.apps-hero-section` dans services.css. -->
       <Container>
         <!-- Micro-sprint "Test Hero PROJET" — visuel animé UNIQUEMENT sur
              cette page (nouveau wrapper .apps-hero-layout, scopé par
@@ -77,10 +102,14 @@ const architectureSteps = [
              lui-même n'est pas modifié : Sites pro / Sur mesure gardent
              leur hero en une seule colonne, inchangé. -->
         <div class="apps-hero-layout">
+          <!-- Micro-change "Hero mots clés" — 3 mots du lead (métier,
+               règles, architecture) mis en avant (gras + ivoire, voir
+               .service-hero__lead strong dans services.css), texte
+               strictement identique à avant, seul le balisage change. -->
           <ServiceHero
             eyebrow="Applications métier & SaaS"
             title="Des applications métier conçues autour de vos processus."
-            lead="CRM, facturation, planification, portails, workflows ou SaaS multi-utilisateurs : le studio part du besoin métier, modélise les règles et choisit l'architecture adaptée."
+            leadHtml="CRM, facturation, planification, portails, workflows ou SaaS multi-utilisateurs : le studio part du besoin <strong>métier</strong>, modélise les <strong>règles</strong> et choisit l'<strong>architecture</strong> adaptée."
             secondaryHref="/realisations/"
             secondaryLabel="Voir les réalisations"
           />
@@ -89,60 +118,85 @@ const architectureSteps = [
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="apps-problems-title">
+    <section class="service-page__section service-page__section--soft apps-problems-section" aria-labelledby="apps-problems-title">
+      <!-- Micro-sprint "filaments/points animés" — même motif de points
+           animés que derrière Expertises/Capacités sur la Home, composant
+           réutilisé TEL QUEL (ExpertiseDotWave.astro + expertise-dot-wave.
+           css, déjà conçu pour plusieurs hôtes, aucun nom de section codé
+           en dur côté JS). Stacking (position/isolation/z-index) ajouté
+           pour ces 2 nouveaux hôtes dans expertise-dot-wave.css — la Home
+           n'est pas touchée. -->
+      <ExpertiseDotWave />
       <Container>
+        <!-- Micro-change "mot-clé projet" — même mécanisme que le slot
+             `intro` déjà utilisé sur la Home (index.astro, Expertises) :
+             markup local (jamais de set:html), toujours détecté par le
+             reveal existant (data-motion="intro" sur le <p> parent, non
+             affecté par le contenu du slot). -->
         <SectionHeading
           id="apps-problems-title"
           eyebrow="Le point de départ"
           title="Des problèmes concrets, pas une liste de fonctionnalités."
-          intro="Chaque projet part d'un contexte réel. Voici des situations fréquentes — pas une liste que tous les prospects reconnaîtront nécessairement."
-        />
+        >
+          <Fragment slot="intro">Chaque <strong class="apps-problems__highlight">projet</strong> part d'un contexte réel. Voici des situations fréquentes — pas une liste que tous les prospects reconnaîtront nécessairement.</Fragment>
+        </SectionHeading>
+        <!-- Micro-sprint "refonte Le point de départ" — 2 cards premium
+             (formule .service-cta/.service-proof déjà validée sur cette
+             page : surface-elevated + bordure forte + radius-lg, jamais
+             une nouvelle esthétique) au lieu de deux colonnes de texte nu
+             posées sur le fond à points animés. Liseré neutre (problèmes)
+             / Ember (solutions) pour une légère sensation de dialogue. -->
         <div class="service-problems-solutions">
-          <div class="service-problems" data-motion="block">
-            <h2>Des situations qui reviennent souvent</h2>
-            <ul>
-              {problems.map((problem) => (
-                <li>{problem}</li>
+          <article class="service-poc-card service-poc-card--problems" data-motion="block">
+            <h3>Des situations qui reviennent souvent</h3>
+            <ul class="service-poc-card__list service-poc-card__list--numbered">
+              {problems.map((problem, i) => (
+                <li>
+                  <span class="service-poc-card__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                  <span>{problem}</span>
+                </li>
               ))}
             </ul>
-          </div>
-          <div class="service-solutions" data-motion="block">
-            <h2>Des familles de solutions possibles</h2>
-            <ul>
+          </article>
+          <article class="service-poc-card service-poc-card--solutions" data-motion="block">
+            <h3>Des familles de solutions possibles</h3>
+            <ul class="service-poc-card__list service-poc-card__list--solutions">
               {solutionFamilies.map((family) => (
-                <li>{family}</li>
+                <li>
+                  <span class="service-poc-card__marker" aria-hidden="true"></span>
+                  <span>
+                    {family.label}
+                    {family.technical && <span class="service-poc-card__technical"> — {family.technical}</span>}
+                  </span>
+                </li>
               ))}
             </ul>
-          </div>
+            <p class="service-poc-card__closing">L'outil s'adapte à votre façon de travailler, pas l'inverse.</p>
+          </article>
         </div>
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="apps-architecture-title">
+    <section class="service-page__section apps-architecture-section" aria-labelledby="apps-architecture-title">
+      <!-- Micro-sprint "backgrounds Ember sections" — même langage visuel
+           que le Hero (glow Ember translucide, PageFilaments visible au
+           travers, voir services.css .apps-architecture-section). -->
       <Container>
         <SectionHeading
           id="apps-architecture-title"
           eyebrow="Méthode"
           title="On ne commence pas par choisir une technologie."
-          intro="Le studio part de ce qui doit fonctionner, pas d'une préférence pour React ou pour Spring Boot."
+          intro="Le studio part de ce qui doit fonctionner, puis choisit la technologie la plus adaptée au projet."
         />
-        <div
-          class="service-architecture"
-          data-motion="block"
-          role="img"
-          aria-label="Schéma : Besoin, puis Règles métier, puis Données, puis API et Services, puis Interface, puis Tests et Livraison."
-        >
-          {architectureSteps.map((step, i) => (
-            <>
-              <div class:list={["service-architecture__step", step.accent && "service-architecture__step--accent"]}>
-                {step.label}
-              </div>
-              {i < architectureSteps.length - 1 && <div class="service-architecture__arrow" aria-hidden="true">↓</div>}
-            </>
-          ))}
-        </div>
+        <!-- Micro-sprint "Méthode interactive" — remplace l'ancien schéma
+             statique (6 pastilles + flèches, dont une accentuée en dur sans
+             lien avec une interaction) par un parcours en 6 étapes :
+             survol/focus (desktop) ou accordéon tap (mobile), voir
+             ServiceMethodJourney.astro. Aucune étape active au repos. -->
+        <ServiceMethodJourney />
         <p class="service-architecture__note">
-          Cette lecture guide chaque choix technique : la stack vient après la compréhension du métier, pas avant.
+          Chaque étape de ce parcours nourrit la suivante : la stack technique arrive en dernier, une fois le besoin
+          compris.
         </p>
       </Container>
     </section>
@@ -175,7 +229,10 @@ const architectureSteps = [
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="apps-method-title">
+    <section class="service-page__section apps-cadrage-section" aria-labelledby="apps-method-title">
+      <!-- Micro-sprint "backgrounds Ember sections" — même langage visuel
+           que le Hero (glow Ember translucide, PageFilaments visible au
+           travers, voir services.css .apps-cadrage-section). -->
       <Container>
         <SectionHeading
           id="apps-method-title"
@@ -189,7 +246,11 @@ const architectureSteps = [
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="apps-stack-title">
+    <section class="service-page__section service-page__section--soft apps-stack-section" aria-labelledby="apps-stack-title">
+      <!-- Micro-sprint "filaments/points animés" — même motif de points
+           animés que derrière Expertises/Capacités sur la Home (voir
+           commentaire équivalent plus haut, section "Le point de départ"). -->
+      <ExpertiseDotWave />
       <Container>
         <SectionHeading id="apps-stack-title" eyebrow="Stack" title="La stack dépend des contraintes, pas d'un principe." />
         <div class="service-tech-choice" data-motion="block">
@@ -240,7 +301,10 @@ const architectureSteps = [
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="apps-cta-title">
+    <section class="service-page__section apps-final-cta-section" aria-labelledby="apps-cta-title">
+      <!-- Micro-sprint "backgrounds Ember sections" — même glow que le CTA
+           final de la Home (.home-final-cta__glow, même formule), voir
+           services.css .apps-final-cta-section. -->
       <Container>
         <ServiceCta
           headingId="apps-cta-title"
