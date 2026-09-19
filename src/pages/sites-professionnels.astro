@@ -13,6 +13,7 @@ import ActionLink from "../components/ui/ActionLink.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
+import SitesPhoneScene from "../components/hero/SitesPhoneScene";
 import ServiceProofCard from "../components/services/ServiceProofCard.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
@@ -71,19 +72,37 @@ const foundations = [
   description="Sites professionnels rapides, accessibles et pensés pour le SEO : architecture Astro ou React, contenus structurés, responsive et performance."
 >
   <div class="service-page service-page--sites">
+    <!-- Micro-sprint "Test téléphone 3D"
+         (PROMPT_CLAUDE_CODE_V2_SITES_PROFESSIONNELS_PHONE_3D_TEST) — même
+         convention que PageFilaments sur Applications métier & SaaS :
+         Canvas monté UNE SEULE FOIS au niveau racine de la page, jamais
+         par section (voir src/components/hero/SitesPhoneScene.tsx, non
+         partagé avec PageFilaments/HeroScene, aucun des deux modifié).
+         Aligné sur la Home/Applications : aucune hydratation sous 900px. -->
+    <SitesPhoneScene client:media="(min-width: 900px)" />
     <Container>
       <ServiceBreadcrumb current="Sites professionnels" />
     </Container>
 
     <section class="service-page__section">
       <Container>
-        <ServiceHero
-          eyebrow="Sites professionnels"
-          title="Un site professionnel pensé pour être trouvé, compris et contacté."
-          lead="Architecture SEO, performance, responsive, accessibilité et direction artistique : chaque page doit servir un besoin concret, pas remplir un thème."
-          secondaryHref="/realisations/belkhir-depannage/"
-          secondaryLabel="Voir Belkhir Dépannage"
-        />
+        <!-- Micro-sprint "Test téléphone 3D" — grille 2 colonnes UNIQUEMENT
+             sur cette page (.sites-hero-layout, scopée .service-page--sites
+             dans services.css), par analogie avec .apps-hero-layout
+             (Applications). ServiceHero.astro n'est pas modifié : la
+             colonne de droite n'est qu'un slot DOM vide qui réserve
+             l'espace visuel — le téléphone lui-même est rendu dans le
+             Canvas fixed, pas dans ce slot. -->
+        <div class="sites-hero-layout">
+          <ServiceHero
+            eyebrow="Sites professionnels"
+            title="Un site professionnel pensé pour être trouvé, compris et contacté."
+            lead="Architecture SEO, performance, responsive, accessibilité et direction artistique : chaque page doit servir un besoin concret, pas remplir un thème."
+            secondaryHref="/realisations/belkhir-depannage/"
+            secondaryLabel="Voir Belkhir Dépannage"
+          />
+          <div class="sites-hero-layout__phone-slot" aria-hidden="true"></div>
+        </div>
       </Container>
     </section>
 

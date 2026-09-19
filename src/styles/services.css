@@ -852,6 +852,52 @@ html .service-page--apps .section-heading__eyebrow {
    B. SITES PROFESSIONNELS — triptyque, fondations, choix techno
    ========================================================================== */
 
+/* Micro-sprint "Test téléphone 3D"
+   (PROMPT_CLAUDE_CODE_V2_SITES_PROFESSIONNELS_PHONE_3D_TEST) — grille 2
+   colonnes du Hero, par analogie avec `.service-page--apps .apps-hero-
+   layout` (Applications métier & SaaS), scopée `.service-page--sites`
+   UNIQUEMENT : Applications / Sur mesure n'ont pas cette classe sur leur
+   Hero, aucun effet ailleurs. La colonne de droite (`__phone-slot`) est un
+   simple slot DOM vide qui réserve l'espace visuel : le téléphone 3D réel
+   est rendu dans le Canvas fixed (SitesPhoneScene.tsx), jamais dans ce
+   `<div>` — `aria-hidden` + aucune largeur/contenu propre en dessous du
+   breakpoint desktop. */
+.service-page--sites .sites-hero-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+@media (min-width: 900px) {
+  .service-page--sites .sites-hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+  }
+
+  .service-page--sites .sites-hero-layout__phone-slot {
+    min-height: 26rem;
+  }
+}
+
+/* Micro-sprint "Drag utilisateur téléphone 3D"
+   (PROMPT_CLAUDE_CODE_PHONE_USER_DRAG_RETURN_IDLE) — curseur uniquement :
+   la zone `__phone-slot` reste un `<div>` vide qui ne fait que réserver
+   l'espace visuel (voir commentaire plus haut) ; SitesPhoneScene.tsx y
+   attache des écouteurs Pointer Events natifs (`document.querySelector`,
+   hors de l'arbre React de ce composant) et bascule ces 2 classes en JS
+   selon la phase d'animation (`--interactive` ajoutée une seule fois à la
+   fin de l'entrée, jamais avant ; `--grabbing` uniquement pendant un drag
+   actif). Curseur par défaut (`normal`, hors interaction disponible)
+   volontairement NON redéclaré ici : c'est déjà le comportement natif
+   d'un `<div>` sans règle `cursor`. */
+.service-page--sites .sites-hero-layout__phone-slot--interactive {
+  cursor: grab;
+}
+
+.service-page--sites .sites-hero-layout__phone-slot--interactive.sites-hero-layout__phone-slot--grabbing {
+  cursor: grabbing;
+}
+
 .service-page--sites .service-triptych {
   display: grid;
   grid-template-columns: 1fr;

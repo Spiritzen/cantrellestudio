@@ -1,0 +1,885 @@
+// SitesPhoneScene — /sites-professionnels/, téléphone 3D.
+//
+// V1 (PROMPT_CLAUDE_CODE_V2_SITES_PROFESSIONNELS_PHONE_3D_TEST) : premier
+// test, image appliquée sur la geometry de `WhiteScreen` (seul écran
+// disponible dans le GLB à l'époque).
+//
+// V2 (PROMPT_CLAUDE_CODE_V2_SITES_PRO_PHONE_SCREENDISPLAY_ENVIRONMENT) :
+// le GLB a été retravaillé dans Blender et a reçu un 3e node dédié,
+// `ScreenDisplay` (plan simple, 4 sommets), destiné explicitement à
+// porter l'image/future vidéo — remplace `WhiteScreen` comme support de
+// la capture. `WhiteScreen` restait alors monté avec son matériau GLB
+// d'origine (glow émissif) comme halo derrière `ScreenDisplay`.
+//
+// V3 — CE FICHIER (PROMPT_CLAUDE_CODE_PHONE_SCREENDISPLAY_ONLY_TEST) :
+// le GLB a été nettoyé à nouveau dans Blender — `WhiteScreen` N'EXISTE
+// PLUS (seuls `PhoneBody` et `ScreenDisplay` subsistent). Toute
+// dépendance à `WhiteScreen` (node, geometry, matériau, opacité de
+// cohabitation, offset géométrique anti-z-fighting, renderOrder) a été
+// retirée. `ScreenDisplay` est désormais l'UNIQUE support visuel de
+// l'écran, opacity 1.0 (base de test propre pour isoler la cause du
+// scintillement — l'effet lumineux sera retravaillé plus tard, une fois
+// l'absence de scintillement confirmée).
+//
+// Shell (hydratation/reduced-motion/Page Visibility/wrapper fixed/Canvas)
+// INCHANGÉ depuis la V1 — copié fidèlement du principe déjà validé de
+// PageFilaments.tsx/HeroScene.tsx (prompt §10 : "ne pas refaire
+// l'architecture, le protéger").
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { RefObject } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useGLTF, useTexture } from "@react-three/drei";
+import * as THREE from "three";
+import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
+import phoneGlbUrl from "../../assets/3d/PhoneFinal.glb?url";
+// Micro-ajustements (PROMPT micro-ajustements téléphone 3D) — nouvelle
+// capture d'écran, même dossier que l'ancienne (`belkhir-mobile.jpg`,
+// conservée sur disque, non supprimée : simplement plus référencée ici).
+import belkhirScreenUrl from "../../assets/projects/belkhir-depannage/belkhir-mobile1.jpg?url";
+// Environnement EXR 1K (PROMPT_CLAUDE_CODE_PHONE_ENVIRONMENT_EXR_1K) —
+// remplace `modern_bathroom_4k.webp` : vrai HDR linéaire (pas une image
+// SDR passée par TextureLoader). `?url` (comme le GLB ci-dessus) : un
+// binaire chargé par EXRLoader, jamais par le pipeline astro:assets
+// (celui-ci ne connaît pas le format .exr).
+import phoneEnvironmentExrUrl from "../../assets/hdr/blue_photo_studio_1k.exr?url";
+
+// --- Placement du téléphone (micro-ajustements) ---------------------------
+// Rotation de base -90°/Y (validée V1/V2 : amène l'écran face caméra,
+// +X local -> +Z monde) + une rotation ADDITIONNELLE demandée par ce
+// sprint ("orienté du mauvais côté... il faut l'orienter vers la gauche,
+// donc vers le texte / le centre de la composition") : le téléphone est
+// tourné DAVANTAGE (au lieu de rester bien en face de la caméra) pour que
+// sa face regarde partiellement vers -X (gauche = côté texte, puisque le
+// groupe téléphone est positionné en X positif). Valeur ajustée par
+// vérification visuelle réelle (voir rapport).
+const PHONE_ROTATION_Y = -Math.PI / 2 - Math.PI / 7;
+// Réduction supplémentaire de 10 % demandée pour ce sprint, sur la base
+// d'ORIGINE 7.2 (jamais sur le 5.1 du sprint précédent) : objectif final
+// -40 % au total, soit 7.2 * 0.60 = 4.32 très exactement — valeur imposée
+// par le prompt ("ne pas approximer à 4.5"), conservée telle quelle.
+const PHONE_SCALE = 4.32;
+// Replacé plus à gauche (fraction réduite : plus proche du centre de la
+// composition, moins collé au bord droit qu'au sprint précédent) et
+// remonté (Y positif plus important) pour un meilleur équilibre vertical
+// dans le Hero. Fraction du demi-viewport (calculée depuis la caméra R3F,
+// jamais une valeur pixel figée — cohérent à 1440px et 1024px), ajustée
+// par vérification visuelle réelle (voir rapport).
+const PHONE_RIGHT_FRACTION = 0.4;
+const PHONE_Y_OFFSET = 0.3;
+
+// --- Animation d'entrée + idle (storyboard imposé) ------------------------
+// Position de repos = position/rotation actuelles ci-dessus, considérées
+// comme LA position finale : jamais modifiées par ce sprint, uniquement
+// approchées depuis un point de départ différent.
+//
+// Étape A/D : le téléphone démarre plus à droite (offset local ajouté à la
+// position finale du groupe, jamais une nouvelle valeur de `phoneX`) et
+// glisse jusqu'à 0 (= position finale exacte).
+// Fix "2 tours réellement visibles" — REVENU à 3.4 (valeur pré-"peps").
+// Audit : à 5, le téléphone démarrait entièrement hors du viewport visible
+// (position monde ≈ phoneX + 5, largement au-delà de la demi-largeur du
+// viewport à 1440px) ; comme la translation ET la rotation partageaient
+// jusqu'ici le MÊME `eased` (easeOutCubic, très front-loaded), le
+// téléphone ne redevenait visible qu'une fois `eased` déjà avancé à
+// ~0,59-0,6 — c'est-à-dire après que 59-60% des 2.25 tours (environ 480-
+// 486°, plus d'un tour complet) avaient déjà tourné HORS ÉCRAN. Il ne
+// restait donc plus qu'un arc résiduel (~330°, à peine 1 tour) à observer
+// une fois le téléphone visible — d'où le symptôme rapporté ("+/- un demi-
+// tour"). Revenir à 3.4 réduit mécaniquement cette fenêtre hors écran,
+// mais l'essentiel du fix est le DÉCOUPLAGE ci-dessous (§ENTERING) : avec
+// une rotation qui ne suit plus le easeOutCubic très agressif de la
+// translation, la fraction de rotation "consommée" avant que le téléphone
+// soit visible reste faible quelle que soit la valeur exacte de cet
+// offset.
+const ENTRY_START_X_OFFSET = 3.4;
+// Étape B : rotation cumulée sur l'axe vertical (Y) UNIQUEMENT — jamais
+// une bascule sur X/Z. 2.25 tours (810°), au-dessus du minimum imposé de
+// 2 tours (720°) pour une lecture nette sans être excessif. INCHANGÉ.
+const ENTRY_SPIN_TURNS = 2.25;
+const ENTRY_SPIN_RADIANS = ENTRY_SPIN_TURNS * Math.PI * 2;
+// Étape C : durée — 3.2s INCHANGÉE (dans la fourchette validée, prompt
+// §8 : "ne pas raccourcir... conserver ~3.2s").
+const ENTRY_DURATION = 3.2;
+// Translation — easeOutCubic INCHANGÉ (donne l'impact "rapide au départ,
+// ralentissement progressif, arrivée douce" recherché pour l'ARRIVÉE du
+// téléphone dans le cadre).
+function easeOutCubic(t: number) {
+  return 1 - Math.pow(1 - t, 3);
+}
+// Fix "2 tours réellement visibles" — ROTATION DÉCOUPLÉE de la
+// translation (prompt §6 : `moveProgress`/`spinProgress` séparés mais
+// synchronisés dans la même phase ENTERING, jamais après). Un ease-out
+// quadratique, nettement MOINS front-loaded que le cubique de la
+// translation (à t=0.15, quad ≈ 27,75% contre cubic ≈ 39%), pour que la
+// majorité de la rotation reste à jouer PENDANT que le téléphone devient
+// progressivement visible — "progression temporelle plus régulière /
+// légèrement ease-out" (prompt §6), tout en conservant une décélération
+// perceptible en fin de course (contrairement à un linéaire pur, qui
+// stopperait net à vitesse angulaire constante). Rotation TOUJOURS
+// pilotée par une valeur cumulative explicite (lerp entre 2 radians
+// absolus, jamais de quaternion.slerp/normalize/modulo/chemin le plus
+// court, prompt §7) : aucun risque de réduction visuelle des 810° à un
+// petit arc.
+function easeOutQuadSpin(t: number) {
+  return 1 - Math.pow(1 - t, 2);
+}
+// Étape E : idle — léger pivot droite/gauche autour de l'axe vertical,
+// continu, jamais figé. Amplitude modérée (ni trop faible ni exagérée) et
+// période lente pour un rendu premium, pas un tic nerveux.
+const IDLE_AMPLITUDE = THREE.MathUtils.degToRad(6);
+const IDLE_SPEED = 0.45; // rad/s de la phase du sinus (période ≈ 14s)
+
+// --- Environnement EXR 1K (PROMPT_CLAUDE_CODE_PHONE_ENVIRONMENT_EXR_1K) ---
+// Valeur de départ imposée par le prompt (§3). Ajustable visuellement entre
+// 1.0 (si surexposé) et 1.4 maximum (si reflets trop faibles) — jamais
+// au-delà sans validation visuelle. 1.2 conservée : ni surexposition ni
+// reflets trop faibles constatés lors de la validation de ce sprint (voir
+// rapport).
+const PHONE_ENVIRONMENT_INTENSITY = 1.2;
+// Orientation naturelle de l'EXR conservée (prompt §4 : "ne pas inventer
+// une rotation forte arbitraire... commencer avec l'orientation naturelle
+// de l'EXR"). Validation visuelle de ce sprint : les grandes sources
+// lumineuses de `blue_photo_studio_1k.exr` tombent déjà correctement sur
+// la coque (tranche métallique, contour supérieur, flancs, lentilles) sans
+// aucun ajustement — rotation laissée à 0.
+const PHONE_ENVIRONMENT_ROTATION_Y = 0;
+
+// --- Interaction utilisateur — drag souris (PROMPT_CLAUDE_CODE_PHONE_
+// USER_DRAG_RETURN_IDLE) — active UNIQUEMENT une fois IDLE atteint (jamais
+// pendant WAITING/PAUSING/ENTERING). Sensibilité au milieu de la fourchette
+// recommandée (0.005-0.008 rad/px).
+const DRAG_SENSITIVITY = 0.006; // rad par pixel de déplacement souris
+// Yaw (Y) : volontairement AUCUN clamp — "l'utilisateur doit pouvoir voir
+// les côtés et l'arrière", rotation libre à 360°.
+// Pitch (X) : clamp large (60°, milieu de la fourchette ±55°/±65°
+// recommandée) — permet une inclinaison nette sans jamais présenter le
+// téléphone totalement inversé.
+const DRAG_PITCH_CLAMP = THREE.MathUtils.degToRad(60);
+// Retour automatique après inactivité — mesurée depuis le DERNIER
+// mouvement réel (jamais depuis pointerup), lambda au milieu de la
+// fourchette 4-6 recommandée (retour perceptuellement ~0.8-1.2s).
+const DRAG_RETURN_TIMEOUT = 1; // secondes sans mouvement avant RETURNING
+const RETURN_LAMBDA = 5;
+// Seuil angulaire (rad) sous lequel RETURNING est considéré "arrivé" et
+// clampe proprement sur l'orientation de repos avant de repasser en IDLE.
+const RETURN_SETTLE_THRESHOLD = 0.01;
+
+/** Clone la geometry source (jamais l'originale mise en cache par
+ * useGLTF/drei — mutée ici) et normalise son attribut UV vers 0..1
+ * (prompt §3 : le nouveau `ScreenDisplay` a des UV bruts qui ne couvrent
+ * qu'une partie de l'espace 0..1, ex. U ∈ [0, 0.538] mesuré dans le GLB
+ * réel — un mapping direct laisserait l'essentiel de la texture inutilisé
+ * et l'image apparaîtrait comme comprimée/déformée sur la largeur, l'effet
+ * "machine à laver" que le prompt demande explicitement d'éviter). Aucune
+ * modification du GLB sur disque : uniquement une geometry clonée en
+ * mémoire, locale à ce composant. */
+function normalizeUv(sourceGeometry: THREE.BufferGeometry) {
+  const geometry = sourceGeometry.clone();
+  const uv = geometry.attributes.uv as THREE.BufferAttribute;
+  let uMin = Infinity;
+  let uMax = -Infinity;
+  let vMin = Infinity;
+  let vMax = -Infinity;
+  for (let i = 0; i < uv.count; i++) {
+    const u = uv.getX(i);
+    const v = uv.getY(i);
+    uMin = Math.min(uMin, u);
+    uMax = Math.max(uMax, u);
+    vMin = Math.min(vMin, v);
+    vMax = Math.max(vMax, v);
+  }
+  const uRange = uMax - uMin || 1;
+  const vRange = vMax - vMin || 1;
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, (uv.getX(i) - uMin) / uRange, (uv.getY(i) - vMin) / vRange);
+  }
+  uv.needsUpdate = true;
+  return geometry;
+}
+
+/** Fix "haut de l'image manquant" (PROMPT_CLAUDE_CODE — fix mapping écran
+ * contain) — remplace l'ancien mapping `cover` (`buildCoverRepeat`, qui
+ * recadrait l'axe en excédent via `repeat`/`offset` et coupait le haut de
+ * l'image quand `imageAspect > planeAspect`) par un vrai `contain` :
+ * l'image entière est TOUJOURS visible, jamais recadrée, jamais déformée
+ * (aucun stretch). Implémenté en pré-composant l'image sur un canvas aux
+ * dimensions de l'écran (`planeAspect`), avec l'image centrée à l'échelle
+ * qui la fait tenir entièrement dedans — les marges résiduelles (si le
+ * ratio image/écran diffère légèrement) sont remplies d'un noir profond
+ * sobre, cohérent avec un écran de téléphone, plutôt que de laisser
+ * `ClampToEdgeWrapping` étirer les pixels de bord (rendu sale). `repeat`/
+ * `offset`/`center`/`rotation` restent à leur valeur PAR DÉFAUT sur la
+ * texture résultante : le canvas a déjà le bon cadrage, aucun mapping UV
+ * supplémentaire n'est nécessaire ni appliqué. `planeAspect`/`imageAspect`
+ * sont tous deux hauteur/largeur. */
+function buildContainCanvas(image: unknown, planeAspect: number) {
+  // `Texture.image` est typé `unknown` côté three.js — `useTexture` charge
+  // toujours un `HTMLImageElement` via `TextureLoader` (jamais une vidéo/
+  // un canvas source ici), cast direct sans vérification supplémentaire.
+  const source = image as HTMLImageElement;
+  const imgWidth = source.naturalWidth || source.width;
+  const imgHeight = source.naturalHeight || source.height;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = imgWidth;
+  canvas.height = Math.round(imgWidth * planeAspect);
+  const ctx = canvas.getContext("2d")!;
+
+  // Couleur de marge — noir profond, se fond dans l'écran/la coque plutôt
+  // que de trancher avec un blanc/gris visible.
+  ctx.fillStyle = "#050505";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const scale = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
+  const drawWidth = imgWidth * scale;
+  const drawHeight = imgHeight * scale;
+  const dx = (canvas.width - drawWidth) / 2;
+  const dy = (canvas.height - drawHeight) / 2;
+  ctx.drawImage(source, dx, dy, drawWidth, drawHeight);
+
+  return canvas;
+}
+
+/** Pont entre la couche DOM (écouteurs Pointer Events sur
+ * `.sites-hero-layout__phone-slot`, en dehors du Canvas R3F — voir
+ * `SitesPhoneScene`) et la boucle d'animation (`useFrame` dans
+ * `SitesPhoneModel`). Même principe que `pointerRef` dans HeroScene.tsx :
+ * un simple objet muté directement par les gestionnaires DOM, lu/consommé
+ * chaque frame — aucun state React, aucun re-render. */
+interface PhoneInteractionBridge {
+  /** Élément DOM de la zone d'interaction, mis en cache une seule fois. */
+  zoneEl: HTMLElement | null;
+  /** Flag "one-shot" : un pointerdown vient d'avoir lieu, pas encore
+   * consommé par `useFrame`. */
+  justPressed: boolean;
+  /** Delta cumulé depuis la dernière consommation par `useFrame`. */
+  deltaX: number;
+  deltaY: number;
+  /** Flag "one-shot" : au moins un pointermove a eu lieu depuis la
+   * dernière frame consommée (sert à réinitialiser l'inactivité). */
+  moved: boolean;
+}
+
+interface SitesPhoneModelProps {
+  reducedMotion: boolean;
+  interactionRef: RefObject<PhoneInteractionBridge>;
+}
+
+function SitesPhoneModel({ reducedMotion, interactionRef }: SitesPhoneModelProps) {
+  // `nodes` ciblés PAR NOM (jamais un index) — inchangé depuis la V1,
+  // étendu au 3e node.
+  const { nodes } = useGLTF(phoneGlbUrl) as unknown as {
+    nodes: Record<string, THREE.Mesh>;
+  };
+  const phoneBody = nodes.PhoneBody;
+  const screenDisplay = nodes.ScreenDisplay;
+
+  // Animation d'entrée + idle — tout vit sur CE groupe (ref), jamais sur le
+  // groupe parent qui porte la position finale [phoneX, PHONE_Y_OFFSET, 0]
+  // (SitesPhoneSceneContent, recalculée automatiquement au resize via
+  // useThree().viewport — ne doit jamais être court-circuitée par
+  // l'animation). Ici, seul un décalage LOCAL (X) et la rotation Y sont
+  // pilotés image par image ; au repos les deux valent respectivement 0 et
+  // PHONE_ROTATION_Y, soit EXACTEMENT la position/rotation finale déjà
+  // validée.
+  const rigRef = useRef<THREE.Group>(null);
+  const entryElapsed = useRef(0);
+  const pauseElapsed = useRef(0);
+  // Fix "saut entry -> idle" — timer LOCAL à la phase idle, jamais
+  // `state.clock.elapsedTime` (global, continue de tourner depuis le
+  // montage du Canvas : au moment où l'entrée se termine, `sin(elapsedTime
+  // * IDLE_SPEED)` n'a aucune raison de valoir 0, d'où le saut d'angle
+  // observé). `idleElapsed` est remis à 0 EXACTEMENT au moment où la
+  // phase passe à "idle" (voir plus bas) et n'est incrémenté que pendant
+  // cette phase — à idleElapsed=0, sin(0)=0, donc aucune discontinuité
+  // avec la rotation finale de l'entrée.
+  const idleElapsed = useRef(0);
+  // Montée progressive de l'amplitude idle (prompt §7) sur ~0.7s, jamais
+  // appliquée d'un coup — smoothstep (ease-in-out standard, Three.js/
+  // GLSL), aucune nouvelle dépendance.
+  const IDLE_BLEND_DURATION = 0.7;
+  function smoothstep(x: number) {
+    const t = THREE.MathUtils.clamp(x, 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  // Fix "entrée invisible" — machine à états explicite (au lieu d'un
+  // simple booléen `entryDone`) : `waiting` couvre la toute première frame
+  // RÉELLEMENT rendue de ce composant (après résolution du Suspense R3F
+  // pour le GLB/la texture, potentiellement plusieurs secondes après le
+  // montage du Canvas). Le `delta` de CETTE frame précise peut refléter
+  // tout le temps de chargement écoulé pendant que le composant était
+  // suspendu (le clock R3F continue de tourner même quand les enfants
+  // sont suspendus) — s'il était accumulé dans `entryElapsed`, `t`
+  // atteindrait quasi instantanément 1, rendant l'animation invisible
+  // (symptôme exact rapporté). Ce `delta` est donc VOLONTAIREMENT ignoré :
+  // on se contente de (re)poser le rig à son état de départ et de changer
+  // de phase, sans faire progresser aucun minuteur sur cette frame-là.
+  const phase = useRef<"waiting" | "pausing" | "entering" | "idle" | "userDrag" | "returning">("waiting");
+  // Micro-pause (150-250ms) après cette première frame réelle : laisse la
+  // pose de départ se lire clairement avant que l'entrée démarre.
+  const READY_PAUSE = 0.2;
+
+  // Interaction utilisateur — rotation courante pilotée par le drag ou le
+  // retour automatique (X = pitch, Y = yaw). Servent de source de vérité
+  // UNIQUEMENT pendant USER_DRAG/RETURNING ; WAITING/PAUSING/ENTERING/IDLE
+  // continuent d'écrire directement sur `rig.rotation` comme avant (X y
+  // reste alors implicitement 0, jamais touché ailleurs).
+  const dragPitch = useRef(0);
+  const dragYaw = useRef(PHONE_ROTATION_Y);
+  // Inactivité mesurée depuis le DERNIER mouvement réel (prompt §8),
+  // jamais depuis pointerup — incrémentée uniquement pendant USER_DRAG.
+  const inactivityElapsed = useRef(0);
+
+  useFrame((_state, delta) => {
+    const rig = rigRef.current;
+    if (!rig) return;
+
+    if (reducedMotion) {
+      // "Pas d'animation agressive" — ni spin d'entrée, ni oscillation
+      // idle : position/rotation finales appliquées directement, sans
+      // transition (même principe que HeroSpheres.tsx/PageFilaments.tsx
+      // sous prefers-reduced-motion). Choix délibéré et conservateur
+      // (prompt §15, "peut rester autorisée" — permissif, pas obligatoire) :
+      // le drag reste désactivé sous reduced-motion, cohérent avec le
+      // comportement déjà validé de HeroSpheres.tsx/PageFilaments.tsx qui
+      // gèlent toute animation continue dans ce mode — "ne pas casser le
+      // comportement actuel" prime ici sur l'ajout d'une interaction
+      // optionnelle.
+      rig.position.x = 0;
+      rig.rotation.x = 0;
+      rig.rotation.y = PHONE_ROTATION_Y;
+      phase.current = "idle";
+      return;
+    }
+
+    // Prompt §2/§7 : une pression valide n'est prise en compte QUE si la
+    // phase actuelle autorise l'interaction (IDLE ou RETURNING — jamais
+    // WAITING/PAUSING/ENTERING). Le flag est de toute façon consommé
+    // (remis à false) pour ne jamais rester "en attente" indéfiniment.
+    const bridge = interactionRef.current;
+    if (bridge?.justPressed) {
+      bridge.justPressed = false;
+      if (phase.current === "idle" || phase.current === "returning") {
+        // "Prendre comme point de départ EXACT la rotation actuelle
+        // visible... ne pas revenir d'abord à PHONE_ROTATION_Y" — capture
+        // directement les valeurs actuelles de `rig.rotation`, qu'elles
+        // viennent de l'idle (Y oscillant, X toujours à 0) ou d'un retour
+        // en cours (X/Y à mi-chemin).
+        dragPitch.current = rig.rotation.x;
+        dragYaw.current = rig.rotation.y;
+        phase.current = "userDrag";
+        inactivityElapsed.current = 0;
+      }
+    }
+
+    if (phase.current === "userDrag") {
+      if (bridge?.moved) {
+        dragYaw.current += bridge.deltaX * DRAG_SENSITIVITY;
+        dragPitch.current = THREE.MathUtils.clamp(
+          dragPitch.current + bridge.deltaY * DRAG_SENSITIVITY,
+          -DRAG_PITCH_CLAMP,
+          DRAG_PITCH_CLAMP,
+        );
+        bridge.deltaX = 0;
+        bridge.deltaY = 0;
+        bridge.moved = false;
+        inactivityElapsed.current = 0;
+      }
+      rig.rotation.x = dragPitch.current;
+      rig.rotation.y = dragYaw.current;
+
+      inactivityElapsed.current += delta;
+      if (inactivityElapsed.current >= DRAG_RETURN_TIMEOUT) {
+        // "Après exactement environ 1 seconde SANS mouvement" — que le
+        // pointeur soit encore appuyé (immobile) ou relâché n'a aucune
+        // importance ici : seul le temps depuis le dernier mouvement RÉEL
+        // compte (prompt §8).
+        phase.current = "returning";
+      }
+      return;
+    }
+
+    if (phase.current === "returning") {
+      // Reprise immédiate si l'utilisateur recommence à bouger (prompt
+      // §8/§12) : le `justPressed`/`userDrag` ci-dessus gère déjà la
+      // reprise sur un NOUVEAU pointerdown ; ici on gère la reprise SANS
+      // relâcher le pointeur (un `pointermove` peut arriver alors que la
+      // capture est toujours active depuis avant le début du retour).
+      if (bridge?.moved) {
+        dragYaw.current += bridge.deltaX * DRAG_SENSITIVITY;
+        dragPitch.current = THREE.MathUtils.clamp(
+          dragPitch.current + bridge.deltaY * DRAG_SENSITIVITY,
+          -DRAG_PITCH_CLAMP,
+          DRAG_PITCH_CLAMP,
+        );
+        bridge.deltaX = 0;
+        bridge.deltaY = 0;
+        bridge.moved = false;
+        inactivityElapsed.current = 0;
+        phase.current = "userDrag";
+        rig.rotation.x = dragPitch.current;
+        rig.rotation.y = dragYaw.current;
+        return;
+      }
+
+      // Damp framerate-independent (jamais un lerp/assignment direct) —
+      // ramène X vers 0 (neutre) et Y vers PHONE_ROTATION_Y (orientation
+      // centrale de repos, prompt §9), Z jamais touché (reste à 0).
+      dragPitch.current = THREE.MathUtils.damp(dragPitch.current, 0, RETURN_LAMBDA, delta);
+      dragYaw.current = THREE.MathUtils.damp(dragYaw.current, PHONE_ROTATION_Y, RETURN_LAMBDA, delta);
+      rig.rotation.x = dragPitch.current;
+      rig.rotation.y = dragYaw.current;
+
+      const settled =
+        Math.abs(dragPitch.current) < RETURN_SETTLE_THRESHOLD &&
+        Math.abs(dragYaw.current - PHONE_ROTATION_Y) < RETURN_SETTLE_THRESHOLD;
+      if (settled) {
+        // Prompt §10 : clamp propre sur l'orientation de repos exacte,
+        // reset idleElapsed à 0 (l'idle reprend en douceur depuis une
+        // amplitude nulle, exactement comme à la sortie de ENTERING).
+        rig.rotation.x = 0;
+        rig.rotation.y = PHONE_ROTATION_Y;
+        dragPitch.current = 0;
+        dragYaw.current = PHONE_ROTATION_Y;
+        phase.current = "idle";
+        idleElapsed.current = 0;
+      }
+      return;
+    }
+
+    if (phase.current === "waiting") {
+      // Pose de départ (déjà appliquée par les props déclaratives du
+      // <group>, réaffirmée ici par sécurité) — delta de cette frame
+      // ignoré (voir commentaire plus haut), simple transition de phase.
+      rig.position.x = ENTRY_START_X_OFFSET;
+      rig.rotation.y = PHONE_ROTATION_Y - ENTRY_SPIN_RADIANS;
+      phase.current = "pausing";
+      return;
+    }
+
+    if (phase.current === "pausing") {
+      // À partir d'ici, `delta` reflète un vrai intervalle inter-frame
+      // (~16ms à 60fps) : le composant a déjà rendu au moins une frame,
+      // l'anomalie du premier `delta` ne peut plus se reproduire.
+      pauseElapsed.current += delta;
+      if (pauseElapsed.current >= READY_PAUSE) {
+        phase.current = "entering";
+        entryElapsed.current = 0; // remise à zéro exacte au démarrage réel
+      }
+      return;
+    }
+
+    if (phase.current === "entering") {
+      entryElapsed.current += delta;
+      const t = Math.min(entryElapsed.current / ENTRY_DURATION, 1);
+      // Découplées mais synchronisées sur le MÊME `t` (même phase
+      // ENTERING, même durée totale) — la translation garde son impact
+      // "rapide puis amorti" (cubique), la rotation suit une courbe plus
+      // régulière pour rester lisible pendant que le téléphone entre dans
+      // le cadre. Les deux atteignent 1 EXACTEMENT à la même frame (t>=1
+      // ci-dessous) : la rotation ne continue jamais après la fin de
+      // l'entrée (prompt §6 : "ne pas faire tourner le téléphone après la
+      // fin de l'entrée").
+      const moveProgress = easeOutCubic(t);
+      const spinProgress = easeOutQuadSpin(t);
+      // Étape B/D : glisse de droite (+offset local) vers la position
+      // finale (0) ; tourne sur l'axe Y depuis (finale - 2.25 tours)
+      // jusqu'à la rotation finale exacte — arrive donc TOUJOURS pile à
+      // PHONE_ROTATION_Y, jamais un multiple résiduel. Lerp entre 2
+      // radians absolus (valeur cumulative explicite, prompt §7) — jamais
+      // de normalisation d'angle qui réduirait visuellement les 810° à un
+      // petit arc.
+      rig.position.x = THREE.MathUtils.lerp(ENTRY_START_X_OFFSET, 0, moveProgress);
+      rig.rotation.y = THREE.MathUtils.lerp(PHONE_ROTATION_Y - ENTRY_SPIN_RADIANS, PHONE_ROTATION_Y, spinProgress);
+      if (t >= 1) {
+        // Passage ENTERING -> IDLE (prompt §8) : clamp position/rotation
+        // finales, reset idleElapsed à 0, blend idle à 0 (implicite :
+        // smoothstep(0)=0). Cette frame se termine ici avec rotation.y
+        // EXACTEMENT PHONE_ROTATION_Y — la phase idle ne s'exécute qu'à
+        // partir de la frame SUIVANTE, avec idleElapsed quasi nul.
+        rig.position.x = 0;
+        rig.rotation.x = 0;
+        rig.rotation.y = PHONE_ROTATION_Y;
+        phase.current = "idle";
+        idleElapsed.current = 0;
+        // Interaction disponible à partir d'ici seulement (prompt §12 :
+        // "Pendant ENTERING : curseur normal, interaction inactive") — un
+        // seul ajout de classe, jamais retiré ensuite (ENTERING ne se
+        // reproduit plus après le premier chargement).
+        interactionRef.current?.zoneEl?.classList.add("sites-hero-layout__phone-slot--interactive");
+      }
+      return;
+    }
+
+    // Étape E — idle : timer LOCAL (jamais state.clock.elapsedTime, voir
+    // plus haut) + montée progressive de l'amplitude sur IDLE_BLEND_
+    // DURATION — à idleElapsed=0, sin(0)*amplitude*smoothstep(0) = 0,
+    // continuité parfaite avec la fin de l'entrée. Jamais de mouvement de
+    // position (seule la rotation oscille). `rotation.x` réaffirmé à 0 par
+    // sécurité (seul USER_DRAG/RETURNING le modifient jamais).
+    idleElapsed.current += delta;
+    const idleBlend = smoothstep(idleElapsed.current / IDLE_BLEND_DURATION);
+    rig.position.x = 0;
+    rig.rotation.x = 0;
+    rig.rotation.y = PHONE_ROTATION_Y + Math.sin(idleElapsed.current * IDLE_SPEED) * IDLE_AMPLITUDE * idleBlend;
+  });
+
+  // Micro-ajustements — "le téléphone paraît trop gris, ne met pas en
+  // valeur les matériaux" : les matériaux D'ORIGINE du GLB sont conservés
+  // tels quels (aucun remplacement, "vérifier que les matériaux du modèle
+  // sont bien respectés"), seule leur `envMapIntensity` est renforcée
+  // (propriété standard de MeshStandardMaterial/MeshPhysicalMaterial,
+  // celle que GLTFLoader assigne à ces matériaux PBR) pour que les reflets
+  // de l'environnement (métal, lentilles) soient nettement plus visibles
+  // — même principe que le renforcement d'`envMapIntensity` déjà appliqué
+  // sur les sphères de la Home (CS-S6D) pour corriger un rendu plat.
+  useEffect(() => {
+    if (!phoneBody) return;
+    // `PhoneBody` a 10 matériaux (un par primitive glTF) : GLTFLoader crée
+    // un Mesh distinct par primitive sous un Group parent, PAS un Mesh
+    // unique avec un tableau `.material` — `traverse()` visite chaque
+    // Mesh descendant (et fonctionnerait aussi si le node était un Mesh
+    // unique, cas couvert par la même boucle).
+    phoneBody.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      materials.forEach((mat) => {
+        if (mat && "envMapIntensity" in mat) {
+          (mat as THREE.MeshStandardMaterial).envMapIntensity = 2.2;
+          mat.needsUpdate = true;
+        }
+      });
+    });
+  }, [phoneBody]);
+
+  const screenTexture = useTexture(belkhirScreenUrl);
+
+  // Geometry normalisée + mapping contain — recalculés seulement si la
+  // geometry source change (jamais par frame, aucune animation ici).
+  //
+  // Micro-sprint "ScreenDisplay seul" — le GLB a été nettoyé dans
+  // Blender : `WhiteScreen` n'existe plus, `ScreenDisplay` est
+  // désormais l'unique support visuel de l'écran. L'ancien offset
+  // géométrique (`SCREEN_DISPLAY_EXTRA_OFFSET`) n'avait de sens que pour
+  // écarter `ScreenDisplay` de `WhiteScreen` (z-fighting entre 2 surfaces
+  // quasi coplanaires) — supprimé, il n'y a plus rien dont s'écarter.
+  // La normalisation UV, elle, reste NÉCESSAIRE : vérifiée à nouveau sur
+  // ce GLB réexporté, les UV brutes de `ScreenDisplay` ne couvrent
+  // toujours que U ∈ [0, 0.537] (mesuré directement dans le fichier),
+  // pas l'espace 0..1 complet — sans cette normalisation, l'image serait
+  // comprimée sur la largeur ("machine à laver").
+  const normalizedGeometry = useMemo(() => {
+    if (!screenDisplay) return null;
+    return normalizeUv(screenDisplay.geometry);
+  }, [screenDisplay]);
+
+  const screenMaterial = useMemo(() => {
+    if (!normalizedGeometry) return null;
+    normalizedGeometry.computeBoundingBox();
+    const bbox = normalizedGeometry.boundingBox!;
+    // Repère local confirmé par l'audit (X = épaisseur/normale, Y =
+    // hauteur, Z = largeur) — ScreenDisplay est un plan plat sur ce même
+    // axe X, donc Y/Z portent bien la hauteur/largeur réelles du plan.
+    const planeHeight = bbox.max.y - bbox.min.y;
+    const planeWidth = bbox.max.z - bbox.min.z;
+    const planeAspect = planeHeight / planeWidth;
+
+    // Fix "haut de l'image manquant" — CONTAIN, jamais cover : l'image est
+    // pré-composée entière (jamais déformée) sur un canvas aux dimensions
+    // de l'écran, marges éventuelles en noir profond (voir
+    // buildContainCanvas ci-dessus). La texture résultante mappe 1:1 sur
+    // le plan : AUCUN repeat/offset/center/rotation appliqué en plus
+    // (ancien réglage `cover` entièrement supprimé, jamais réappliqué ici).
+    const containCanvas = buildContainCanvas(screenTexture.image, planeAspect);
+    const containTexture = new THREE.CanvasTexture(containCanvas);
+    containTexture.colorSpace = THREE.SRGBColorSpace;
+    // Même convention d'orientation que l'ancienne texture image (déjà
+    // validée visuellement sur plusieurs sprints) : le canvas est dessiné
+    // avec la même origine haut-gauche qu'un HTMLImageElement classique.
+    containTexture.flipY = false;
+    containTexture.wrapS = THREE.ClampToEdgeWrapping;
+    containTexture.wrapT = THREE.ClampToEdgeWrapping;
+    containTexture.needsUpdate = true;
+
+    // Micro-sprint "ScreenDisplay seul" — base de test propre demandée :
+    // une seule surface écran, totalement opaque (opacity 1.0,
+    // transparent:false). L'ancienne opacité 0.90 + les propriétés de
+    // sécurité anti-z-fighting (depthWrite:false, polygonOffset)
+    // n'avaient de sens que pour cohabiter avec `WhiteScreen` (glow
+    // émissif derrière, surfaces quasi coplanaires) — les deux ont
+    // disparu avec `WhiteScreen` lui-même. `depthWrite` reste à sa
+    // valeur par défaut (`true`), cohérente avec un matériau opaque.
+    // Aucun émissif ajouté pour ce test (prompt : "sera retravaillé plus
+    // tard, après validation de l'absence de scintillement").
+    return new THREE.MeshBasicMaterial({
+      map: containTexture,
+      color: "#ffffff",
+      toneMapped: false,
+      opacity: 1,
+      transparent: false,
+    });
+  }, [normalizedGeometry, screenTexture]);
+
+  if (!phoneBody || !screenDisplay || !normalizedGeometry || !screenMaterial) {
+    // Garde défensive : si l'un des 2 nodes attendus (`PhoneBody`,
+    // `ScreenDisplay`) n'existait pas dans le GLB, ne rien rendre plutôt
+    // que d'improviser un rendu partiel.
+    return null;
+  }
+
+  return (
+    // Props déclaratives = état de départ EXACT de l'animation (position
+    // locale décalée à droite, rotation = finale - 2.25 tours) : évite
+    // tout flash de la pose finale avant le premier tick de `useFrame`.
+    // `scale` reste statique (jamais animé, proportions inchangées).
+    <group
+      ref={rigRef}
+      position={[ENTRY_START_X_OFFSET, 0, 0]}
+      rotation={[0, PHONE_ROTATION_Y - ENTRY_SPIN_RADIANS, 0]}
+      scale={PHONE_SCALE}
+    >
+      {/* Corps du téléphone — INCHANGÉ. */}
+      <primitive object={phoneBody} />
+      {/* ScreenDisplay — UNIQUE support visuel de l'écran (WhiteScreen
+          n'existe plus dans le GLB), geometry normalisée, matériau dédié
+          opaque ci-dessus. Aucun renderOrder particulier : plus de second
+          plan écran avec lequel s'ordonner. */}
+      <mesh geometry={normalizedGeometry} material={screenMaterial} />
+    </group>
+  );
+}
+
+/** Environnement de réflexion dédié à cette scène — EXR 1K HDR réel
+ * (PROMPT_CLAUDE_CODE_PHONE_ENVIRONMENT_EXR_1K), remplace l'ancien
+ * `modern_bathroom_4k.webp` (TextureLoader, image SDR). `EXRLoader`
+ * UNIQUEMENT pour ce fichier (jamais TextureLoader : l'EXR est une donnée
+ * HDR linéaire, pas une image encodée) — même principe PMREM que
+ * l'ancienne version et que `HeroEnvironmentImage.tsx` (chargement
+ * IMPÉRATIF pour ne jamais faire disparaître le reste de la scène pendant
+ * le téléchargement, cleanup complet). Alimente UNIQUEMENT
+ * `scene.environment`/`scene.environmentIntensity`/
+ * `scene.environmentRotation`, jamais `scene.background` (le fond noir du
+ * site reste inchangé). */
+function SitesPhoneEnvironment() {
+  const { gl, scene } = useThree();
+  const pmremRef = useRef<THREE.PMREMGenerator | null>(null);
+
+  useEffect(() => {
+    let disposed = false;
+    let renderTarget: THREE.WebGLRenderTarget | null = null;
+    const previousEnvironment = scene.environment;
+    const previousEnvironmentIntensity = scene.environmentIntensity;
+    const previousEnvironmentRotation = scene.environmentRotation.clone();
+
+    const pmremGenerator = new THREE.PMREMGenerator(gl);
+    pmremGenerator.compileEquirectangularShader();
+    pmremRef.current = pmremGenerator;
+
+    const loader = new EXRLoader();
+    loader.load(phoneEnvironmentExrUrl, (texture) => {
+      if (disposed) {
+        texture.dispose();
+        return;
+      }
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      // EXR = HDR linéaire : AUCUN colorSpace sRGB appliqué ici (prompt
+      // §1 — contrairement à l'ancienne texture .webp, qui en avait
+      // besoin).
+
+      renderTarget = pmremGenerator.fromEquirectangular(texture);
+      scene.environment = renderTarget.texture;
+      scene.environmentIntensity = PHONE_ENVIRONMENT_INTENSITY;
+      scene.environmentRotation.set(0, PHONE_ENVIRONMENT_ROTATION_Y, 0);
+
+      texture.dispose();
+    });
+
+    return () => {
+      disposed = true;
+      scene.environment = previousEnvironment;
+      scene.environmentIntensity = previousEnvironmentIntensity;
+      scene.environmentRotation.copy(previousEnvironmentRotation);
+      renderTarget?.dispose();
+      pmremGenerator.dispose();
+    };
+  }, [gl, scene]);
+
+  return null;
+}
+
+interface SitesPhoneSceneContentProps {
+  reducedMotion: boolean;
+  interactionRef: RefObject<PhoneInteractionBridge>;
+}
+
+function SitesPhoneSceneContent({ reducedMotion, interactionRef }: SitesPhoneSceneContentProps) {
+  const { viewport } = useThree();
+  const phoneX = (viewport.width / 2) * PHONE_RIGHT_FRACTION;
+
+  return (
+    <>
+      {/* Éclairage complémentaire (micro-ajustements — "trop gris, ne met
+          pas en valeur les matériaux") : intensités relevées + une 2e
+          lumière directionnelle (clé + contre-jour léger, toujours 2
+          lumières seulement, jamais "10 lights") pour mieux sculpter les
+          courbes de coque et distinguer les lentilles ; le panorama salle
+          de bain (scene.environment) reste la source principale des
+          reflets métalliques. */}
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[3.5, 4, 5]} intensity={1.7} color="#F1EFE8" />
+      <directionalLight position={[-3, -1, -3]} intensity={0.7} color="#A5A8AE" />
+      <SitesPhoneEnvironment />
+
+      {/* Groupe téléphone — seule géométrie de ce sprint. */}
+      <group position={[phoneX, PHONE_Y_OFFSET, 0]}>
+        <SitesPhoneModel reducedMotion={reducedMotion} interactionRef={interactionRef} />
+      </group>
+
+      {/* Emplacement réservé pour les futures vagues horizontales (prompt
+          §11) — groupe VIDE intentionnellement : aucune géométrie, aucun
+          shader, aucune animation. */}
+      <group name="future-horizontal-waves" />
+    </>
+  );
+}
+
+export default function SitesPhoneScene() {
+  // Shell IDENTIQUE au principe de PageFilaments.tsx/HeroScene.tsx —
+  // INCHANGÉ depuis la V1 (prompt §10 : "ne pas refaire l'architecture").
+  const [tabVisible, setTabVisible] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  // Pont d'interaction (drag souris) — objet muté directement, jamais de
+  // state React dessus (même principe que `pointerRef` dans HeroScene.tsx,
+  // lu à chaque frame côté R3F sans jamais déclencher de re-render ici).
+  const interactionRef = useRef<PhoneInteractionBridge>({
+    zoneEl: null,
+    justPressed: false,
+    deltaX: 0,
+    deltaY: 0,
+    moved: false,
+  });
+
+  useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(motionQuery.matches);
+    const onMotionChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    motionQuery.addEventListener("change", onMotionChange);
+    return () => motionQuery.removeEventListener("change", onMotionChange);
+  }, []);
+
+  useEffect(() => {
+    const onVisibilityChange = () => setTabVisible(!document.hidden);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  // Interaction souris — écouteurs Pointer Events natifs sur la zone DOM
+  // déjà réservée au téléphone dans le Hero (`.sites-hero-layout__phone-
+  // slot`, sites-professionnels.astro/services.css, NON modifiés par ce
+  // sprint côté structure : seule une classe de curseur y est ajoutée en
+  // CSS). Ce `<div>` vit HORS du Canvas R3F (colonne DOM normale du Hero,
+  // toujours `pointer-events:auto` par défaut) — jamais de changement sur
+  // le wrapper Canvas fixed lui-même (`pointer-events:none` INCHANGÉ,
+  // prompt §3 : "ne jamais remettre pointer-events:auto sur tout le
+  // Canvas full-screen"). Toute la logique de PHASE (IDLE/RETURNING
+  // seules autorisent l'interaction) vit côté `useFrame` (SitesPhoneModel)
+  // — ces écouteurs se contentent d'alimenter le pont, jamais de décider.
+  useEffect(() => {
+    const zone = document.querySelector<HTMLElement>(".sites-hero-layout__phone-slot");
+    if (!zone) return;
+    interactionRef.current.zoneEl = zone;
+
+    let activePointerId: number | null = null;
+    let lastX = 0;
+    let lastY = 0;
+
+    const onPointerDown = (event: PointerEvent) => {
+      // Un seul pointeur actif à la fois — ignore un second doigt/bouton
+      // pendant qu'un drag est déjà en cours.
+      if (activePointerId !== null) return;
+      activePointerId = event.pointerId;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      try {
+        zone.setPointerCapture(event.pointerId);
+      } catch {
+        // Capture non disponible (navigateur/contexte) : le drag reste
+        // fonctionnel tant que le pointeur ne quitte pas la zone.
+      }
+      zone.classList.add("sites-hero-layout__phone-slot--grabbing");
+      interactionRef.current.justPressed = true;
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (activePointerId === null || event.pointerId !== activePointerId) return;
+      const dx = event.clientX - lastX;
+      const dy = event.clientY - lastY;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      // "Sans saut lors du premier pixel de drag" (prompt §4) : le tout
+      // premier pointermove après pointerdown ne produit qu'un delta
+      // minime (dx/dy depuis la position du pointerdown elle-même, jamais
+      // depuis 0/0 ou une position arbitraire) — aucun saut possible par
+      // construction.
+      interactionRef.current.deltaX += dx;
+      interactionRef.current.deltaY += dy;
+      interactionRef.current.moved = true;
+    };
+
+    const endDrag = (event: PointerEvent) => {
+      if (activePointerId === null || event.pointerId !== activePointerId) return;
+      try {
+        zone.releasePointerCapture(activePointerId);
+      } catch {
+        // Déjà relâchée (ex. pointercancel) : sans effet.
+      }
+      activePointerId = null;
+      zone.classList.remove("sites-hero-layout__phone-slot--grabbing");
+      // Prompt §8/§9 : PAS de retour instantané ici — le relâchement ne
+      // fait que cesser d'alimenter le pont ; c'est le minuteur
+      // d'inactivité (côté useFrame) qui déclenchera RETURNING après le
+      // délai complet, qu'il reste écoulé ou non au moment du relâchement.
+    };
+
+    zone.addEventListener("pointerdown", onPointerDown);
+    zone.addEventListener("pointermove", onPointerMove);
+    zone.addEventListener("pointerup", endDrag);
+    zone.addEventListener("pointercancel", endDrag);
+
+    return () => {
+      zone.removeEventListener("pointerdown", onPointerDown);
+      zone.removeEventListener("pointermove", onPointerMove);
+      zone.removeEventListener("pointerup", endDrag);
+      zone.removeEventListener("pointercancel", endDrag);
+      // Cleanup obligatoire (prompt §11/§19) : relâche une capture encore
+      // active si le composant démonte pendant un drag en cours.
+      if (activePointerId !== null) {
+        try {
+          zone.releasePointerCapture(activePointerId);
+        } catch {
+          // Élément déjà retiré du DOM ou capture déjà relâchée.
+        }
+      }
+      zone.classList.remove("sites-hero-layout__phone-slot--grabbing");
+    };
+  }, []);
+
+  const frameloop = tabVisible && !reducedMotion ? "always" : "demand";
+
+  return (
+    <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none" }}>
+      <Canvas
+        dpr={[1, 1.5]}
+        frameloop={frameloop}
+        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        camera={{ fov: 34, position: [0, 0, 7] }}
+      >
+        <SitesPhoneSceneContent reducedMotion={reducedMotion} interactionRef={interactionRef} />
+      </Canvas>
+    </div>
+  );
+}
+
+useGLTF.preload(phoneGlbUrl);
