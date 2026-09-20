@@ -35,13 +35,31 @@ import phoneGlbUrl from "../../assets/3d/PhoneFinal.glb?url";
 // Micro-ajustements (PROMPT micro-ajustements téléphone 3D) — nouvelle
 // capture d'écran, même dossier que l'ancienne (`belkhir-mobile.jpg`,
 // conservée sur disque, non supprimée : simplement plus référencée ici).
-import belkhirScreenUrl from "../../assets/projects/belkhir-depannage/belkhir-mobile1.jpg?url";
+//
+// Micro-sprint "Remplacement image initiale téléphone" (PROMPT_CLAUDE_CODE_
+// SITES_PRO_REMPLACEMENT_IMAGE_INITIALE_VIDEO_TELEPHONE) — remplacée à son
+// tour par `imagePhoneSite.jpg` (fournie par Sébastien, ratio 557×1038 =
+// 1,8635, nettement plus proche du ratio réel de ScreenDisplay/de la vidéo
+// — 1,8608/1,8611 — que l'ancien fichier 1080×2160 = 2,0, pour une
+// transition image -> vidéo moins perceptible). `belkhir-mobile1.jpg` N'EST
+// PAS supprimée du disque (prompt : "ne pas supprimer l'ancien JPG"),
+// simplement plus référencée ici, seul et unique point d'usage de ce
+// fichier dans le dépôt.
+import belkhirScreenUrl from "../../assets/projects/belkhir-depannage/imagePhoneSite.jpg?url";
 // Environnement EXR 1K (PROMPT_CLAUDE_CODE_PHONE_ENVIRONMENT_EXR_1K) —
 // remplace `modern_bathroom_4k.webp` : vrai HDR linéaire (pas une image
 // SDR passée par TextureLoader). `?url` (comme le GLB ci-dessus) : un
 // binaire chargé par EXRLoader, jamais par le pipeline astro:assets
 // (celui-ci ne connaît pas le format .exr).
 import phoneEnvironmentExrUrl from "../../assets/hdr/blue_photo_studio_1k.exr?url";
+// Vidéo écran (PROMPT_CLAUDE_CODE_INTEGRATION_VIDEO_SCREENDISPLAY_SITES_PRO)
+// — même convention `?url` que le GLB/EXR ci-dessus : Vite résout un chemin
+// final compatible avec le base path GitHub Pages, jamais un `/src/assets/...`
+// codé en dur. Fichier fourni tel quel (jamais réencodé), contrôlé
+// binairement avant intégration : MP4 H.264 (`avc1`), 720x1340, 30 i/s,
+// ~50,7s, aucune piste audio, ~3,34 Mo (voir rapport pour le détail du
+// contrôle) — conforme à l'export attendu.
+import phoneVideoUrl from "../../assets/videos/videoPhoneCantrelleStudio.mp4?url";
 
 // --- Placement du téléphone (micro-ajustements) ---------------------------
 // Rotation de base -90°/Y (validée V1/V2 : amène l'écran face caméra,
@@ -323,6 +341,13 @@ function buildContainCanvas(image: unknown, planeAspect: number) {
 interface PhoneInteractionBridge {
   /** Élément DOM de la zone d'interaction, mis en cache une seule fois. */
   zoneEl: HTMLElement | null;
+  /** Micro-sprint "Indication d'interaction du téléphone 3D" — élément DOM
+   * du texte d'aide (`.sites-hero-layout__phone-hint`), mis en cache une
+   * seule fois au même endroit que `zoneEl` ci-dessus. `null` si l'élément
+   * est absent (ex. balisage retiré) : les 2 `classList` optionnels
+   * plus bas (SitesPhoneModel) deviennent alors des no-op silencieux,
+   * jamais une erreur. */
+  hintEl: HTMLElement | null;
   /** Flag "one-shot" : un pointerdown vient d'avoir lieu, pas encore
    * consommé par `useFrame`. */
   justPressed: boolean;
@@ -336,6 +361,12 @@ interface PhoneInteractionBridge {
 
 interface SitesPhoneModelProps {
   reducedMotion: boolean;
+  // Vidéo écran (PROMPT_CLAUDE_CODE_INTEGRATION_VIDEO_SCREENDISPLAY_SITES_
+  // PRO) — même valeur que `tabVisible` déjà utilisée par `SitesPhoneScene`
+  // pour piloter `frameloop` ; propagée ici pour mettre la vidéo en pause
+  // quand l'onglet est masqué (adaptation minimale, même principe de
+  // props déjà en place pour `reducedMotion`).
+  tabVisible: boolean;
   interactionRef: RefObject<PhoneInteractionBridge>;
   slotAnchor: PhoneSlotAnchor | null;
 }
@@ -377,7 +408,7 @@ function computePhoneFootprint(phoneBody: THREE.Mesh, screenDisplay: THREE.Mesh)
   return { width: size.x, height: size.y };
 }
 
-function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPhoneModelProps) {
+function SitesPhoneModel({ reducedMotion, tabVisible, interactionRef, slotAnchor }: SitesPhoneModelProps) {
   // `nodes` ciblés PAR NOM (jamais un index) — inchangé depuis la V1,
   // étendu au 3e node.
   const { nodes } = useGLTF(phoneGlbUrl) as unknown as {
@@ -457,6 +488,28 @@ function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPho
   // pose de départ se lire clairement avant que l'entrée démarre.
   const READY_PAUSE = 0.2;
 
+  // --- Vidéo écran (PROMPT_CLAUDE_CODE_INTEGRATION_VIDEO_SCREENDISPLAY_
+  // SITES_PRO) — refs uniquement (jamais de state React ici, même
+  // principe que `phase`/`dragYaw` ci-dessus : la lecture/pause de la
+  // vidéo est pilotée depuis un `useFrame` séparé, isolé du phase machine
+  // d'animation existant, jamais lu ni modifié par lui — voir plus bas). */
+  const posterTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  const planeAspectRef = useRef(0);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
+  // true dès que la vidéo a réellement démarré sa lecture (autoplay
+  // accepté) — condition NÉCESSAIRE mais pas suffisante pour l'afficher :
+  // il faut aussi que `phase.current === "idle"` (entrée terminée).
+  const videoPlaybackStartedRef = useRef(false);
+  // true dès que `screenMaterial.map` pointe réellement sur la texture
+  // vidéo (bascule définitive, une seule fois par montage sauf si
+  // reduced-motion s'active en cours de route et la fait revenir au
+  // poster).
+  const videoAppliedRef = useRef(false);
+  // Dernier état lecture/pause réellement demandé au `<video>` — évite
+  // d'appeler `.play()`/`.pause()` à chaque frame quand rien n'a changé.
+  const videoShouldPlayRef = useRef(false);
+
   // Interaction utilisateur — rotation courante pilotée par le drag ou le
   // retour automatique (X = pitch, Y = yaw). Servent de source de vérité
   // UNIQUEMENT pendant USER_DRAG/RETURNING ; WAITING/PAUSING/ENTERING/IDLE
@@ -522,6 +575,15 @@ function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPho
         bridge.deltaY = 0;
         bridge.moved = false;
         inactivityElapsed.current = 0;
+        // Micro-sprint "Indication d'interaction du téléphone 3D" — PREMIÈRE
+        // interaction effective (clic maintenu + mouvement réel, jamais un
+        // simple clic sans glissement : `bridge.moved` n'est mis à `true`
+        // QUE par un vrai `pointermove`, voir `onPointerMove` plus bas dans
+        // ce fichier). `classList.remove` est idempotent sur les frames
+        // suivantes d'un même drag continu — jamais réajoutée ensuite nulle
+        // part ailleurs dans ce fichier, donc masquage permanent pour le
+        // reste de cette visite de page.
+        interactionRef.current?.hintEl?.classList.remove("sites-hero-layout__phone-hint--visible");
       }
       rig.rotation.x = dragPitch.current;
       rig.rotation.y = dragYaw.current;
@@ -645,6 +707,13 @@ function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPho
         // seul ajout de classe, jamais retiré ensuite (ENTERING ne se
         // reproduit plus après le premier chargement).
         interactionRef.current?.zoneEl?.classList.add("sites-hero-layout__phone-slot--interactive");
+        // Micro-sprint "Indication d'interaction du téléphone 3D" — même
+        // point exact que la ligne ci-dessus (entrée réellement terminée,
+        // jamais un timeout arbitraire) : fondu d'apparition de l'aide.
+        // Ajouté une seule fois, jamais retiré ici (seul le premier drag
+        // effectif, plus bas, le retire — plus jamais réaffiché ensuite
+        // puisque ENTERING ne se reproduit plus après ce premier passage).
+        interactionRef.current?.hintEl?.classList.add("sites-hero-layout__phone-hint--visible");
       }
       return;
     }
@@ -739,6 +808,12 @@ function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPho
     containTexture.wrapS = THREE.ClampToEdgeWrapping;
     containTexture.wrapT = THREE.ClampToEdgeWrapping;
     containTexture.needsUpdate = true;
+    // Vidéo écran — la texture poster est conservée dans une ref pour que
+    // le useFrame vidéo plus bas puisse y revenir (reduced-motion activé
+    // en cours de session, échec de lecture, etc.) sans reconstruire ce
+    // matériau ni recalculer `planeAspect`.
+    posterTextureRef.current = containTexture;
+    planeAspectRef.current = planeAspect;
 
     // Micro-sprint "ScreenDisplay seul" — base de test propre demandée :
     // une seule surface écran, totalement opaque (opacity 1.0,
@@ -758,6 +833,157 @@ function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPho
       transparent: false,
     });
   }, [normalizedGeometry, screenTexture]);
+
+  // --- Vidéo écran : création/chargement (PROMPT_CLAUDE_CODE_INTEGRATION_
+  // VIDEO_SCREENDISPLAY_SITES_PRO) -----------------------------------------
+  // Élément <video> jamais ajouté au DOM (prompt : "ne doit pas créer de
+  // DOM visible par-dessus la page") — un <video> détaché suffit à
+  // alimenter une THREE.VideoTexture ; cette page ne monte de toute façon
+  // pas la scène 3D sous 900px (prompt §4), donc aucune contrainte mobile
+  // n'exige de l'attacher au DOM. Gardée sous `reducedMotion` (prompt :
+  // "idéalement, ne pas déclencher de chargement vidéo" dans ce mode) —
+  // si `reducedMotion` passe à `true` en cours de session (media query),
+  // le cleanup ci-dessous démonte proprement la vidéo créée par CE sprint
+  // (jamais le GLB/HDRI partagés).
+  useEffect(() => {
+    if (reducedMotion) return;
+
+    const video = document.createElement("video");
+    video.src = phoneVideoUrl;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    videoRef.current = video;
+
+    // Même traitement colorimétrique/orientation que `containTexture`
+    // ci-dessus (prompt : "vérifie l'espace colorimétrique sRGB... évite un
+    // écran délavé") — un <video> se comporte comme n'importe quelle
+    // source image pour l'upload GPU three.js, la même règle `flipY`
+    // s'applique donc à l'identique.
+    const texture = new THREE.VideoTexture(video);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.flipY = false;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    videoTextureRef.current = texture;
+
+    // Mapping — AUCUN repeat/offset/canvas de recadrage ajouté ici,
+    // contrairement au poster : vérifié avant ce sprint (voir rapport),
+    // le ratio hauteur/largeur réel de ScreenDisplay (1,8608) et celui du
+    // fichier fourni (1340/720 = 1,8611) ne diffèrent que de ~0,016% —
+    // moins d'un pixel d'écart à 720px de large. Un mapping direct
+    // (repeat 1/1, offset 0/0) sur la MÊME geometry normalisée (UV 0..1
+    // déjà pleine surface) remplit donc l'écran entièrement, sans bande
+    // ni rognage perceptible — ce n'est PAS un branchement naïf : une
+    // vraie composition façon `buildContainCanvas` a été jugée inutile et
+    // plus coûteuse (redessin CPU à chaque frame) pour un écart déjà
+    // sous le seuil de perception.
+    const onLoadedData = () => {
+      // "Premier frame utilisable", jamais l'attente du téléchargement
+      // complet (prompt) : `loadeddata` suffit, `.play()` gère lui-même
+      // le buffering progressif ensuite.
+      video.play().then(
+        () => {
+          videoPlaybackStartedRef.current = true;
+        },
+        () => {
+          // Autoplay refusé/lecture impossible : reste sur le poster,
+          // aucune erreur non gérée (prompt).
+        },
+      );
+    };
+    video.addEventListener("loadeddata", onLoadedData);
+
+    // Pause immédiate au masquage d'onglet (en plus du useFrame plus bas,
+    // qui gère le cas "hors Hero" au scroll) — jamais de reprise
+    // inconditionnelle ici : la reprise réelle dépend AUSSI de la
+    // position de scroll, gérée uniquement par le useFrame.
+    const onVisibilityChange = () => {
+      if (document.hidden) video.pause();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      // Nettoyage — UNIQUEMENT les ressources créées par CE sprint (vidéo/
+      // texture vidéo), jamais le GLB/HDRI partagés (prompt).
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      texture.dispose();
+      videoRef.current = null;
+      videoTextureRef.current = null;
+      videoPlaybackStartedRef.current = false;
+      videoAppliedRef.current = false;
+      videoShouldPlayRef.current = false;
+      // Retour immédiat au poster si un matériau existe déjà (cas
+      // reduced-motion activé en cours de session) — jamais d'écran vide.
+      if (screenMaterial && posterTextureRef.current && screenMaterial.map !== posterTextureRef.current) {
+        screenMaterial.map = posterTextureRef.current;
+        screenMaterial.needsUpdate = true;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reducedMotion, screenMaterial]);
+
+  // --- Vidéo écran : lecture/pause + bascule poster->vidéo -----------------
+  // `useFrame` SÉPARÉ du phase machine d'animation ci-dessus (jamais
+  // fusionné) : ne LIT que `phase.current` (jamais ne l'écrit), donc
+  // aucun risque d'interférer avec l'entrée/idle/drag déjà validés. Court-
+  // circuité par sécurité si le matériau n'existe pas encore (tout premier
+  // render, avant que le GLB ne soit prêt).
+  useFrame(() => {
+    if (!screenMaterial) return;
+
+    if (reducedMotion) {
+      // Reduced-motion activé en cours de session (media query) : jamais
+      // de lecture, retour au poster si nécessaire (le useEffect ci-dessus
+      // gère aussi ce cas à la destruction de la vidéo).
+      if (videoShouldPlayRef.current) {
+        videoShouldPlayRef.current = false;
+        videoRef.current?.pause();
+      }
+      if (posterTextureRef.current && screenMaterial.map !== posterTextureRef.current) {
+        screenMaterial.map = posterTextureRef.current;
+        screenMaterial.needsUpdate = true;
+        videoAppliedRef.current = false;
+      }
+      return;
+    }
+
+    // Visible = même règle que `group.visible` dans `SitesPhoneSceneContent`
+    // (limite au Hero) — dupliquée ici à dessein (référence à `slotAnchor`
+    // déjà disponible dans ce composant) plutôt que de faire remonter une
+    // nouvelle prop depuis le composant parent pour cette seule lecture.
+    const heroVisible = slotAnchor ? window.scrollY < slotAnchor.heroBottomRestPx : true;
+    const shouldPlay = tabVisible && heroVisible;
+
+    if (shouldPlay !== videoShouldPlayRef.current) {
+      videoShouldPlayRef.current = shouldPlay;
+      const video = videoRef.current;
+      if (video) {
+        if (shouldPlay) video.play().catch(() => {});
+        else video.pause();
+      }
+    }
+
+    // Bascule poster -> vidéo, UNE SEULE FOIS : seulement une fois l'entrée
+    // terminée (phase "idle", jamais pendant "entering" — prompt : "les
+    // visiteurs voient d'abord le mouvement du téléphone") ET la lecture
+    // réellement démarrée (autoplay accepté, premier frame utilisable).
+    if (
+      !videoAppliedRef.current &&
+      videoPlaybackStartedRef.current &&
+      phase.current === "idle" &&
+      videoTextureRef.current
+    ) {
+      screenMaterial.map = videoTextureRef.current;
+      screenMaterial.needsUpdate = true;
+      videoAppliedRef.current = true;
+    }
+  });
 
   if (!phoneBody || !screenDisplay || !normalizedGeometry || !screenMaterial) {
     // Garde défensive : si l'un des 2 nodes attendus (`PhoneBody`,
@@ -851,11 +1077,12 @@ function SitesPhoneEnvironment() {
 
 interface SitesPhoneSceneContentProps {
   reducedMotion: boolean;
+  tabVisible: boolean;
   interactionRef: RefObject<PhoneInteractionBridge>;
   slotAnchor: PhoneSlotAnchor | null;
 }
 
-function SitesPhoneSceneContent({ reducedMotion, interactionRef, slotAnchor }: SitesPhoneSceneContentProps) {
+function SitesPhoneSceneContent({ reducedMotion, tabVisible, interactionRef, slotAnchor }: SitesPhoneSceneContentProps) {
   // Position de REPOS (scroll=0) du groupe téléphone — centre du slot DOM
   // converti en unités monde au plan z=0 (profondeur réelle du rig, jamais
   // touchée par l'entrée/l'idle : voir SitesPhoneModel). `viewport.width`/
@@ -955,7 +1182,7 @@ function SitesPhoneSceneContent({ reducedMotion, interactionRef, slotAnchor }: S
           conforme à la valeur de repli du useFrame tant que `slotAnchor`
           n'est pas mesuré. */}
       <group ref={outerGroupRef}>
-        <SitesPhoneModel reducedMotion={reducedMotion} interactionRef={interactionRef} slotAnchor={slotAnchor} />
+        <SitesPhoneModel reducedMotion={reducedMotion} tabVisible={tabVisible} interactionRef={interactionRef} slotAnchor={slotAnchor} />
       </group>
 
       {/* Emplacement réservé pour les futures vagues horizontales (prompt
@@ -982,6 +1209,7 @@ export default function SitesPhoneScene() {
   // lu à chaque frame côté R3F sans jamais déclencher de re-render ici).
   const interactionRef = useRef<PhoneInteractionBridge>({
     zoneEl: null,
+    hintEl: null,
     justPressed: false,
     deltaX: 0,
     deltaY: 0,
@@ -1068,6 +1296,10 @@ export default function SitesPhoneScene() {
     const zone = document.querySelector<HTMLElement>(".sites-hero-layout__phone-slot");
     if (!zone) return;
     interactionRef.current.zoneEl = zone;
+    // Micro-sprint "Indication d'interaction du téléphone 3D" — même
+    // requête ponctuelle que `zoneEl` ci-dessus, jamais par frame. `null`
+    // si le balisage est absent (repli silencieux, voir l'interface).
+    interactionRef.current.hintEl = document.querySelector<HTMLElement>(".sites-hero-layout__phone-hint");
 
     let activePointerId: number | null = null;
     let lastX = 0;
@@ -1154,7 +1386,12 @@ export default function SitesPhoneScene() {
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         camera={{ fov: 34, position: [0, 0, 7] }}
       >
-        <SitesPhoneSceneContent reducedMotion={reducedMotion} interactionRef={interactionRef} slotAnchor={slotAnchor} />
+        <SitesPhoneSceneContent
+          reducedMotion={reducedMotion}
+          tabVisible={tabVisible}
+          interactionRef={interactionRef}
+          slotAnchor={slotAnchor}
+        />
       </Canvas>
     </div>
   );

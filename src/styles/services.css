@@ -290,6 +290,23 @@ html .service-page--apps .section-heading__eyebrow {
   margin: 0 0 var(--space-sm) 0;
 }
 
+/* Micro-sprint "CTA titre Ember" (PROMPT_CLAUDE_CODE_SITES_PRO_CTA_TITRE_
+   EMBER) — "Un site à créer ou à repenser ?" (eyebrow du CTA final)
+   passe en Ember atténué, EXACTE MÊME formule que `.home-kicker--accent`/
+   `.section-heading__eyebrow` (home.css) et `.service-page--apps
+   .service-cta__eyebrow` ci-dessus (color: var(--color-accent); opacity:
+   .8) : token existant uniquement, aucune nouvelle teinte. `.service-cta
+   __eyebrow` est PARTAGÉ par 5 pages (Applications, Sites pro, Sur
+   mesure, Méthode, À propos) — règle de base ci-dessus non touchée,
+   uniquement SURCHARGÉE ici, scopée `.service-page--sites` (2 classes > 1,
+   gagne sans ambiguïté), donc sans effet sur les 4 autres pages. Rien
+   d'autre changé sur cette page : titres/textes/boutons/opacité de fond
+   de carte/DotWave/animations/dimensions/espacements/footer inchangés. */
+.service-page--sites .service-cta__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
 .service-cta__text {
   margin: var(--space-sm) auto var(--space-lg) auto;
 }
@@ -919,6 +936,44 @@ html .service-page--apps .section-heading__eyebrow {
 
 .service-page--sites .sites-hero-layout__phone-slot--interactive.sites-hero-layout__phone-slot--grabbing {
   cursor: grabbing;
+}
+
+/* Micro-sprint "Indication d'interaction du téléphone 3D"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_INDICATION_INTERACTION_TELEPHONE) — texte
+   discret sous le téléphone, masqué par défaut (y compris sous 900 px, où
+   `__phone-slot` lui-même n'est qu'un `<div>` vide non interactif). Affiché
+   uniquement via la classe `--visible`, basculée en JS par
+   SitesPhoneScene.tsx sur l'état réel "entrée terminée" / "premier drag
+   effectif" (jamais un timeout arbitraire). `pointer-events: none` pour ne
+   jamais gêner le clic/drag/lecture vidéo du téléphone. */
+.service-page--sites .sites-hero-layout__phone-hint {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .service-page--sites .sites-hero-layout__phone-hint {
+    display: block;
+    grid-column: 2;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 600ms ease;
+  }
+
+  .service-page--sites .sites-hero-layout__phone-hint--visible {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page--sites .sites-hero-layout__phone-hint {
+    transition: none;
+  }
 }
 
 /* Micro-sprint "Positionnement interactif + CTA transparence"
@@ -1554,6 +1609,33 @@ html .service-page--apps .section-heading__eyebrow {
   color: var(--color-text-muted);
 }
 
+/* Micro-sprint "Suppression Choix technique, message Fondations"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_SUPPRESSION_CHOIX_TECHNIQUE_MESSAGE_
+   FONDATIONS) — conclusion discrète APRÈS les 4 cartes, dans le même
+   conteneur : jamais une 5e carte (aucune surface/bordure/radius de
+   carte), jamais un nouveau panneau interactif, aucun CTA, aucun liseré
+   Ember ni icône ajoutés. Tokens déjà utilisés sur cette page uniquement
+   (Sora/titres, Manrope/texte secondaire, `--color-text`/`--color-text-
+   secondary`) ; largeur de lecture confortable alignée sur l'intro de
+   section (`.section-heading__intro`, même `max-width:62ch`). */
+.service-page--sites .foundations-conclusion {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  max-width: 62ch;
+}
+
+.service-page--sites .foundations-conclusion__title {
+  font-size: 1.0625rem;
+  margin: 0 0 var(--space-xs) 0;
+  color: var(--color-text);
+}
+
+.service-page--sites .foundations-conclusion__text {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
 /* Micro-sprint "DA orange / backgrounds / footer" (PROMPT_CLAUDE_CODE_V2_
    SITES_PRO_DA_ORANGE_BACKGROUNDS_FOOTER) — sur-titres en Ember, MÊME
    formule que `.home-kicker--accent`/`.section-heading__eyebrow` (home.css)
@@ -1599,6 +1681,276 @@ html .service-page--sites .section-heading__eyebrow {
   background: radial-gradient(circle at 30% 50%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 65%);
 }
 
+/* Micro-sprint "Preuves, trois réalisations premium" (PROMPT_CLAUDE_CODE_
+   SITES_PRO_PREUVES_TROIS_REALISATIONS_PREMIUM) — remplace la paire
+   Belkhir/Vélocéan (`.related-case-study-pair`/`.related-case-study*`/
+   `.service-proof*`, PARTAGÉES avec Applications métier & SaaS/Développement
+   sur mesure, NON TOUCHÉES ici — toujours utilisées là-bas) par une
+   composition bespoke à 3 projets, classes LOCALES à cette page. Le liseré
+   Ember horizontal de Belkhir (`.related-case-study--primary { border-top:
+   ... }`, ci-dessus) ne s'applique tout simplement plus : ces nouvelles
+   cartes n'utilisent jamais cette classe, donc rien à neutraliser en plus.
+
+   Micro-sprint "Preuves, Belkhir pleine largeur + liens visibles"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_PREUVES_BELKHIR_PLEINE_LARGEUR_LIENS_
+   VISIBLES) — disposition précédente (Belkhir à gauche pleine hauteur +
+   Beauty Laï/Nolya empilées à droite, avec un `margin-top:auto` pour
+   étirer artificiellement Belkhir) REJETÉE (trop de vide). Remplacée par :
+   Belkhir en rangée 1 PLEINE LARGEUR (`grid-column:1/-1`, jamais une
+   hauteur imposée — sa hauteur suit son propre contenu), Beauty Laï et
+   Nolya en rangée 2, côte à côte. Un lien "Voir la maquette" EXPLICITE
+   (`.sites-proof-card__demo-link`, badge sobre bordé — jamais un CTA
+   orange plein qui concurrencerait le bouton principal du site) s'ajoute
+   à côté du titre sur les 3 cartes, en PLUS du titre/image déjà cliquables
+   (jamais à leur place).
+
+   Micro-sprint "Preuves, réagencement final" (PROMPT_CLAUDE_CODE_SITES_
+   PRO_PREUVES_REAGENCEMENT_FINAL) — la mise en page interne "image à
+   gauche / contenu à droite" de Belkhir (sprint précédent, media query
+   dédiée) est RETIRÉE : Belkhir revient à "image en haut pleine largeur,
+   contenu dessous" (même logique que Beauty Laï/Nolya). Aspect-ratio de
+   sa zone média élargi (`21/9` au lieu de `16/10`) pour éviter qu'une
+   image pleine largeur de grille ne produise une carte exagérément haute.
+   Labels "ÉTUDE DE CAS"/"MAQUETTE DE DÉMONSTRATION" passés en Ember, même
+   formule que l'eyebrow "PREUVES" de cette page. */
+.service-page--sites .sites-proofs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .service-page--sites .sites-proofs-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "belkhir belkhir"
+      "beautylai nolya";
+  }
+
+  .service-page--sites .sites-proof-card--belkhir {
+    grid-area: belkhir;
+  }
+
+  .service-page--sites .sites-proof-card--beauty-lai {
+    grid-area: beautylai;
+  }
+
+  .service-page--sites .sites-proof-card--nolya {
+    grid-area: nolya;
+  }
+}
+
+/* Carte — MÊMES tokens/hover que `.service-page--apps .service-poc-card`
+   (Applications métier & SaaS, "Le point de départ", lu en référence, NON
+   modifié) : surface-elevated, bordure forte, radius-lg, lift -5px +
+   bordure/ombre Ember douce.
+   Micro-sprint "Preuves, correction hover persistant au retour navigation"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_PREUVES_CORRECTION_HOVER_RETOUR_
+   NAVIGATION) — CAUSE RÉELLE diagnostiquée : `:focus-within` déclenchait
+   ce même lift/ombre. Le focus posé sur un lien (notamment un lien
+   `target="_blank"`) RESTE actif après un clic — y compris au retour sur
+   l'onglet via le bouton Précédent du navigateur, tant que rien d'autre
+   ne reçoit le focus — donc `:focus-within` restait vrai indéfiniment et
+   la carte gardait l'apparence "survolée" même sans le curseur dessus ; en
+   survolant ensuite une AUTRE carte, celle-ci déclenchait `:hover`
+   pendant que la première restait bloquée en `:focus-within`, d'où
+   l'impression de 2 cartes survolées à la fois. Retiré : seul `:hover`
+   (position réelle du pointeur, jamais persistant) pilote désormais ce
+   traitement. Le focus clavier reste visible via les règles
+   `:focus-visible` déjà posées sur CHAQUE lien individuellement
+   (`.sites-proof-card__media`, `__title-link`, `__demo-link`,
+   `__case-link`, plus bas) — un contour/changement de couleur scopé au
+   lien réellement ciblé, jamais un lift ni une ombre globale de carte :
+   déjà distinct du hover par construction, aucun ajout nécessaire. */
+.service-page--sites .sites-proof-card {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
+}
+
+.service-page--sites .sites-proof-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(228, 95, 54, 0.4);
+  box-shadow: 0 18px 40px -28px rgba(228, 95, 54, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page--sites .sites-proof-card {
+    transition: border-color 260ms ease, box-shadow 260ms ease;
+  }
+
+  .service-page--sites .sites-proof-card:hover {
+    transform: none;
+  }
+}
+
+/* Ember, MÊME formule que l'eyebrow "PREUVES" de cette page (`html
+   .service-page--sites .section-heading__eyebrow`, plus bas dans ce
+   fichier : color: var(--color-accent); opacity: .8) — un seul orange
+   sur la page, jamais une deuxième teinte inventée. */
+.service-page--sites .sites-proof-card__label {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+/* Corps de carte — colonne (image au-dessus du texte) sur les 3 cartes, à
+   TOUTES les tailles : Belkhir suit la MÊME logique que Beauty Laï/Nolya,
+   juste à l'échelle de toute la largeur de la grille (prompt "réagencement
+   final" §1 : "pas une disposition image à gauche / texte à droite"). */
+.service-page--sites .sites-proof-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.service-page--sites .sites-proof-card__content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media en `contain`, jamais `cover` — MÊME règle que `.related-case-
+   study__img` (ci-dessus) : la capture reste une preuve intacte, jamais
+   recadrée (pas de logo/CTA amputé). Belkhir (pleine largeur de grille)
+   reçoit un ratio plus large (`21/9`) que Beauty Laï/Nolya (`16/10`,
+   règle spécifique ci-dessous) pour éviter qu'une image pleine largeur
+   ne produise une carte exagérément haute. */
+.service-page--sites .sites-proof-card__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-soft);
+  overflow: hidden;
+  aspect-ratio: 21 / 9;
+}
+
+.service-page--sites .sites-proof-card--beauty-lai .sites-proof-card__media,
+.service-page--sites .sites-proof-card--nolya .sites-proof-card__media {
+  aspect-ratio: 16 / 10;
+}
+
+/* Micro-sprint "Belkhir, cadrage et netteté" (PROMPT_CLAUDE_CODE_SITES_PRO_
+   BELKHIR_CADRAGE_NETTETE_IMAGE) — cause RÉELLE diagnostiquée en
+   navigateur (jamais un `object-fit: cover` : celui-ci était déjà
+   `contain`, donc aucun rognage possible par construction) : le VRAI
+   enfant flex de `.sites-proof-card__media` est `<picture>` (généré par
+   `astro:assets`), PAS `<img>`. `<picture>` ne portait aucune règle de
+   taille (seulement `max-width:100%; display:block` du reset global) et
+   se contentait donc de la taille NATURELLE du fichier choisi par le
+   navigateur (mesuré : 864×432, la variante "900w") au lieu de remplir
+   la boîte réelle (mesurée : 1238×530 à 1440px) — `width:100%;
+   height:100%` posé sur `.sites-proof-card__img` ne pouvait rien changer
+   puisqu'il se résout par rapport à CE `<picture>` non dimensionné, pas
+   par rapport à la boîte média. Corrigé en donnant à `<picture>`
+   lui-même la taille de son conteneur ; `object-fit:contain` (déjà en
+   place, inchangé) peut alors réellement centrer/mettre à l'échelle
+   l'image SANS rognage. Scopé STRICTEMENT à Belkhir (`--belkhir`) : la
+   même cause probable existe sur Beauty Laï/Nolya mais n'est PAS
+   corrigée ici, hors périmètre de ce sprint (voir rapport). */
+.service-page--sites .sites-proof-card--belkhir .sites-proof-card__media picture {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.service-page--sites .sites-proof-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.service-page--sites .sites-proof-card__media:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.service-page--sites .sites-proof-card__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  font-size: 1.1875rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.service-page--sites .sites-proof-card__title-link {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.2em;
+}
+
+.service-page--sites .sites-proof-card__title-link:hover,
+.service-page--sites .sites-proof-card__title-link:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
+/* Lien "Voir la maquette ↗" — badge sobre, distinct du titre (prompt §3 :
+   "ne pas ajouter trois gros CTA orange" ; jamais un remplissage Ember
+   plein, réservé au bouton principal du site ailleurs sur la page). */
+.service-page--sites .sites-proof-card__demo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+.service-page--sites .sites-proof-card__demo-link:hover,
+.service-page--sites .sites-proof-card__demo-link:focus-visible {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.service-page--sites .sites-proof-card__description {
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--color-text-secondary);
+}
+
+.service-page--sites .sites-proof-card__keywords {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.service-page--sites .sites-proof-card__case-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.2em;
+  font-weight: 600;
+}
+
+.service-page--sites .sites-proof-card__case-link:hover,
+.service-page--sites .sites-proof-card__case-link:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
 .service-page--sites .sites-honesty-section {
   background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
 }
@@ -1628,21 +1980,21 @@ main:has(.sites-final-cta-section) + footer {
    déjà appliqué là-bas : hôte en `position:relative; isolation:isolate`,
    son `> .container` promu `z-index:1` pour peindre au-dessus du décor
    `z-index:0`) est reproduit ICI, localement, scopé `.service-page--sites`
-   UNIQUEMENT — Home/Applications non touchées. 4 hôtes sur cette page :
-   "Positionnement", "Fondations", "Choix technique" (fond
-   `--color-bg-soft` opaque, comme les 2 hôtes déjà validés sur
-   Applications) et la section CTA finale (`.sites-final-cta-section`,
-   déjà utilisée par la règle d'espacement footer ci-dessus — le décor
-   vient se peindre derrière la carte `.service-cta`, elle-même opaque,
-   jamais par-dessus son texte/ses boutons). Aucun de ces 4 hôtes ne porte
-   de background Ember translucide (contrairement aux 4 sections du
-   micro-sprint DA précédent) : aucun risque de masquer les filaments
-   (`PageFilaments`, Canvas fixed z-index:-1, NON MODIFIÉ) ni d'être
-   masqué par eux — les deux couches restent indépendantes comme partout
-   ailleurs sur le site. */
+   UNIQUEMENT — Home/Applications non touchées.
+   Micro-sprint "Suppression Choix technique, message Fondations"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_SUPPRESSION_CHOIX_TECHNIQUE_MESSAGE_
+   FONDATIONS) — `.sites-tech-section` retiré de cette liste (section
+   entièrement supprimée de la page, plus aucune référence). 3 hôtes
+   restants sur cette page : "Positionnement", "Fondations" et la section
+   CTA finale (`.sites-final-cta-section`, déjà utilisée par la règle
+   d'espacement footer ci-dessus — le décor vient se peindre derrière la
+   carte `.service-cta`, elle-même opaque, jamais par-dessus son texte/
+   ses boutons). Aucun de ces hôtes ne porte de background Ember
+   translucide : aucun risque de masquer les filaments (`PageFilaments`,
+   Canvas fixed z-index:-1, NON MODIFIÉ) ni d'être masqué par eux — les
+   deux couches restent indépendantes comme partout ailleurs sur le site. */
 .service-page--sites .sites-positioning-section,
 .service-page--sites .sites-foundations-section,
-.service-page--sites .sites-tech-section,
 .service-page--sites .sites-final-cta-section {
   position: relative;
   isolation: isolate;
@@ -1650,7 +2002,6 @@ main:has(.sites-final-cta-section) + footer {
 
 .service-page--sites .sites-positioning-section > .container,
 .service-page--sites .sites-foundations-section > .container,
-.service-page--sites .sites-tech-section > .container,
 .service-page--sites .sites-final-cta-section > .container {
   position: relative;
   z-index: 1;

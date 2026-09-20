@@ -18,21 +18,14 @@ import PageFilaments from "../components/hero/PageFilaments";
 import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
 import PositioningSituations from "../components/services/PositioningSituations.astro";
 import ClientJourney from "../components/services/ClientJourney.astro";
-import ServiceProofCard from "../components/services/ServiceProofCard.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
-import RelatedCaseStudy from "../components/relations/RelatedCaseStudy.astro";
-import { velocean } from "../data/serviceProofs";
-import { projectMedia } from "../data/projectMedia";
-import { externalProjectMedia } from "../data/externalProjectMedia";
-import { caseStudyContent } from "../data/caseStudyContent";
-import { getProofsForService } from "../data/serviceCaseStudyMap";
 import { withBase } from "../utils/paths";
+import { Picture } from "astro:assets";
+import belkhirHero from "../assets/projects/site-professionnelle/belkhir-hero.webp";
+import beautyLaiDesktop from "../assets/projects/site-professionnelle/beauty-lai-desktop.webp";
+import nolyaDesktop from "../assets/projects/site-professionnelle/nolya-desktop.webp";
 import "../styles/services.css";
-
-// CS-S10B — preuve phare unique Belkhir Dépannage, source unique
-// `serviceCaseStudyMap.ts` (prompt §8 : pas de seconde étude artificielle).
-const sitesProof = getProofsForService("sites-professionnels")[0];
 
 // Micro-sprint "Positionnement interactif" (PROMPT_CLAUDE_CODE_SITES_PRO_
 // POSITIONNEMENT_INTERACTIF_CTA) — remplace l'ancienne grille statique de
@@ -291,6 +284,82 @@ const foundationCards = [
     icon: "accessibility",
   },
 ];
+
+// Micro-sprint "Preuves, trois réalisations premium" (PROMPT_CLAUDE_CODE_
+// SITES_PRO_PREUVES_TROIS_REALISATIONS_PREMIUM) — remplace la paire
+// Belkhir/Vélocéan (RelatedCaseStudy + ServiceProofCard, composants
+// PARTAGÉS avec Applications métier & SaaS / Développement sur mesure —
+// non modifiés, toujours utilisés là-bas) par une composition bespoke à 3
+// projets, propre à cette page. Vélocéan disparaît de PREUVES (toujours
+// cité ailleurs sur le site, non touché). SOURCE UNIQUE : `proofCards`,
+// copie VALIDÉE mot pour mot du prompt. `caseHref` de Belkhir CONSERVE
+// EXACTEMENT le href déjà utilisé avant ce sprint
+// (`/realisations/belkhir-depannage/`) — vérifié dans l'historique de
+// cette section avant modification.
+//
+// Micro-sprint "Preuves, Belkhir pleine largeur + liens visibles"
+// (PROMPT_CLAUDE_CODE_SITES_PRO_PREUVES_BELKHIR_PLEINE_LARGEUR_LIENS_
+// VISIBLES) — la disposition "Belkhir à gauche pleine hauteur + Beauty
+// Laï/Nolya empilées à droite" (sprint précédent) est REJETÉE (trop de
+// vide dans Belkhir). Remplacée par : Belkhir en première rangée, pleine
+// largeur ; Beauty Laï et Nolya en seconde rangée, côte à côte. Ajout
+// d'un lien EXPLICITE "Voir la maquette" (badge sobre, distinct du
+// titre) à côté du titre de CHAQUE carte — en plus du titre/image déjà
+// cliquables, jamais à leur place.
+//
+// Micro-sprint "Preuves, réagencement final" (PROMPT_CLAUDE_CODE_SITES_
+// PRO_PREUVES_REAGENCEMENT_FINAL) — la mise en page interne "image à
+// gauche / contenu à droite" de Belkhir (sprint précédent) revient à
+// "image en haut pleine largeur, contenu dessous" (même logique que
+// Beauty Laï/Nolya, juste à l'échelle de toute la largeur de grille) ;
+// flèche du badge "Voir la maquette" changée de "↗" à "→" (texte exact du
+// prompt) ; labels "ÉTUDE DE CAS"/"MAQUETTE DE DÉMONSTRATION" passés en
+// Ember (voir services.css). Données `proofCards` inchangées (même
+// contenu éditorial, mêmes href).
+const proofCards = [
+  {
+    id: "belkhir",
+    role: "primary",
+    label: "Étude de cas",
+    title: "Belkhir Dépannage",
+    description:
+      "Une vitrine consacrée au dépannage d'urgence, avec des pages par métier, un parcours mobile et des moyens de contact adaptés aux situations urgentes.",
+    keywords: "Architecture de contenu · Visibilité locale · Parcours de contact",
+    demoHref: "https://spiritzen.github.io/belkhir-depannage/",
+    demoLabel: "Voir la maquette Belkhir Dépannage",
+    caseHref: "/realisations/belkhir-depannage/",
+    image: belkhirHero,
+    imageAlt: "Capture de la page d'accueil de la maquette Belkhir Dépannage",
+  },
+  {
+    id: "beauty-lai",
+    role: "secondary",
+    label: "Maquette de démonstration",
+    title: "Beauty Laï",
+    description:
+      "Une vitrine élégante pour présenter l'institut, ses prestations et ses tarifs, puis accompagner les visiteurs vers la réservation sur Planity.",
+    keywords: "Identité visuelle · Présentation des soins · Réservation",
+    demoHref: "https://spiritzen.github.io/beauty-lai/",
+    demoLabel: "Voir la maquette Beauty Laï",
+    caseHref: null,
+    image: beautyLaiDesktop,
+    imageAlt: "Capture de la page d'accueil de la maquette Beauty Laï",
+  },
+  {
+    id: "nolya",
+    role: "secondary",
+    label: "Maquette de démonstration",
+    title: "Nolya Café",
+    description:
+      "Une vitrine chaleureuse pour faire découvrir le lieu, consulter sa carte et retrouver ses horaires et informations pratiques.",
+    keywords: "Expérience visuelle · Carte interactive · Parcours client",
+    demoHref: "https://spiritzen.github.io/nolya/",
+    demoLabel: "Voir la maquette Nolya Café",
+    caseHref: null,
+    image: nolyaDesktop,
+    imageAlt: "Capture de la page d'accueil de la maquette Nolya Café",
+  },
+];
 ---
 
 <BaseLayout
@@ -345,6 +414,9 @@ const foundationCards = [
             secondaryLabel="Voir Belkhir Dépannage"
           />
           <div class="sites-hero-layout__phone-slot" aria-hidden="true"></div>
+          <p class="sites-hero-layout__phone-hint" aria-hidden="true">
+            Cliquez et faites glisser le téléphone pour l'explorer.
+          </p>
         </div>
       </Container>
     </section>
@@ -427,61 +499,70 @@ const foundationCards = [
             </div>
           ))}
         </div>
+        <!-- Micro-sprint "Suppression Choix technique, message Fondations"
+             (PROMPT_CLAUDE_CODE_SITES_PRO_SUPPRESSION_CHOIX_TECHNIQUE_
+             MESSAGE_FONDATIONS) — la section "CHOIX TECHNIQUE" (Astro/React,
+             DotWave dédié) est retirée ENTIÈREMENT de la page (voir plus bas :
+             elle n'existe plus entre Preuves et SEO honnête). Son idée
+             essentielle survit sous cette forme : une conclusion courte
+             APRÈS les 4 cartes, dans le même conteneur — jamais une 5e
+             carte, jamais un nouveau panneau, aucun CTA ajouté. -->
+        <div class="foundations-conclusion" data-motion="block">
+          <h3 class="foundations-conclusion__title">La bonne solution, sans complexité inutile.</h3>
+          <p class="foundations-conclusion__text">
+            Chaque projet est différent. Nous choisissons les outils adaptés à votre activité, à vos besoins et à
+            votre budget, pour construire un site fiable et capable d'évoluer avec vous.
+          </p>
+        </div>
       </Container>
     </section>
 
     <section class="service-page__section sites-proofs-section" aria-labelledby="sites-proofs-title">
       <Container>
-        <SectionHeading id="sites-proofs-title" eyebrow="Preuves" title="Une maquette de refonte, pensée comme un vrai projet." />
-        <div class="related-case-study-pair">
-          <RelatedCaseStudy
-            role="primary"
-            title="Belkhir Dépannage"
-            category="Site professionnel"
-            angle={sitesProof.angle}
-            capabilities={caseStudyContent["belkhir-depannage"].proves.slice(0, 3)}
-            image={projectMedia["belkhir-depannage"].primary}
-            imageAlt={projectMedia["belkhir-depannage"].primaryAlt}
-            href="/realisations/belkhir-depannage/"
-          />
-          <ServiceProofCard
-            title={velocean.title}
-            description={velocean.angle}
-            facts={velocean.facts}
-            isDemonstrator={velocean.isDemonstrator}
-            image={externalProjectMedia.velocean.image}
-            imageAlt={externalProjectMedia.velocean.alt}
-          />
+        <SectionHeading
+          id="sites-proofs-title"
+          eyebrow="Preuves"
+          title="Des sites pensés autour de chaque activité."
+          intro="Trois univers différents, une même attention portée à la présentation des services, à l'expérience des visiteurs et à la prise de contact."
+        />
+        <div class="sites-proofs-grid">
+          {proofCards.map((card) => (
+            <article class:list={["sites-proof-card", `sites-proof-card--${card.role}`, `sites-proof-card--${card.id}`]} data-motion="proof">
+              <span class="sites-proof-card__label">{card.label}</span>
+              <div class="sites-proof-card__body">
+                <a class="sites-proof-card__media" href={card.demoHref} target="_blank" rel="noopener noreferrer" aria-label={card.demoLabel}>
+                  <Picture
+                    src={card.image}
+                    alt={card.imageAlt}
+                    formats={["avif", "webp"]}
+                    fallbackFormat="webp"
+                    widths={card.role === "primary" ? [320, 640, 900, 1238, 1600, 1902] : [320, 480, 640]}
+                    sizes={card.role === "primary" ? "(min-width: 1320px) 1238px, calc(100vw - 5rem)" : "(min-width: 900px) 30vw, 100vw"}
+                    loading="lazy"
+                    decoding="async"
+                    class="sites-proof-card__img"
+                  />
+                </a>
+                <div class="sites-proof-card__content">
+                  <h3 class="sites-proof-card__title">
+                    <a class="sites-proof-card__title-link" href={card.demoHref} target="_blank" rel="noopener noreferrer" aria-label={card.demoLabel}>{card.title}</a>
+                    <a class="sites-proof-card__demo-link" href={card.demoHref} target="_blank" rel="noopener noreferrer" aria-label={card.demoLabel}>
+                      Voir la maquette <span aria-hidden="true">→</span>
+                    </a>
+                  </h3>
+                  <p class="sites-proof-card__description">{card.description}</p>
+                  <p class="sites-proof-card__keywords">{card.keywords}</p>
+                  {card.caseHref && (
+                    <a class="sites-proof-card__case-link" href={withBase(card.caseHref)}>
+                      Voir l'étude de cas {card.title} <span aria-hidden="true">→</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
         <p class="service-architecture__note">D'autres projets sont présentés dans les <a href={withBase("/realisations/")}>réalisations</a>.</p>
-      </Container>
-    </section>
-
-    <section class="service-page__section service-page__section--soft sites-tech-section" aria-labelledby="sites-tech-title">
-      <!-- Micro-sprint "DotWave local" — voir commentaire section
-           "Positionnement" plus haut, même principe exact. -->
-      <ExpertiseDotWave />
-      <Container>
-        <SectionHeading id="sites-tech-title" eyebrow="Choix technique" title="La technologie dépend du site." />
-        <div class="service-tech-choice" data-motion="block">
-          <div class="service-tech-choice__col">
-            <h3>Astro</h3>
-            <ul>
-              <li>Contenu, SEO, rendu statique</li>
-              <li>JavaScript minimal</li>
-              <li>Adapté aux vitrines et sites de contenu</li>
-            </ul>
-          </div>
-          <div class="service-tech-choice__col">
-            <h3>React</h3>
-            <ul>
-              <li>Interactions plus riches</li>
-              <li>Expériences complexes</li>
-              <li>Parties applicatives d'un site — voir <a href={withBase("/applications-metier-saas/")}>applications métier & SaaS</a></li>
-            </ul>
-          </div>
-        </div>
-        <p class="service-architecture__note">Le bon choix dépend du site, pas d'une préférence par défaut.</p>
       </Container>
     </section>
 
