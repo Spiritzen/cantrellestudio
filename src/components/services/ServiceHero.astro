@@ -4,6 +4,17 @@
 // spécifique ici : l'architecture/diagramme propre à chaque page vit dans
 // la page elle-même, pas dans ce composant — prompt §31, "leur composition
 // centrale doit différer"). Aucune 3D, aucun JS : CSS/HTML statique.
+//
+// Micro-sprint "Reveal scroll Applications/Sites pro" — prop optionnelle
+// `revealGranular` (défaut false, RÉTROCOMPATIBLE à 100%) : quand true,
+// remplace l'unique marqueur `data-motion="hero"` (1 seul bloc, consommé
+// par le reveal générique de ServiceMotion.astro) par 4 marqueurs distincts
+// par rôle (`hero-eyebrow`/`hero-title`/`hero-lead`/`hero-actions`),
+// consommés UNIQUEMENT par l'orchestration dédiée aux 2 pages ciblées
+// (voir ServiceMotion.astro, `setupHeroGranular`). Les autres appelants
+// (a-propos, contact, développement sur mesure, développement web Amiens,
+// méthode) ne passent jamais cette prop : ils gardent EXACTEMENT le même
+// marqueur unique et le même comportement qu'avant ce sprint.
 import ActionLink from "../ui/ActionLink.astro";
 
 interface Props {
@@ -22,6 +33,7 @@ interface Props {
   primaryLabel?: string;
   secondaryHref: string;
   secondaryLabel: string;
+  revealGranular?: boolean;
 }
 
 const {
@@ -33,18 +45,19 @@ const {
   primaryLabel = "Parler de votre projet",
   secondaryHref,
   secondaryLabel,
+  revealGranular = false,
 } = Astro.props;
 ---
 
-<div class="service-hero" data-motion="hero">
-  <span class="service-hero__eyebrow">{eyebrow}</span>
-  <h1 class="service-hero__title">{title}</h1>
+<div class="service-hero" data-motion={revealGranular ? undefined : "hero"}>
+  <span class="service-hero__eyebrow" data-motion={revealGranular ? "hero-eyebrow" : undefined}>{eyebrow}</span>
+  <h1 class="service-hero__title" data-motion={revealGranular ? "hero-title" : undefined}>{title}</h1>
   {leadHtml ? (
-    <p class="service-hero__lead" set:html={leadHtml} />
+    <p class="service-hero__lead" data-motion={revealGranular ? "hero-lead" : undefined} set:html={leadHtml} />
   ) : (
-    <p class="service-hero__lead">{lead}</p>
+    <p class="service-hero__lead" data-motion={revealGranular ? "hero-lead" : undefined}>{lead}</p>
   )}
-  <div class="service-hero__actions">
+  <div class="service-hero__actions" data-motion={revealGranular ? "hero-actions" : undefined}>
     <ActionLink href={primaryHref} variant="primary">{primaryLabel}</ActionLink>
     <ActionLink href={secondaryHref} variant="secondary">{secondaryLabel}</ActionLink>
   </div>

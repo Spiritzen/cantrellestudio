@@ -1,6 +1,8 @@
 ---
-// ServiceMotion — CS-S9B. Motion léger des 3 pages services, cohérent avec
-// le langage de mouvement de la Home (CS-S8/CS-S8A) : mêmes constantes
+// ServiceMotion — CS-S9B, enrichi par le micro-sprint "Reveal scroll
+// Applications/Sites pro" (PROMPT_CLAUDE_CODE_REVEAL_SCROLL_APPLICATIONS_
+// SAAS_SITES_PRO). Motion léger des pages services, cohérent avec le
+// langage de mouvement de la Home (CS-S8/CS-S8A) : mêmes constantes
 // (durée, easing, stagger, offsets) importées depuis `motionUtils.ts`
 // (partagé, non spécifique à la Home), même pattern set()+to()+clearProps
 // (évite les deux bugs GSAP documentés en CS-S8 : transform figé et
@@ -11,22 +13,32 @@
 // N'IMPORTE PAS HomeMotion.astro et ne le modifie pas : composant
 // entièrement séparé, propre aux pages services, conformément à la règle
 // CS-S9B "ne pas modifier la Home au-delà du strict nécessaire". Reste un
-// simple hôte de script (aucun template, aucune hydratation React),
-// exactement le même choix d'architecture que HomeMotion pour un coût nul
-// en dehors des pages qui l'importent.
+// simple hôte de script (aucun template, aucune hydratation React).
 //
-// CS-S10 §28 — "Si le système de motion CS-S9B peut être réutilisé : le
-// réutiliser." Le sélecteur de section a été élargi pour couvrir aussi
-// `.case-study__section` (études de cas, CS-S10) : même reveal, même
-// replay, même chunk JS partagé — zéro nouveau moteur de motion créé.
-// CS-S11A — même élargissement d'une ligne pour `.methode-page__section`
-// (page Méthode) : identique principe, aucune nouvelle logique.
+// CE MICRO-SPRINT — jusqu'ici ServiceMotion animait un seul groupe PAR
+// SECTION ENTIÈRE (`.service-page__section, .case-study__section,
+// .methode-page__section`), avec un offset flat unique (OFFSET.title) —
+// une approximation volontairement générique de la grammaire de la Home
+// (voir docs/rapports/rapport_audit_apparitions_scroll_landing_vers_
+// services.txt, audit préalable obligatoire de ce sprint). Ce sprint
+// ENRICHIT ce fichier d'une orchestration GRANULAIRE dédiée, reproduisant
+// la logique réellement validée dans HomeMotion.astro (fonction `reveal()`
+// identique, titres déclenchés par leur propre `.section-heading`, offsets
+// différenciés par rôle) — SANS copier ses sélecteurs `.home-*` (inexistants
+// ici) et SANS installer un second moteur d'animation (même GSAP/
+// ScrollTrigger déjà chargés).
 //
-// Portée : un seul ScrollTrigger par section (`.service-page__section`,
-// `.case-study__section` ou `.methode-page__section`), jamais un par
-// élément — reveal groupé des enfants `[data-motion]` de chaque section,
-// avec un léger stagger.
-// Aucun scrub, aucun parallax, aucun effet agressif.
+// OPT-IN STRICT — l'orchestration granulaire ne s'active QUE si
+// `.service-page--sites` et/ou `.service-page--apps` existent dans le DOM
+// (racines de PAGE posées uniquement par sites-professionnels.astro et
+// applications-metier-saas.astro — vérifié par grep dans tout le dépôt).
+// Les sections de CES pages sont explicitement EXCLUES de l'ancienne boucle
+// générique (voir le `.closest(...)` plus bas) pour qu'aucun élément ne
+// soit jamais ciblé simultanément par l'ancien marker global et les
+// nouveaux marqueurs détaillés. Toutes les AUTRES pages qui montent ce
+// composant (a-propos, contact, développement sur mesure, méthode, études
+// de cas) continuent de passer par l'ancienne boucle générique, strictement
+// INCHANGÉE pour elles.
 ---
 
 <script>
@@ -37,7 +49,148 @@
   gsap.registerPlugin(ScrollTrigger);
 
   if (!prefersReducedMotion()) {
+    /** Reveal générique — adaptation FIDÈLE de la fonction éponyme de
+     * HomeMotion.astro (même algorithme, même contrat gsap.set()+gsap.to()+
+     * clearProps, même replay bidirectionnel one ScrollTrigger). Dupliquée
+     * ici volontairement (CS-S9B : "composant entièrement séparé, n'importe
+     * jamais HomeMotion.astro") plutôt que partagée par import, pour ne
+     * jamais risquer de faire dépendre la Home protégée d'un changement
+     * futur côté services. */
+    function reveal(
+      targets: Element[] | NodeListOf<Element>,
+      y: number | ((i: number) => number),
+      opts: gsap.TweenVars & { scrollTrigger?: ScrollTrigger.Vars } = {},
+    ) {
+      const list = Array.from(targets as Iterable<Element>);
+      if (list.length === 0) return;
+      const { scrollTrigger, ...tweenOpts } = opts;
+
+      const setInitial = () => gsap.set(list, { opacity: 0, y });
+      let tween: gsap.core.Tween | null = null;
+
+      const play = () => {
+        tween?.kill();
+        tween = gsap.to(list, {
+          opacity: 1,
+          y: 0,
+          duration: DURATION.reveal,
+          ease: EASE,
+          stagger: STAGGER,
+          clearProps: "opacity,transform",
+          ...tweenOpts,
+        });
+      };
+
+      setInitial();
+
+      if (!scrollTrigger) {
+        play();
+        return;
+      }
+
+      const reset = () => {
+        tween?.kill();
+        setInitial();
+      };
+
+      ScrollTrigger.create({
+        trigger: scrollTrigger.trigger,
+        start: scrollTrigger.start ?? "top 90%",
+        end: scrollTrigger.end ?? "bottom 10%",
+        onEnter: play,
+        onEnterBack: play,
+        onLeave: reset,
+        onLeaveBack: reset,
+      });
+    }
+
+    /** Titres de section — même principe que `setupSectionHeadings` de
+     * HomeMotion.astro : 1 ScrollTrigger PAR INSTANCE de `.section-heading`
+     * trouvée SOUS `root` (jamais tout le document — scoping strict à la
+     * page cible), ciblant ses propres enfants `[data-motion="eyebrow"/
+     * "title"/"intro"]` avec leurs offsets dédiés. `SectionHeading.astro`
+     * est un composant partagé par tout le site ; ce scoping par `root`
+     * garantit qu'aucune autre page n'est affectée par cette fonction. */
+    function setupHeadingsWithin(root: ParentNode) {
+      root.querySelectorAll(".section-heading").forEach((heading) => {
+        const eyebrow = heading.querySelector('[data-motion="eyebrow"]');
+        const title = heading.querySelector('[data-motion="title"]');
+        const intro = heading.querySelector('[data-motion="intro"]');
+        const parts: { el: Element; y: number }[] = [
+          eyebrow && { el: eyebrow, y: OFFSET.eyebrow },
+          title && { el: title, y: OFFSET.title },
+          intro && { el: intro, y: OFFSET.intro },
+        ].filter(Boolean) as { el: Element; y: number }[];
+        if (parts.length === 0) return;
+
+        reveal(
+          parts.map((p) => p.el),
+          (i: number) => parts[i].y,
+          { scrollTrigger: { trigger: heading } },
+        );
+      });
+    }
+
+    /** Hero granulaire — même contrat que `setupHero` de HomeMotion.astro,
+     * MOINS le traitement séparé "hero-note" (prompt : absent de ces
+     * Heroes, ne pas le reproduire). Reveal immédiat, PAS de ScrollTrigger
+     * (texte déjà dans le viewport au chargement) — activé UNIQUEMENT si
+     * `ServiceHero` a reçu `revealGranular` (sinon `hero-eyebrow` etc.
+     * n'existent pas dans le DOM et ce bloc ne trouve rien, `reveal()`
+     * sort immédiatement via sa garde `list.length === 0`). */
+    function setupHeroGranular(root: ParentNode) {
+      const eyebrow = root.querySelector('[data-motion="hero-eyebrow"]');
+      const title = root.querySelector('[data-motion="hero-title"]');
+      const lead = root.querySelector('[data-motion="hero-lead"]');
+      const actions = root.querySelector('[data-motion="hero-actions"]');
+      const parts: { el: Element; y: number }[] = [
+        eyebrow && { el: eyebrow, y: OFFSET.eyebrow },
+        title && { el: title, y: OFFSET.title },
+        lead && { el: lead, y: OFFSET.intro },
+        actions && { el: actions, y: OFFSET.cta },
+      ].filter(Boolean) as { el: Element; y: number }[];
+      if (parts.length === 0) return;
+
+      reveal(
+        parts.map((p) => p.el),
+        (i: number) => parts[i].y,
+        { stagger: STAGGER },
+      );
+    }
+
+    /** CTA final granulaire — même contrat que `setupCtaFinal` de
+     * HomeMotion.astro POUR LE TEXTE UNIQUEMENT (prompt : ne pas copier le
+     * halo respirant, effet non demandé ici — les pages services gardent
+     * leur halo CSS statique existant, non touché). Offset unique 24px
+     * (OFFSET.card) pour le groupe entier, durée structurelle 0.85s, seuil
+     * "top 80%" — valeurs identiques à la Home. */
+    function setupCtaGranular(root: ParentNode) {
+      const targets = ["cta-eyebrow", "cta-title", "cta-text", "cta-actions"]
+        .map((name) => root.querySelector(`[data-motion="${name}"]`))
+        .filter((el): el is Element => Boolean(el));
+      if (targets.length === 0) return;
+
+      const cta = root.querySelector(".service-cta");
+      if (!cta) return;
+
+      reveal(targets, OFFSET.card, {
+        duration: DURATION.structural,
+        scrollTrigger: { trigger: cta, start: "top 80%" },
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // A. Ancienne orchestration générique — INCHANGÉE pour toute page qui
+    // ne porte NI `.service-page--sites` NI `.service-page--apps` (a-propos,
+    // contact, développement sur mesure, développement web Amiens, méthode,
+    // études de cas). Les sections des 2 pages ciblées par ce sprint sont
+    // désormais explicitement EXCLUES (`closest(...)`) : elles sont prises
+    // en charge par l'orchestration granulaire ci-dessous, jamais les deux
+    // à la fois sur le même élément.
+    // ------------------------------------------------------------------
     document.querySelectorAll(".service-page__section, .case-study__section, .methode-page__section").forEach((section) => {
+      if (section.closest(".service-page--sites, .service-page--apps")) return;
+
       const targets = Array.from(section.querySelectorAll("[data-motion]"));
       if (targets.length === 0) return;
 
@@ -72,5 +225,130 @@
         onLeaveBack: reset,
       });
     });
+
+    // ------------------------------------------------------------------
+    // B. Orchestration granulaire — /sites-professionnels/ UNIQUEMENT.
+    // ------------------------------------------------------------------
+    const sitesRoot = document.querySelector<HTMLElement>(".service-page--sites");
+    if (sitesRoot) {
+      setupHeadingsWithin(sitesRoot);
+      setupHeroGranular(sitesRoot);
+
+      // Positionnement / 3 objectifs — apparition GROUPÉE de l'enveloppe
+      // interactive entière (fieldset radio natif), jamais un stagger par
+      // label/radio (prompt §A.2/A.3 : ne pas modifier le comportement de
+      // sélection). Vérifié : ni `.sites-situations` ni `.client-journey`
+      // ne portent de règle CSS sur leur sélecteur racine (seuls leurs
+      // enfants/pseudo-classes sont stylés) — un `opacity`/`transform`
+      // GSAP direct sur le fieldset n'entre donc en conflit avec aucun
+      // état CSS existant.
+      const positioning = sitesRoot.querySelector(".sites-situations");
+      if (positioning) reveal([positioning], OFFSET.title, { scrollTrigger: { trigger: positioning } });
+
+      const journey = sitesRoot.querySelector(".client-journey");
+      if (journey) reveal([journey], OFFSET.title, { scrollTrigger: { trigger: journey } });
+
+      // Fondations — 4 cartes INDIVIDUELLEMENT (offset carte 24px, stagger
+      // 0.08s standard), un seul ScrollTrigger scopé à la grille (prompt
+      // §A.4 : "ne pas créer une animation concurrente sur la grille
+      // entière ET sur les 4 cartes à la fois" — la grille elle-même n'a
+      // plus de `data-motion` propre, voir sites-professionnels.astro).
+      // La conclusion apparaît ENSUITE, dans son propre groupe, son propre
+      // ScrollTrigger (prompt : "peut apparaître ensuite dans son groupe").
+      const foundationsGrid = sitesRoot.querySelector(".foundations-grid");
+      const foundationsCards = foundationsGrid ? foundationsGrid.querySelectorAll(".foundations-card") : [];
+      if (foundationsGrid && foundationsCards.length > 0) {
+        reveal(foundationsCards, OFFSET.card, { scrollTrigger: { trigger: foundationsGrid } });
+      }
+      const foundationsConclusion = sitesRoot.querySelector(".foundations-conclusion");
+      if (foundationsConclusion) {
+        reveal([foundationsConclusion], OFFSET.title, { scrollTrigger: { trigger: foundationsConclusion } });
+      }
+
+      // Preuves — 3 cartes INDIVIDUELLEMENT (offset carte 24px), scopées à
+      // la grille de preuves. Hover/focus/liens externes/captures : jamais
+      // touchés (aucune règle sur `.sites-proof-card__media`/`__img`, seule
+      // la carte entière opacity/transform, `clearProps` en fin de tween).
+      const proofsGrid = sitesRoot.querySelector(".sites-proofs-grid");
+      const proofCards = proofsGrid ? proofsGrid.querySelectorAll('[data-motion="proof"]') : [];
+      if (proofsGrid && proofCards.length > 0) {
+        reveal(proofCards, OFFSET.card, { scrollTrigger: { trigger: proofsGrid } });
+      }
+
+      // SEO honnête / FAQ — 2 groupes sobres, jamais les <details>/<summary>
+      // individuellement (prompt §A.6 : ne jamais modifier leur état
+      // ouvert/fermé — un simple fade+translate du conteneur parent ne
+      // touche à aucun attribut `open`).
+      const honesty = sitesRoot.querySelector(".service-honesty");
+      if (honesty) reveal([honesty], OFFSET.title, { scrollTrigger: { trigger: honesty } });
+      const faq = sitesRoot.querySelector(".sites-honesty-section .service-faq");
+      if (faq) reveal([faq], OFFSET.title, { scrollTrigger: { trigger: faq } });
+
+      // CTA final — texte séquencé, halo CSS/DotWave existants non touchés.
+      setupCtaGranular(sitesRoot);
+    }
+
+    // ------------------------------------------------------------------
+    // C. Orchestration granulaire — /applications-metier-saas/ UNIQUEMENT.
+    // ------------------------------------------------------------------
+    const appsRoot = document.querySelector<HTMLElement>(".service-page--apps");
+    if (appsRoot) {
+      setupHeadingsWithin(appsRoot);
+      setupHeroGranular(appsRoot);
+      // `ProjectHeroVisual` (puce/particules/tilt) : aucun `data-motion`,
+      // jamais interrogé ici — reste géré par son propre script autonome,
+      // continu dès le chargement, exactement comme avant ce sprint.
+
+      // "Le point de départ" — 2 cartes déjà séparées, offset carte 24px,
+      // stagger standard, hover/texte/DotWave non touchés.
+      const problemsSolutions = appsRoot.querySelector(".service-problems-solutions");
+      const pocCards = problemsSolutions ? problemsSolutions.querySelectorAll('[data-motion="block"]') : [];
+      if (problemsSolutions && pocCards.length > 0) {
+        reveal(pocCards, OFFSET.card, { scrollTrigger: { trigger: problemsSolutions } });
+      }
+
+      // Méthode / parcours interactif (ServiceMethodJourney) — EXCEPTION
+      // DOCUMENTÉE (prompt §B.3) : le composant n'est PAS modifié, sa
+      // granularité interne (liste + panneau desktop, 2 `data-motion=
+      // "block"` internes) n'est PAS utilisée ici. Le panneau desktop
+      // (`.service-method-journey__panel--desktop`) porte sa PROPRE classe
+      // d'état `.is-updating` (opacity/transform CSS, basculée au survol/
+      // focus d'une étape — voir ServiceMethodJourney.astro) : lui
+      // appliquer un `opacity`/`transform` GSAP directement risquerait un
+      // conflit visuel si l'utilisateur survole une étape PENDANT le tween
+      // de reveal (2 systèmes écrivant la même propriété inline au même
+      // moment). Cible choisie à la place : l'enveloppe GLOBALE
+      // `.service-method-journey` (aucune règle CSS sur son propre
+      // sélecteur racine, vérifié), révélée comme UN SEUL groupe — reveal
+      // strictement plus sûr, jamais de ciblage d'étape ou de panneau
+      // individuel, conforme à "conserver la granularité actuelle de ses
+      // enveloppes, sans cibler étapes ou panneau actif individuellement".
+      const methodJourney = appsRoot.querySelector(".service-method-journey");
+      if (methodJourney) reveal([methodJourney], OFFSET.title, { scrollTrigger: { trigger: methodJourney } });
+
+      // Preuves — cartes (RelatedCaseStudy × 2 + ServiceProofCard)
+      // individuellement, offset carte 24px, scopées à la section entière
+      // (2 grilles distinctes dans le DOM, un seul ScrollTrigger commun,
+      // aucun lien/média/hover touché).
+      const proofsSection = appsRoot.querySelector('section[aria-labelledby="apps-proofs-title"]');
+      const appsProofCards = proofsSection ? proofsSection.querySelectorAll('[data-motion="proof"]') : [];
+      if (proofsSection && appsProofCards.length > 0) {
+        reveal(appsProofCards, OFFSET.card, { scrollTrigger: { trigger: proofsSection } });
+      }
+
+      // Cadrage — simple reveal du paragraphe/lien déjà ciblé.
+      const cadrage = appsRoot.querySelector(".apps-cadrage-section");
+      const cadrageBlock = cadrage ? cadrage.querySelector('[data-motion="block"]') : null;
+      if (cadrageBlock) reveal([cadrageBlock], OFFSET.title, { scrollTrigger: { trigger: cadrageBlock } });
+
+      // Stack / FAQ — 2 groupes existants, accordéons/couleurs non touchés.
+      const techChoice = appsRoot.querySelector(".service-tech-choice");
+      if (techChoice) reveal([techChoice], OFFSET.title, { scrollTrigger: { trigger: techChoice } });
+      const stackFaq = appsRoot.querySelector(".apps-stack-section .service-faq");
+      if (stackFaq) reveal([stackFaq], OFFSET.title, { scrollTrigger: { trigger: stackFaq } });
+
+      // CTA final — même cadence que Sites professionnels.
+      setupCtaGranular(appsRoot);
+    }
   }
 </script>

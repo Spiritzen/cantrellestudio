@@ -16,6 +16,13 @@
 // a-propos.astro).
 import ActionLink from "../ui/ActionLink.astro";
 
+// Micro-sprint "Reveal scroll Applications/Sites pro" — même principe et
+// même prop `revealGranular` (défaut false, rétrocompatible à 100%) que
+// ServiceHero.astro : remplace `data-motion="cta"` (1 bloc) par 4
+// marqueurs par rôle, consommés UNIQUEMENT par l'orchestration dédiée aux
+// 2 pages ciblées. Les autres appelants (a-propos, contact, développement
+// sur mesure, développement web Amiens, méthode) gardent le marqueur
+// unique et le comportement inchangé.
 interface Props {
   eyebrow: string;
   title: string;
@@ -23,16 +30,17 @@ interface Props {
   secondaryHref: string;
   secondaryLabel: string;
   headingId?: string;
+  revealGranular?: boolean;
 }
 
-const { eyebrow, title, text, secondaryHref, secondaryLabel, headingId } = Astro.props;
+const { eyebrow, title, text, secondaryHref, secondaryLabel, headingId, revealGranular = false } = Astro.props;
 ---
 
-<div class="service-cta" data-motion="cta">
-  <span class="service-cta__eyebrow">{eyebrow}</span>
-  <h2 id={headingId} class="service-cta__title">{title}</h2>
-  <p class="service-cta__text">{text}</p>
-  <div class="service-cta__actions">
+<div class="service-cta" data-motion={revealGranular ? undefined : "cta"}>
+  <span class="service-cta__eyebrow" data-motion={revealGranular ? "cta-eyebrow" : undefined}>{eyebrow}</span>
+  <h2 id={headingId} class="service-cta__title" data-motion={revealGranular ? "cta-title" : undefined}>{title}</h2>
+  <p class="service-cta__text" data-motion={revealGranular ? "cta-text" : undefined}>{text}</p>
+  <div class="service-cta__actions" data-motion={revealGranular ? "cta-actions" : undefined}>
     <ActionLink href="/contact/" variant="primary">Parler de votre projet</ActionLink>
     <ActionLink href={secondaryHref} variant="secondary">{secondaryLabel}</ActionLink>
   </div>
