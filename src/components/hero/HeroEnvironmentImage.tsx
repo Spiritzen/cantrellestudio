@@ -30,13 +30,40 @@
 // RETRAIT DE CE TEST : supprimer <HeroEnvironmentImage /> dans
 // HeroSpheres.tsx, dé-commenter le rig <Environment>/<Lightformer>
 // d'origine juste au-dessus, puis supprimer ce fichier.
+//
+// Micro-sprint "sphères prêtes avant affichage" — `scene.environment` est
+// assigné de façon ASYNCHRONE (callback de `TextureLoader.load`, jamais
+// gated par le Suspense de `<Canvas>` — voir le commentaire "Chargement
+// IMPÉRATIF" ci-dessus, INCHANGÉ). Les 3 sphères (BALL.glb, metalness
+// ≈0.94/roughness 0, AUCUNE texture propre — vérifié dans le JSON du GLB)
+// rendent leurs reflets EXCLUSIVEMENT via cet environnement : tant qu'il
+// n'est pas assigné, un métal quasi-miroir sans IBL ne reçoit que les 3
+// lumières directes de HeroSpheres.tsx (dont un `pointLight` Ember/orange
+// proche et intense) — d'où le flash "marron" constaté par Sébastien,
+// confirmé être un artefact d'ÉCLAIRAGE et non une couleur de matériau
+// (baseColorFactor du GLB = gris neutre [0.8,0.8,0.8], vérifié). `onReady`
+// est le SEUL signal fiable que HeroSpheres.tsx peut observer pour savoir
+// que les reflets finaux sont disponibles (ce composant ne rend rien et ne
+// passe `scene.environment` par aucun state/prop React).
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import heroEnvironmentSource from "../../assets/hdr/hdr.webp";
 
-export default function HeroEnvironmentImage() {
-  const { gl, scene } = useThree();
+interface HeroEnvironmentImageProps {
+  /** Invoqué UNE FOIS, dès que `scene.environment` est réellement assigné
+   * (succès) OU en cas d'échec de chargement (repli contrôlé — prompt §2 :
+   * "jamais écran bloqué sans explication en dev" — la composition est
+   * alors révélée sans reflets HDR plutôt que jamais). Doit être une
+   * référence STABLE côté appelant (`useCallback`, deps `[]`) : ce composant
+   * la place en dépendance de son effet de chargement, et une référence qui
+   * change à chaque rendu du parent relancerait le téléchargement/le bake
+   * PMREM à chaque fois (prompt §5 : "aucun téléchargement en double"). */
+  onReady?: () => void;
+}
+
+export default function HeroEnvironmentImage({ onReady }: HeroEnvironmentImageProps) {
+  const { gl, scene, invalidate } = useThree();
   const pmremRef = useRef<THREE.PMREMGenerator | null>(null);
 
   useEffect(() => {
@@ -49,21 +76,39 @@ export default function HeroEnvironmentImage() {
     pmremRef.current = pmremGenerator;
 
     const loader = new THREE.TextureLoader();
-    loader.load(heroEnvironmentSource.src, (texture) => {
-      if (disposed) {
+    loader.load(
+      heroEnvironmentSource.src,
+      (texture) => {
+        if (disposed) {
+          texture.dispose();
+          return;
+        }
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        texture.colorSpace = THREE.SRGBColorSpace;
+
+        renderTarget = pmremGenerator.fromEquirectangular(texture);
+        scene.environment = renderTarget.texture;
+
+        // La texture équirectangulaire source n'est plus nécessaire une fois
+        // préfiltrée en PMREM : seul renderTarget.texture sert d'environnement.
         texture.dispose();
-        return;
-      }
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      texture.colorSpace = THREE.SRGBColorSpace;
-
-      renderTarget = pmremGenerator.fromEquirectangular(texture);
-      scene.environment = renderTarget.texture;
-
-      // La texture équirectangulaire source n'est plus nécessaire une fois
-      // préfiltrée en PMREM : seul renderTarget.texture sert d'environnement.
-      texture.dispose();
-    });
+        onReady?.();
+        // frameloop="demand" (reduced-motion, HeroScene.tsx) : ce chargement
+        // async ne passe par aucun state/prop React que le reconciler R3F
+        // observerait pour replanifier une frame — sans cet appel explicite,
+        // la révélation des sphères (HeroSpheres.tsx) resterait en attente
+        // indéfiniment sous ce mode (prompt §2 : "éviter tout deadlock...
+        // ni attendre un événement impossible lorsque frameloop=demand").
+        invalidate();
+      },
+      undefined,
+      (error) => {
+        if (disposed) return;
+        console.error("HeroEnvironmentImage : échec du chargement de l'environnement HDR", error);
+        onReady?.();
+        invalidate();
+      },
+    );
 
     return () => {
       disposed = true;
@@ -71,7 +116,7 @@ export default function HeroEnvironmentImage() {
       renderTarget?.dispose();
       pmremGenerator.dispose();
     };
-  }, [gl, scene]);
+  }, [gl, scene, invalidate, onReady]);
 
   return null;
 }

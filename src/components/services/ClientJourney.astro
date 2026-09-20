@@ -1,0 +1,123 @@
+---
+// ClientJourney — micro-sprint "3 objectifs, parcours client interactif"
+// (PROMPT_CLAUDE_CODE_SITES_PRO_3_OBJECTIFS_PARCOURS_CLIENT_INTERACTIF),
+// utilisé UNIQUEMENT par /sites-professionnels/, section "3 OBJECTIFS".
+// Distinct de PositioningSituations.astro (Positionnement, VALIDÉ,
+// intouché) : ici le panneau détaillé va SOUS la rangée des 3 cartes
+// (jamais à côté), pas de fil dans Positionnement. Seule la TECHNIQUE
+// d'interaction (groupe radio natif, CSS pur) est réutilisée, car déjà
+// prouvée accessible/sans JS sur cette page — la disposition, elle, est
+// volontairement différente (prompt §1 : "ne pas reprendre mécaniquement
+// la structure Positionnement").
+//
+// SOURCE UNIQUE : `steps` (prop, alimentée par sites-professionnels.astro)
+// — un seul balisage produit à la fois la rangée desktop (3 cartes +
+// panneau unique sous la rangée, via `display:contents` + placement Grid
+// explicite, cf. services.css) et l'accordéon mobile (flux naturel, panneau
+// juste sous SA carte). Aucun texte dupliqué pour le responsive.
+//
+// MÉCANISME — aucun JavaScript : groupe de 3 boutons radio natifs
+// (fieldset/legend, légende visuellement masquée mais accessible), un seul
+// coché à la fois, `:checked ~ .client-journey__panel` (CSS pur) affiche
+// le panneau actif. Étape 01 cochée côté serveur (`checked` HTML) : jamais
+// de panneau vide, y compris avant toute hydratation. Tab atteint l'option
+// cochée, les flèches déplacent la sélection parmi les 3 — comportement
+// natif, aucun rôle ARIA réinventé. Le survol (CSS `:hover`) ne change que
+// l'apparence de la carte survolée, jamais la sélection réelle (`:checked`
+// est un état totalement indépendant) : la sélection ne peut donc jamais
+// "repartir" au mouseleave.
+//
+// Icônes : 3 pictogrammes SVG minimalistes écrits à la main (loupe /
+// bulle de message / téléphone — formes génériques de type "feather
+// icons", aucune bibliothèque, aucun fichier image ajouté), en markup
+// Astro conditionnel classique (jamais `set:html` : cette règle du
+// micro-sprint précédent, "mise en valeur texte", est respectée aussi
+// ici bien que les chaînes soient des constantes de code, pas du contenu
+// éditorial). Purement décoratifs (`aria-hidden="true"`), couleur héritée
+// via `currentColor`.
+interface Benefit {
+  title: string;
+  text: string;
+}
+
+interface Step {
+  id: string;
+  title: string;
+  hook: string;
+  text: string;
+  benefits: Benefit[];
+  skills: string;
+}
+
+interface Props {
+  steps: Step[];
+}
+
+const { steps } = Astro.props;
+const GROUP_NAME = "client-journey";
+---
+
+<fieldset class="client-journey" data-motion="block">
+  <legend class="client-journey__legend">Étapes du parcours client</legend>
+  <div class="client-journey__grid">
+    <div class="client-journey__thread" aria-hidden="true"><span class="client-journey__thread-glow"></span></div>
+    {steps.map((step, index) => {
+      const radioId = `${GROUP_NAME}-${step.id}`;
+      const panelId = `${GROUP_NAME}-panel-${step.id}`;
+      return (
+        <div class="client-journey__item">
+          <input
+            type="radio"
+            name={GROUP_NAME}
+            id={radioId}
+            class="client-journey__radio"
+            checked={index === 0}
+            aria-controls={panelId}
+          />
+          <label for={radioId} class="client-journey__card">
+            {step.id === "01" && (
+              <svg class="client-journey__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            )}
+            {step.id === "02" && (
+              <svg class="client-journey__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+            )}
+            {step.id === "03" && (
+              <svg class="client-journey__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            )}
+            <span class="client-journey__index" aria-hidden="true">{step.id}</span>
+            <span class="client-journey__title">{step.title}</span>
+          </label>
+          <div class="client-journey__panel" id={panelId} aria-labelledby={radioId}>
+            <h3 class="client-journey__panel-title">{step.title}</h3>
+            <p class="client-journey__panel-hook">{step.hook}</p>
+            <p class="client-journey__panel-text">{step.text}</p>
+            <ul class="client-journey__benefits">
+              {step.benefits.map((benefit) => (
+                <li class="client-journey__benefit">
+                  <svg class="client-journey__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span class="client-journey__benefit-body">
+                    <strong class="client-journey__benefit-title">{benefit.title}</strong>
+                    <span class="client-journey__benefit-text">{benefit.text}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p class="client-journey__skills">
+              <span class="client-journey__skills-label">Les compétences mobilisées</span>
+              {step.skills}
+            </p>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</fieldset>

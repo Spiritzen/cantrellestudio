@@ -14,6 +14,10 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
 import SitesPhoneScene from "../components/hero/SitesPhoneScene";
+import PageFilaments from "../components/hero/PageFilaments";
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
+import PositioningSituations from "../components/services/PositioningSituations.astro";
+import ClientJourney from "../components/services/ClientJourney.astro";
 import ServiceProofCard from "../components/services/ServiceProofCard.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
@@ -30,40 +34,262 @@ import "../styles/services.css";
 // `serviceCaseStudyMap.ts` (prompt §8 : pas de seconde étude artificielle).
 const sitesProof = getProofsForService("sites-professionnels")[0];
 
-const builds = [
-  "une hiérarchie de contenu",
-  "un message clair",
-  "un parcours de navigation",
-  "une architecture de pages",
-  "des appels à l'action",
-  "une base technique propre",
-  "une expérience mobile soignée",
-  "un socle SEO",
+// Micro-sprint "Positionnement interactif" (PROMPT_CLAUDE_CODE_SITES_PRO_
+// POSITIONNEMENT_INTERACTIF_CTA) — remplace l'ancienne grille statique de
+// 8 petites cases (`builds`, retirée) : 6 situations client réelles,
+// copie VALIDÉE mot pour mot par le prompt, dans l'ORDRE imposé (01 =
+// création d'entreprise, sélectionnée par défaut). SOURCE UNIQUE consommée
+// par `<PositioningSituations>` (voir ce composant) — jamais dupliquée à
+// la main entre desktop et mobile.
+//
+// Micro-sprint "Positionnement mise en valeur texte" (PROMPT_CLAUDE_CODE_
+// SITES_PRO_POSITIONNEMENT_MISE_EN_VALEUR_TEXTE) — `buildSegments` découpe
+// CHAQUE texte existant (inchangé, ci-dessous) en segments texte normal /
+// texte à mettre en gras, à partir d'une liste de mots choisis par
+// Sébastien. Jamais de set:html/innerHTML/remplacement de chaîne brute :
+// simple découpage en sous-chaînes, rendu ensuite via de vrais noeuds
+// Astro (`<strong>`), donc toujours échappé normalement. Bornage de mot
+// Unicode-aware (`\p{L}`/`\p{N}` en lookaround, pas `\b` qui traite les
+// lettres accentuées comme non-mot et casserait "activité"/"visibilité"
+// en fin de motif) : évite qu'un mot court comme "site" ne matche à
+// l'intérieur d'un autre mot (ex. "visiteurs"). Une seule occurrence par
+// terme, dans l'ordre où les termes sont listés ; termes qui se
+// chevaucheraient ignorés (non utilisé ici mais gardé défensif).
+interface Segment {
+  text: string;
+  strong?: boolean;
+}
+
+function buildSegments(text: string, terms: string[]): Segment[] {
+  const ranges: { start: number; end: number }[] = [];
+  for (const term of terms) {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])${escaped}(?![\\p{L}\\p{N}_])`, "u");
+    const match = pattern.exec(text);
+    if (!match) continue;
+    const start = match.index;
+    const end = start + match[0].length;
+    if (ranges.some((r) => start < r.end && end > r.start)) continue;
+    ranges.push({ start, end });
+  }
+  ranges.sort((a, b) => a.start - b.start);
+  const segments: Segment[] = [];
+  let cursor = 0;
+  for (const range of ranges) {
+    if (range.start > cursor) segments.push({ text: text.slice(cursor, range.start) });
+    segments.push({ text: text.slice(range.start, range.end), strong: true });
+    cursor = range.end;
+  }
+  if (cursor < text.length) segments.push({ text: text.slice(cursor) });
+  return segments;
+}
+
+// Phrase de clôture commune aux 6 panneaux (inchangée) : source unique,
+// définie une seule fois ici plutôt que recopiée dans le composant.
+const SITUATION_CLOSING_NOTE = "Échangeons sur vos besoins pour définir la solution adaptée à votre activité.";
+
+const situationsRaw = [
+  {
+    id: "01",
+    title: "Je lance mon entreprise",
+    situation:
+      "Vous démarrez votre activité et souhaitez vous présenter de manière professionnelle dès le premier jour. Vos futurs clients doivent pouvoir découvrir vos services, comprendre ce que vous proposez et vous contacter facilement.",
+    situationWords: ["activité", "professionnelle", "clients", "contacter facilement"],
+    response:
+      "Un site qui présente votre entreprise, met en valeur vos prestations et pose les premières bases de votre visibilité sur Internet.",
+    responseWords: ["site", "prestations", "visibilité"],
+    contactHook: "Présentons votre nouvelle entreprise.",
+  },
+  {
+    id: "02",
+    title: "Je veux être plus visible",
+    situation:
+      "Votre entreprise existe déjà, mais vos futurs clients ne vous trouvent pas facilement sur Internet. Vous souhaitez développer votre présence et faire connaître vos services.",
+    situationWords: ["entreprise", "clients", "Internet", "présence"],
+    response:
+      "Un site organisé autour de votre activité, de vos prestations et des recherches de vos futurs clients, avec des bases solides pour améliorer progressivement votre visibilité.",
+    responseWords: ["activité", "prestations", "visibilité"],
+    contactHook: "Parlons de votre visibilité.",
+  },
+  {
+    id: "03",
+    title: "Mon activité a évolué",
+    situation:
+      "Vos services, votre équipe ou votre clientèle ont changé. Votre site actuel ne reflète plus vraiment votre entreprise et ce que vous proposez aujourd'hui.",
+    // "équipe" volontairement écarté : la 1re phrase comptait 3 candidats
+    // (services/équipe/clientèle) pour seulement 10 mots — repli sur les 2
+    // termes les plus porteurs de sens (dosage prompt §3).
+    situationWords: ["services", "clientèle", "site", "entreprise"],
+    response:
+      "Une présentation actualisée de votre activité, de votre identité et de vos prestations, pour que vos visiteurs découvrent l'entreprise que vous êtes devenue.",
+    responseWords: ["activité", "prestations", "visiteurs"],
+    contactHook: "Présentons votre activité actuelle.",
+  },
+  {
+    id: "04",
+    title: "Mes clients ne comprennent pas assez vite mon offre",
+    situation:
+      "Vos visiteurs arrivent sur votre site, mais ne comprennent pas immédiatement ce que vous faites, à qui vous vous adressez ou ce qui vous distingue.",
+    situationWords: ["visiteurs", "site", "distingue"],
+    response:
+      "Des messages clairs, des services faciles à découvrir et une présentation qui répond rapidement aux questions essentielles de vos futurs clients.",
+    responseWords: ["messages", "découvrir", "clients"],
+    contactHook: "Clarifions votre présentation.",
+  },
+  {
+    id: "05",
+    title: "Je réponds toujours aux mêmes questions",
+    situation:
+      "Vos clients vous appellent régulièrement pour demander vos horaires, vos prestations, votre zone d'intervention ou votre manière de travailler.",
+    situationWords: ["clients", "horaires", "prestations", "intervention"],
+    response:
+      "Un site qui rassemble les informations utiles au bon endroit, rassure vos visiteurs et leur permet de vous contacter avec une demande plus précise.",
+    responseWords: ["site", "visiteurs", "contacter"],
+    contactHook: "Simplifions le parcours de vos clients.",
+  },
+  {
+    id: "06",
+    title: "Mon site ne m'apporte pas assez de contacts",
+    situation:
+      "Vous avez déjà un site, mais les visiteurs ne passent pas suffisamment à l'action. Ils ne trouvent pas toujours comment vous joindre ou demander un devis.",
+    // "action" volontairement écarté : la 1re phrase comptait 3 candidats
+    // (site/visiteurs/action) pour 14 mots — repli sur les 2 noms les plus
+    // concrets (dosage prompt §3).
+    situationWords: ["site", "visiteurs", "devis"],
+    response:
+      "Un parcours plus simple, des informations rassurantes et des moyens de contact visibles au bon moment pour faciliter les demandes.",
+    responseWords: ["simple", "contact", "demandes"],
+    contactHook: "Améliorons la prise de contact.",
+  },
 ];
 
-const triptych = [
+// Micro-finition "Positionnement" (PROMPT_CLAUDE_CODE_SITES_PRO_
+// POSITIONNEMENT_FINITION_EMPHASE) — la phrase de clôture met désormais en
+// valeur « solution » (plus « besoins »), de façon IDENTIQUE sur les 6
+// panneaux (y compris 01 et 03, qui n'avaient auparavant aucune mise en
+// valeur) : un seul calcul, partagé, plutôt qu'un indicateur par situation.
+const CLOSING_NOTE_SEGMENTS = buildSegments(SITUATION_CLOSING_NOTE, ["solution"]);
+
+const situations = situationsRaw.map((item) => ({
+  id: item.id,
+  title: item.title,
+  situationSegments: buildSegments(item.situation, item.situationWords),
+  responseSegments: buildSegments(item.response, item.responseWords),
+  contactHook: item.contactHook,
+  noteSegments: CLOSING_NOTE_SEGMENTS,
+}));
+
+// Micro-sprint "3 objectifs, parcours client interactif" (PROMPT_CLAUDE_
+// CODE_SITES_PRO_3_OBJECTIFS_PARCOURS_CLIENT_INTERACTIF) — remplace
+// l'ancienne grille statique à 3 colonnes (`triptych`, retirée) par un
+// parcours client sélectionnable (01 Être trouvé → 02 Être compris → 03
+// Être contacté), copie VALIDÉE mot pour mot par le prompt. SOURCE UNIQUE
+// consommée par `<ClientJourney>` (voir ce composant), jamais dupliquée à
+// la main entre desktop et mobile.
+const journeySteps = [
   {
-    index: "01",
+    id: "01",
     title: "Être trouvé",
-    items: ["Structure et pages dédiées par intention", "Title et meta uniques", "Maillage interne", "Performance", "Contenus réellement utiles"],
+    hook: "Vos futurs clients doivent pouvoir vous découvrir.",
+    text: "Lorsqu'une personne recherche un service comme le vôtre, votre entreprise doit disposer d'une présence claire et de pages adaptées à son activité.",
+    benefits: [
+      {
+        title: "Des pages qui parlent de vos services",
+        text: "Chaque prestation importante possède une présentation compréhensible et utile.",
+      },
+      {
+        title: "Une présence adaptée à votre secteur",
+        text: "Votre site tient compte de votre activité et, lorsque c'est pertinent, des villes où vous intervenez.",
+      },
+      {
+        title: "Un site rapide et agréable à consulter",
+        text: "Les visiteurs accèdent facilement aux informations, sur téléphone comme sur ordinateur.",
+      },
+    ],
+    skills: "Référencement naturel (SEO) · Pages dédiées · Performance",
   },
   {
-    index: "02",
+    id: "02",
     title: "Être compris",
-    items: ["Message clair dès l'arrivée", "Hiérarchie visuelle", "Navigation simple", "Contenu qui répond à la question du visiteur"],
+    hook: "Un visiteur doit comprendre rapidement ce que vous proposez.",
+    text: "En quelques instants, il doit pouvoir identifier vos services, savoir à qui ils s'adressent et comprendre pourquoi vous contacter.",
+    benefits: [
+      {
+        title: "Une présentation claire",
+        text: "Vos prestations et vos points forts sont expliqués avec les mots de vos clients.",
+      },
+      {
+        title: "Un parcours sans complication",
+        text: "Les informations essentielles sont faciles à trouver, sans chercher dans des menus interminables.",
+      },
+      {
+        title: "Une identité professionnelle",
+        text: "Votre site inspire confiance et reflète la qualité de votre travail.",
+      },
+    ],
+    skills: "Architecture de contenu · Navigation · Design responsive",
   },
   {
-    index: "03",
+    id: "03",
     title: "Être contacté",
-    items: ["Appels à l'action visibles", "Téléphone accessible", "Formulaire simple", "Parcours mobile pensé jusqu'au bout"],
+    hook: "Faciliter le passage de la visite à la prise de contact.",
+    text: "Quand une personne est intéressée par vos services, elle doit pouvoir vous appeler ou vous adresser une demande sans difficulté.",
+    benefits: [
+      {
+        title: "Des moyens de contact bien visibles",
+        text: "Téléphone, demande de devis ou formulaire sont accessibles au bon moment.",
+      },
+      {
+        title: "Une expérience simple sur mobile",
+        text: "Les visiteurs peuvent vous joindre facilement depuis leur téléphone.",
+      },
+      {
+        title: "Un parcours rassurant",
+        text: "Les informations utiles accompagnent le visiteur jusqu'à sa demande.",
+      },
+    ],
+    skills: "Appels à l'action · Formulaires accessibles · Parcours mobile",
   },
 ];
 
-const foundations = [
-  { title: "SEO technique", text: "Title, meta, canonical, HTML sémantique et maillage interne cohérent." },
-  { title: "Performance", text: "Pages légères, images optimisées, JavaScript limité au strict nécessaire." },
-  { title: "Responsive", text: "Une lecture soignée du mobile au desktop, sans compromis." },
-  { title: "Accessibilité", text: "Contraste, focus visible, navigation clavier, structure sémantique." },
+// Micro-sprint "Fondations, reprise compacte" (PROMPT_CLAUDE_CODE_SITES_PRO_
+// FONDATIONS_REPRISE_COMPACTE) — la démonstration interactive du sprint
+// précédent (grand navigateur fictif + 4 sélecteurs + panneau dynamique,
+// composant FoundationsDemo.astro) est REJETÉE par Sébastien (parcours du
+// regard compliqué, section trop haute/technique) et intégralement retirée
+// (composant supprimé, import retiré, CSS dédiée supprimée — voir
+// services.css). Remplacée par UNE grille statique de 4 cartes de même
+// famille visuelle, sans aucune interaction/JS : copie VALIDÉE mot pour mot
+// du prompt.
+const foundationCards = [
+  {
+    id: "01",
+    title: "Être plus facile à trouver",
+    text: "Des pages claires et bien organisées pour aider vos futurs clients à découvrir votre activité.",
+    technical: "Référencement naturel · SEO",
+    icon: "search",
+  },
+  {
+    id: "02",
+    title: "Ne pas faire attendre",
+    text: "Un site léger et rapide, pour accéder facilement aux informations qui comptent.",
+    technical: "Performance · Chargement optimisé",
+    icon: "bolt",
+  },
+  {
+    id: "03",
+    title: "Être agréable sur tous les écrans",
+    text: "Une présentation qui s'adapte au téléphone, à la tablette et à l'ordinateur.",
+    technical: "Design responsive",
+    icon: "responsive",
+  },
+  {
+    id: "04",
+    title: "Être simple à utiliser",
+    text: "Des contenus lisibles et une navigation claire, pour faciliter l'accès à vos services.",
+    technical: "Accessibilité · Confort de navigation",
+    icon: "accessibility",
+  },
 ];
 ---
 
@@ -72,6 +298,23 @@ const foundations = [
   description="Sites professionnels rapides, accessibles et pensés pour le SEO : architecture Astro ou React, contenus structurés, responsive et performance."
 >
   <div class="service-page service-page--sites">
+    <!-- Micro-sprint "Filaments identiques Applications métier & SaaS"
+         (PROMPT_CLAUDE_CODE_SITES_PRO_FILAMENTS_IDENTIQUES_APPLICATIONS_SAAS)
+         — réutilisation STRICTE du composant déjà validé sur
+         /applications-metier-saas/ (src/components/hero/PageFilaments.tsx,
+         NON MODIFIÉ), monté UNE SEULE FOIS au niveau racine de la page,
+         même directive `client:media` que la page de référence. ORDRE DE
+         MONTAGE INTENTIONNEL : AVANT `<SitesPhoneScene>` — les deux
+         composants rendent chacun un Canvas `position:fixed; z-index:-1`
+         (même valeur), donc au MÊME niveau d'empilement CSS : entre 2
+         éléments de même z-index dans le même contexte d'empilement,
+         l'ordre de PEINTURE suit l'ordre du DOM (le dernier peint par-
+         dessus) — jamais le z-index seul. PageFilaments AVANT garantit que
+         le téléphone (SitesPhoneScene, juste après) peigne PAR-DESSUS les
+         filaments, exactement l'ordre visuel demandé (texte > téléphone >
+         filaments > fond), vérifié réellement dans le navigateur (voir
+         rapport). -->
+    <PageFilaments client:media="(min-width: 900px)" />
     <!-- Micro-sprint "Test téléphone 3D"
          (PROMPT_CLAUDE_CODE_V2_SITES_PROFESSIONNELS_PHONE_3D_TEST) — même
          convention que PageFilaments sur Applications métier & SaaS :
@@ -84,7 +327,7 @@ const foundations = [
       <ServiceBreadcrumb current="Sites professionnels" />
     </Container>
 
-    <section class="service-page__section">
+    <section class="service-page__section sites-hero-section">
       <Container>
         <!-- Micro-sprint "Test téléphone 3D" — grille 2 colonnes UNIQUEMENT
              sur cette page (.sites-hero-layout, scopée .service-page--sites
@@ -106,59 +349,88 @@ const foundations = [
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-positioning-title">
+    <section class="service-page__section service-page__section--soft sites-positioning-section" aria-labelledby="sites-positioning-title">
+      <!-- Micro-sprint "DotWave local" — même motif de points animés que
+           derrière Expertises/Capacités (Home) et "Le point de départ"/
+           "Stack" (Applications métier & SaaS), composant réutilisé TEL
+           QUEL (ExpertiseDotWave.astro + expertise-dot-wave.css, déjà
+           conçu pour plusieurs hôtes, aucun nom de section codé en dur
+           côté JS). Stacking (position/isolation/z-index) ajouté ICI,
+           scopé .service-page--sites, dans services.css — le composant et
+           son CSS partagé (expertise-dot-wave.css) ne sont pas modifiés. -->
+      <ExpertiseDotWave />
       <Container>
-        <SectionHeading
-          id="sites-positioning-title"
-          eyebrow="Positionnement"
-          title="Le studio ne vend pas « 5 pages et un formulaire »."
-          intro="Il construit :"
-        />
-        <ul class="service-chips" data-motion="block">
-          {builds.map((item) => (
-            <li>{item}</li>
-          ))}
-        </ul>
+        <SectionHeading id="sites-positioning-title" eyebrow="Positionnement" title="Le studio ne vend pas « 5 pages et un formulaire ».">
+          <Fragment slot="intro">Chaque <strong class="sites-editorial-highlight">entreprise</strong> a son histoire, ses <strong class="sites-editorial-highlight">objectifs</strong> et ses <strong class="sites-editorial-highlight">besoins</strong>. Où en êtes-vous aujourd'hui ?</Fragment>
+        </SectionHeading>
+        <PositioningSituations situations={situations} />
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="sites-triptych-title">
+    <section class="service-page__section sites-triptych-section" aria-labelledby="sites-triptych-title">
       <Container>
-        <SectionHeading id="sites-triptych-title" eyebrow="3 objectifs" title="Être trouvé, être compris, être contacté." />
-        <div class="service-triptych">
-          {triptych.map((col) => (
-            <div class="service-triptych__item" data-motion="block">
-              <span class="service-triptych__index">{col.index}</span>
-              <h3>{col.title}</h3>
-              <ul>
-                {col.items.map((item) => (
-                  <li>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <p class="service-architecture__note">
+        <SectionHeading
+          id="sites-triptych-title"
+          eyebrow="3 objectifs"
+          title="Être trouvé, être compris, être contacté."
+          intro="De la première recherche jusqu'à la prise de contact, chaque étape de votre site doit faciliter la suivante."
+        />
+        <ClientJourney steps={journeySteps} />
+        <p class="service-architecture__note sites-journey-method-note">
           <ActionLink href="/methode/" variant="text">Découvrir la méthode complète</ActionLink>
         </p>
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-foundations-title">
+    <section class="service-page__section service-page__section--soft sites-foundations-section" aria-labelledby="sites-foundations-title">
+      <!-- Micro-sprint "DotWave local" — voir commentaire section
+           "Positionnement" plus haut, même principe exact. -->
+      <ExpertiseDotWave />
       <Container>
-        <SectionHeading id="sites-foundations-title" eyebrow="Fondations" title="4 fondations, sur chaque projet." />
-        <div class="service-foundations">
-          {foundations.map((item) => (
-            <div class="service-foundations__item" data-motion="block">
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
+        <SectionHeading
+          id="sites-foundations-title"
+          eyebrow="Fondations"
+          title="4 fondations, sur chaque projet."
+          intro="Un bon site doit être facile à trouver, rapide, agréable sur tous les écrans et simple à utiliser."
+        />
+        <div class="foundations-grid" data-motion="block">
+          {foundationCards.map((card) => (
+            <div class="foundations-card">
+              {card.icon === "search" && (
+                <svg class="foundations-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              )}
+              {card.icon === "bolt" && (
+                <svg class="foundations-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              )}
+              {card.icon === "responsive" && (
+                <svg class="foundations-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="4" width="14" height="10" rx="1.2" />
+                  <rect x="13" y="10" width="8" height="12" rx="1.5" />
+                </svg>
+              )}
+              {card.icon === "accessibility" && (
+                <svg class="foundations-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="5" r="1.75" />
+                  <path d="M12 9v6" />
+                  <path d="M8 11h8" />
+                  <path d="M9 20l3-5 3 5" />
+                </svg>
+              )}
+              <h3 class="foundations-card__title">{card.title}</h3>
+              <p class="foundations-card__text">{card.text}</p>
+              <p class="foundations-card__technical">{card.technical}</p>
             </div>
           ))}
         </div>
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="sites-proofs-title">
+    <section class="service-page__section sites-proofs-section" aria-labelledby="sites-proofs-title">
       <Container>
         <SectionHeading id="sites-proofs-title" eyebrow="Preuves" title="Une maquette de refonte, pensée comme un vrai projet." />
         <div class="related-case-study-pair">
@@ -185,7 +457,10 @@ const foundations = [
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-tech-title">
+    <section class="service-page__section service-page__section--soft sites-tech-section" aria-labelledby="sites-tech-title">
+      <!-- Micro-sprint "DotWave local" — voir commentaire section
+           "Positionnement" plus haut, même principe exact. -->
+      <ExpertiseDotWave />
       <Container>
         <SectionHeading id="sites-tech-title" eyebrow="Choix technique" title="La technologie dépend du site." />
         <div class="service-tech-choice" data-motion="block">
@@ -210,7 +485,7 @@ const foundations = [
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="sites-honesty-title">
+    <section class="service-page__section sites-honesty-section" aria-labelledby="sites-honesty-title">
       <Container>
         <SectionHeading id="sites-honesty-title" eyebrow="SEO honnête" title="Une base solide, pas une promesse de classement." />
         <div class="service-honesty" data-motion="block">
@@ -248,7 +523,14 @@ const foundations = [
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="sites-cta-title">
+    <section class="service-page__section service-page__section--soft sites-final-cta-section" aria-labelledby="sites-cta-title">
+      <!-- Micro-sprint "DotWave local" — voir commentaire section
+           "Positionnement" plus haut, même principe exact. Points en
+           décoration de fond de la SECTION, derrière la carte CTA
+           (`.service-cta`, opaque) : jamais par-dessus son texte/boutons,
+           jamais dans le footer (ce composant n'est monté que dans cette
+           section). -->
+      <ExpertiseDotWave />
       <Container>
         <ServiceCta
           headingId="sites-cta-title"

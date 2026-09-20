@@ -258,6 +258,29 @@ html .service-page--apps .section-heading__eyebrow {
   background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
 }
 
+/* Micro-sprint "Positionnement interactif + CTA transparence"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_POSITIONNEMENT_INTERACTIF_CTA §6) — alpha
+   ACTUEL relevé avant modification (audit) : `/sites-professionnels/`
+   n'avait AUCUNE surcharge scopée pour `.service-cta` avant ce sprint —
+   seule la règle de base ci-dessus s'appliquait
+   (`background: var(--color-surface-elevated)`, sans color-mix/alpha,
+   donc 100% opaque). Cible demandée : -20 points de pourcentage, soit
+   100% -> 80% (jamais une multiplication de l'alpha existant). MÊME
+   technique que ci-dessus (`color-mix()` sur le BACKGROUND uniquement,
+   jamais `opacity` sur `.service-cta` — texte/boutons/bordure/focus
+   restent à opacité pleine) et MÊME valeur numérique (80%) que la
+   surcharge Applications, simple coïncidence : les 2 pages partent d'un
+   alpha de départ différent (90% côté Applications avant ce point, 100%
+   ici) et convergent sur ce nombre après leurs -10/-20 points respectifs.
+   Scopée `.service-page--sites` (2 classes > 1, gagne sans ambiguïté sur
+   la règle de base, jamais sur la règle Applications qui ne peut de toute
+   façon pas matcher sur cette page). Le DotWave (ExpertiseDotWave,
+   INCHANGÉ) reste donc perceptible derrière la carte, comme avant ce
+   sprint mais plus nettement. */
+.service-page--sites .service-cta {
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+}
+
 .service-cta__eyebrow {
   display: block;
   font-size: 0.8125rem;
@@ -898,81 +921,739 @@ html .service-page--apps .section-heading__eyebrow {
   cursor: grabbing;
 }
 
-.service-page--sites .service-triptych {
+/* Micro-sprint "Positionnement interactif + CTA transparence"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_POSITIONNEMENT_INTERACTIF_CTA) — remplace
+   `.service-chips` (grille statique de 8 cases, RESTE utilisée telle
+   quelle par /developpement-sur-mesure/ : non modifiée, non retirée) par
+   un sélecteur de 6 situations (PositioningSituations.astro). Reprend LES
+   MÊMES TOKENS/RÈGLES visuelles que `.service-poc-card` déjà validées sur
+   /applications-metier-saas/ (surface-elevated + bordure forte + radius-lg
+   + hover lift/glow Ember identique, transition/reduced-motion identiques)
+   — aucun deuxième langage visuel inventé, cette page n'est jamais scopée
+   `.service-page--apps` donc aucun conflit possible avec la règle
+   d'origine, qui reste intouchée.
+
+   Mécanisme (voir PositioningSituations.astro pour le détail) : un groupe
+   de boutons radio NATIFS pilote, en CSS PUR (`:checked ~ .panel`), quel
+   panneau s'affiche — aucun JavaScript. `.sites-situations__item` est le
+   SEUL wrapper commun aux 2 présentations :
+   - MOBILE (par défaut, aucune règle ci-dessous) : flux naturel, chaque
+     panneau suit directement SA propre carte — accordéon, prompt §4 ;
+   - DESKTOP (>=900px, cf. media query plus bas) : `display:contents` sur
+     l'item laisse le radio caché (position:absolute, exclu de
+     l'auto-placement Grid, cf. spec CSS Grid) hors flux, la carte
+     s'AUTO-PLACE dans les 2 colonnes de gauche (aucune règle par carte
+     nécessaire) tandis que le panneau reçoit un placement Grid EXPLICITE
+     unique (colonne 3, toutes les rangées) : les 6 panneaux visent la
+     MÊME cellule, mais 5 sont `display:none` à tout instant (retirés du
+     calcul de grille par la spec) — un seul panneau existe donc
+     réellement dans la grille à la fois, jamais de chevauchement. */
+.service-page--sites .sites-situations {
+  border: 0;
+  padding: 0;
+  margin: var(--space-lg) 0 0 0;
+  min-width: 0; /* reset du min-width UA par défaut des <fieldset> (peut empêcher un rétrécissement correct en grid/flex) */
+}
+
+.service-page--sites .sites-situations__legend {
+  padding: 0;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.service-page--sites .sites-situations__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.service-page--sites .sites-situations__item {
+  display: contents;
+}
+
+/* Radio "visually hidden" — technique standard (clip+absolute, JAMAIS
+   `display:none`) : reste dans l'arbre d'accessibilité et focusable au
+   clavier (Tab/flèches natives de groupe radio), simplement invisible —
+   c'est la <label> ci-dessous qui porte le rendu visuel de la carte. */
+.service-page--sites .sites-situations__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Carte — MÊMES tokens que `.service-page--apps .service-poc-card`
+   (surface-elevated/bordure forte/radius-lg) et MÊME formule de hover
+   (lift -5px + bordure/ombre Ember), reprises à l'identique plus bas. */
+.service-page--sites .sites-situations__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease, background-color 260ms ease;
+}
+
+.service-page--sites .sites-situations__index {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.service-page--sites .sites-situations__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Hover — IDENTIQUE à `.service-page--apps .service-poc-card:hover`
+   (mêmes valeurs rgba Ember, même durée/easing) : aucune nouvelle valeur. */
+.service-page--sites .sites-situations__card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(228, 95, 54, 0.4);
+  box-shadow: 0 18px 40px -28px rgba(228, 95, 54, 0.35);
+}
+
+/* État sélectionné — CLAIREMENT distinct du simple hover (prompt §3) :
+   bordure Ember pleine + fond légèrement teinté, PERSISTANT (jamais de
+   lift ici, le lift reste le signal du hover/de l'interaction en cours). */
+.service-page--sites .sites-situations__radio:checked + .sites-situations__card {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-elevated));
+}
+
+/* Focus clavier visible — porté par la <label> adjacente puisque le radio
+   réel est visuellement masqué (Tab/flèches natives amènent le focus sur
+   l'input, jamais sur la <label>). */
+.service-page--sites .sites-situations__radio:focus-visible + .sites-situations__card {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page--sites .sites-situations__card {
+    transition: border-color 260ms ease, box-shadow 260ms ease, background-color 260ms ease;
+  }
+
+  .service-page--sites .sites-situations__card:hover {
+    transform: none;
+  }
+}
+
+/* Panneau — masqué par défaut, révélé par le radio coché de SON PROPRE
+   item (`~` ne peut jamais atteindre le panneau d'un autre item : chacun
+   est scopé à l'intérieur de son propre `.sites-situations__item`, cf.
+   composant). Mobile : suit directement sa carte dans le flux normal
+   (accordéon, prompt §4). Changement de texte : aucune transition
+   d'opacité qui le rendrait illisible (prompt §5) — apparition immédiate,
+   pas d'animation ajoutée ici. */
+.service-page--sites .sites-situations__panel {
+  display: none;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.service-page--sites .sites-situations__radio:checked ~ .sites-situations__panel {
+  display: block;
+}
+
+.service-page--sites .sites-situations__panel-title {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.1875rem;
+}
+
+/* Micro-sprint "Positionnement mise en valeur texte" — même formule EXACTE
+   que le sur-titre "POSITIONNEMENT" de cette page (`html .service-page--sites
+   .section-heading__eyebrow`, plus bas dans ce fichier : color: var(--color-
+   accent); opacity: .8), reprise ICI à l'identique pour ces 2 libellés
+   uniquement. Un seul orange sur la page, jamais une deuxième teinte
+   inventée. `opacity` posée sur ce seul span (jamais sur `.sites-situations
+   __panel` ni sur les paragraphes/CTA/bordures), donc n'affecte que le
+   rendu de ce texte précis. */
+.service-page--sites .sites-situations__panel-label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+  margin: var(--space-sm) 0 var(--space-xs) 0;
+}
+
+/* Accent éditorial de l'INTRO de section UNIQUEMENT — MÊME formule que
+   `.service-page--apps .service-hero__lead strong` / `.home-expertise__
+   highlight` : gras + ivoire `--color-text`. Micro-finition "Positionnement"
+   (PROMPT_CLAUDE_CODE_SITES_PRO_POSITIONNEMENT_FINITION_EMPHASE) : cette
+   règle reste STRICTEMENT INCHANGÉE (consigne §1, "ne rien toucher" à
+   l'intro, y compris sa couleur/typographie) — les mots des 6 panneaux
+   utilisent désormais une classe distincte, adoucie, ci-dessous. */
+.service-page--sites .sites-editorial-highlight {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Micro-finition "Positionnement" (PROMPT_CLAUDE_CODE_SITES_PRO_
+   POSITIONNEMENT_FINITION_EMPHASE) — mots déjà sélectionnés dans les 6
+   panneaux (situation/réponse/phrase de clôture) : gras sobre (600, pas 700)
+   et couleur SEULEMENT un peu plus claire que le texte courant (`--color-
+   text-secondary`), jamais l'ivoire plein `--color-text` (jugé "trop blanc /
+   effet guirlande"). `color-mix` entre les 2 tokens de texte existants :
+   aucune nouvelle couleur inventée, pas de blanc pur, pas de surbrillance.
+   Règle locale à Positionnement, jamais un changement global de
+   `strong`/`b`. */
+.service-page--sites .sites-situations__highlight {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-text) 40%, var(--color-text-secondary));
+}
+
+.service-page--sites .sites-situations__panel-label:first-of-type {
+  margin-top: 0;
+}
+
+.service-page--sites .sites-situations__panel-text {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.service-page--sites .sites-situations__panel-hook {
+  margin: var(--space-md) 0 0 0;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.service-page--sites .sites-situations__panel-note {
+  margin: var(--space-xs) 0 var(--space-md) 0;
+  color: var(--color-text-secondary);
+}
+
+/* Desktop — grille 2 colonnes de cartes (3 rangées) + panneau unique à
+   droite (prompt §3). `display:contents` sur l'item : voir commentaire
+   plus haut pour le mécanisme exact d'auto-placement. */
+@media (min-width: 900px) {
+  .service-page--sites .sites-situations__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 1.15fr);
+    grid-template-rows: repeat(3, auto);
+    gap: var(--space-sm) var(--space-lg);
+    align-items: start;
+  }
+
+  .service-page--sites .sites-situations__card {
+    height: 100%;
+  }
+
+  .service-page--sites .sites-situations__panel {
+    grid-column: 3;
+    grid-row: 1 / -1;
+    margin-top: 0;
+  }
+}
+
+/* Micro-sprint "3 objectifs, parcours client interactif" (PROMPT_CLAUDE_
+   CODE_SITES_PRO_3_OBJECTIFS_PARCOURS_CLIENT_INTERACTIF) — remplace
+   `.service-triptych*` (grille statique 3 colonnes, retirée avec son
+   markup dans sites-professionnels.astro ; règles supprimées ici, plus
+   aucune référence dans le projet). Section DISTINCTE de Positionnement :
+   ici UN SEUL panneau va SOUS la rangée des 3 cartes (jamais à côté), un
+   fil Ember relie les 3 étapes — aucune des deux particularités n'existe
+   dans `.sites-situations*`. Cartes : MÊMES tokens/hover que `.sites-
+   situations__card` (déjà repris de `.service-poc-card`, Applications
+   métier & SaaS) — un seul langage de carte sur tout le site.
+
+   Mécanisme (voir ClientJourney.astro) : groupe radio natif, CSS pur
+   (`:checked ~ .panel`). `.client-journey__item` est le SEUL wrapper
+   commun aux 2 présentations :
+   - MOBILE (par défaut, aucune règle ci-dessous) : flux naturel, chaque
+     panneau suit directement SA propre carte — accordéon ;
+   - DESKTOP (>=900px, media query plus bas) : `display:contents` sur
+     l'item laisse le radio caché (position:absolute, exclu de l'auto-
+     placement Grid) hors flux ; la carte s'AUTO-PLACE dans la rangée de 3
+     colonnes (row 1) tandis que les 3 panneaux visent tous la MÊME
+     cellule explicite (row 2, pleine largeur) — un seul `display:block`
+     à la fois (les 2 autres `display:none`, exclus du calcul de grille
+     par la spec), jamais de chevauchement. */
+.service-page--sites .client-journey {
+  border: 0;
+  padding: 0;
+  margin: var(--space-lg) 0 0 0;
+  min-width: 0;
+}
+
+.service-page--sites .client-journey__legend {
+  /* Légende accessible, jamais affichée visuellement : l'intro de section
+     (SectionHeading) et le titre H2 portent déjà le message visible — la
+     légende ne fait que nommer le groupe pour les technologies d'assistance,
+     même technique "visually-hidden" (jamais display:none) que le radio
+     masqué ci-dessous. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.service-page--sites .client-journey__grid {
+  position: relative;
+  isolation: isolate; /* contient le z-index négatif du fil (voir plus bas) — même principe que les hôtes DotWave de cette page (position:relative + isolation:isolate). */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.service-page--sites .client-journey__item {
+  display: contents;
+}
+
+/* Fil conducteur Ember — décoratif, exclu du calcul de grille (position:
+   absolute, comme le radio masqué), z-index négatif CONTENU par
+   `isolation:isolate` sur `.client-journey__grid` (ne peut donc jamais
+   passer sous les Canvas fixed de la page, ni sous rien en dehors de ce
+   composant). Masqué sous 900px (prompt §4 : "pas de fil horizontal
+   inadapté au mobile", pas de traitement vertical ajouté ici — cartes et
+   interaction restent pleinement fonctionnelles). */
+.service-page--sites .client-journey__thread {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .service-page--sites .client-journey__thread {
+    display: block;
+    position: absolute;
+    top: 2.75rem;
+    left: 16.6%;
+    right: 16.6%;
+    height: 2px;
+    background: rgba(228, 95, 54, 0.3);
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .service-page--sites .client-journey__thread-glow {
+    position: absolute;
+    inset: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, rgba(228, 95, 54, 0.9), transparent);
+    animation: client-journey-glow 5s linear infinite;
+  }
+}
+
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  .service-page--sites .client-journey__thread-glow {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+@keyframes client-journey-glow {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+/* Radio "visually hidden" — même technique que `.sites-situations__radio`. */
+.service-page--sites .client-journey__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Carte — MÊMES tokens/hover que `.sites-situations__card` (donc que
+   `.service-poc-card`, Applications métier & SaaS) : un seul langage de
+   carte graphite sur tout le site. */
+.service-page--sites .client-journey__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  cursor: pointer;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease, background-color 260ms ease;
+}
+
+.service-page--sites .client-journey__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.service-page--sites .client-journey__index {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.service-page--sites .client-journey__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.service-page--sites .client-journey__card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(228, 95, 54, 0.4);
+  box-shadow: 0 18px 40px -28px rgba(228, 95, 54, 0.35);
+}
+
+.service-page--sites .client-journey__radio:checked + .client-journey__card {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-elevated));
+}
+
+.service-page--sites .client-journey__radio:focus-visible + .client-journey__card {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page--sites .client-journey__card {
+    transition: border-color 260ms ease, box-shadow 260ms ease, background-color 260ms ease;
+  }
+
+  .service-page--sites .client-journey__card:hover {
+    transform: none;
+  }
+}
+
+/* Panneau — masqué par défaut, révélé par le radio coché de SON PROPRE
+   item (mobile : accordéon sous sa carte ; desktop : cellule partagée
+   sous la rangée, cf. media query plus bas). */
+.service-page--sites .client-journey__panel {
+  display: none;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.service-page--sites .client-journey__radio:checked ~ .client-journey__panel {
+  display: block;
+}
+
+.service-page--sites .client-journey__panel-title {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 1.1875rem;
+}
+
+.service-page--sites .client-journey__panel-hook {
+  margin: 0 0 var(--space-sm) 0;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.service-page--sites .client-journey__panel-text {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--color-text-secondary);
+}
+
+.service-page--sites .client-journey__benefits {
+  list-style: none;
+  margin: 0 0 var(--space-md) 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.service-page--sites .client-journey__benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.service-page--sites .client-journey__check {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.1875rem;
+  color: var(--color-accent);
+}
+
+.service-page--sites .client-journey__benefit-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.service-page--sites .client-journey__benefit-title {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.service-page--sites .client-journey__benefit-text {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* Bandeau "compétences mobilisées" — discret/secondaire (prompt §8 :
+   "éléments techniques seulement dans le bandeau secondaire du panneau"),
+   même registre que `.service-tech-choice__col ul` (petit, muted). */
+.service-page--sites .client-journey__skills {
+  margin: 0;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.service-page--sites .client-journey__skills-label {
+  display: block;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 900px) {
+  .service-page--sites .client-journey__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    gap: var(--space-md);
+  }
+
+  .service-page--sites .client-journey__card {
+    height: 100%;
+  }
+
+  .service-page--sites .client-journey__panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 0;
+  }
+}
+
+/* Lien "Découvrir la méthode complète" — centré sous TOUT le dispositif
+   (3 cartes + panneau), pas sous la seule première colonne. Override
+   LOCAL à cette section uniquement (`.sites-journey-method-note`, posée
+   en plus de la classe partagée `.service-architecture__note` sur le même
+   <p>) : la règle partagée elle-même n'est pas modifiée, donc aucun effet
+   sur les paragraphes "Preuves"/"Choix technique" de cette même page. */
+.service-page--sites .sites-journey-method-note {
+  max-width: none;
+  text-align: center;
+  margin-inline: auto;
+}
+
+/* Micro-sprint "Fondations, reprise compacte" (PROMPT_CLAUDE_CODE_SITES_PRO_
+   FONDATIONS_REPRISE_COMPACTE) — remplace la démonstration interactive
+   rejetée (`.foundations-demo__*`, groupe radio + fenêtre fictive + panneau
+   dynamique, supprimée avec son composant `FoundationsDemo.astro` : plus
+   aucune référence dans le projet) par une grille STATIQUE de 4 cartes,
+   sans aucun JS/interaction pilotée. Cartes : MÊMES tokens/hover que
+   `.service-page--apps .service-poc-card` (Applications métier & SaaS,
+   "Le point de départ", lu en référence, NON modifié) — surface-elevated,
+   bordure forte, radius-lg, hover lift -5px + bordure/ombre Ember,
+   transition 260ms, reduced-motion neutralise le lift. Cartes purement
+   informatives : ni `cursor:pointer`, ni attribut interactif, ni
+   changement de contenu au clic — seul un hover décoratif est prévu. */
+.service-page--sites .foundations-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-md);
   margin-top: var(--space-lg);
 }
 
-@media (min-width: 900px) {
-  .service-page--sites .service-triptych {
-    grid-template-columns: repeat(3, 1fr);
+@media (min-width: 640px) {
+  .service-page--sites .foundations-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.service-page--sites .service-triptych__item {
-  border-top: 2px solid var(--color-accent-deep);
-  padding-top: var(--space-sm);
+@media (min-width: 1200px) {
+  .service-page--sites .foundations-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-.service-page--sites .service-triptych__index {
-  display: block;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-xs);
+.service-page--sites .foundations-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
 }
 
-.service-page--sites .service-triptych__item h3 {
-  font-size: 1.1875rem;
-  margin: 0 0 var(--space-xs) 0;
-}
-
-.service-page--sites .service-triptych__item ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.9375rem;
-  color: var(--color-text-secondary);
-}
-
-.service-page--sites .service-foundations {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-md);
-  margin-top: var(--space-lg);
-}
-
-.service-page--sites .service-foundations__item {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm);
-  transition: border-color 200ms ease, background-color 200ms ease;
-}
-
-.service-page--sites .service-foundations__item:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface);
-}
-
-.service-page--sites .service-foundations__item h3 {
-  font-size: 1rem;
-  margin: 0 0 var(--space-xs) 0;
-}
-
-.service-page--sites .service-foundations__item p {
-  font-size: 0.875rem;
-  margin: 0;
+.service-page--sites .foundations-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(228, 95, 54, 0.4);
+  box-shadow: 0 18px 40px -28px rgba(228, 95, 54, 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .service-page--sites .service-foundations__item {
-    transition: none;
+  .service-page--sites .foundations-card {
+    transition: border-color 260ms ease, box-shadow 260ms ease;
   }
+
+  .service-page--sites .foundations-card:hover {
+    transform: none;
+  }
+}
+
+.service-page--sites .foundations-card__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: var(--space-sm);
+  color: var(--color-accent);
+}
+
+.service-page--sites .foundations-card__title {
+  font-size: 1.0625rem;
+  margin: 0 0 var(--space-xs) 0;
+  color: var(--color-text);
+}
+
+.service-page--sites .foundations-card__text {
+  margin: 0;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.service-page--sites .foundations-card__technical {
+  margin: var(--space-md) 0 0 0;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+/* Micro-sprint "DA orange / backgrounds / footer" (PROMPT_CLAUDE_CODE_V2_
+   SITES_PRO_DA_ORANGE_BACKGROUNDS_FOOTER) — sur-titres en Ember, MÊME
+   formule que `.home-kicker--accent`/`.section-heading__eyebrow` (home.css)
+   et `.service-page--apps .service-hero__eyebrow`/`.section-heading__eyebrow`
+   ci-dessus (color: var(--color-accent); opacity: .8), token existant
+   uniquement, aucune nouvelle variation. Scopée `.service-page--sites`.
+   `.service-cta__eyebrow` ("Un site à créer ou à repenser ?") volontairement
+   EXCLU : la liste des sur-titres demandée pour cette page ne l'inclut pas
+   (contrairement au motif Applications, qui l'inclut) — pas de sur-titre
+   sans consigne explicite. `html` devant `.section-heading__eyebrow` :
+   même piège de spécificité déjà documenté plus haut (le composant
+   SectionHeading.astro porte son propre style scopé
+   `.section-heading__eyebrow[data-astro-cid-xxx]`) — `html` fait gagner
+   cette règle de façon déterministe, sans dépendre de l'ordre de
+   compilation. */
+.service-page--sites .service-hero__eyebrow,
+html .service-page--sites .section-heading__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* Background Ember des 4 sections listées (Hero, "3 objectifs", "Preuves",
+   "SEO honnête") — MÊMES 4 formules de `radial-gradient`, dans le MÊME
+   ORDRE, que `.apps-hero-section`/`.apps-architecture-section`/
+   `.apps-cadrage-section`/`.apps-final-cta-section` (ci-dessus) : aucune
+   nouvelle valeur, aucune approximation. Toujours translucide (alpha max
+   0.14, jamais opaque) pour que `SitesPhoneScene` (Canvas fixed, z-index:-1,
+   NON MODIFIÉ) reste visible AU TRAVERS de ces sections — même mécanique
+   déjà vérifiée en navigateur sur Applications (un `background` CSS sur la
+   section ne crée aucun contexte d'empilement, ne peut donc jamais masquer
+   un descendant `position:fixed` d'un ancêtre commun). Aucune de ces 4
+   sections ne porte `.service-page__section--soft` (vérifié dans
+   sites-professionnels.astro) : pas de conflit avec un fond opaque. */
+.service-page--sites .sites-hero-section {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+.service-page--sites .sites-triptych-section {
+  background: radial-gradient(circle at 50% 20%, rgba(228, 95, 54, 0.12), rgba(228, 95, 54, 0) 65%);
+}
+
+.service-page--sites .sites-proofs-section {
+  background: radial-gradient(circle at 30% 50%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 65%);
+}
+
+.service-page--sites .sites-honesty-section {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+/* Espace vide entre le CTA final et le footer — MÊME cause et MÊME
+   correction déjà validées sur la Home (`main:has(.home-final-cta) +
+   footer { margin-top: 0; }`, home.css) et sur Applications
+   (`main:has(.apps-final-cta-section) + footer { margin-top: 0; }`,
+   ci-dessus) : `footer { margin-top: var(--space-xl) }` (règle générique,
+   global.css) s'additionne au `padding-block` déjà généreux de
+   `.service-page__section` sur la section CTA de CETTE page. `.sites-
+   final-cta-section` n'existe QUE sur cette page (posée uniquement sur la
+   section CTA de sites-professionnels.astro), donc ce sélecteur ne peut
+   matcher nulle part ailleurs : aucun effet sur Applications / Sur mesure /
+   Méthode / À propos. Le Footer (Footer.astro, global.css) n'est pas
+   touché — ni son contenu ni sa structure — seule sa marge est neutralisée
+   pour CETTE page. */
+main:has(.sites-final-cta-section) + footer {
+  margin-top: 0;
+}
+
+/* Micro-sprint "DotWave local" (PROMPT_CLAUDE_CODE_SITES_PRO_DOTWAVE_
+   QUATRE_ZONES) — réutilisation STRICTE du composant `ExpertiseDotWave`/
+   `expertise-dot-wave.css` (Home Expertises/Capacités, Applications
+   "Le point de départ"/"Stack") : ni ce composant ni sa feuille CSS
+   partagée ne sont modifiés — le stacking nécessaire (identique à celui
+   déjà appliqué là-bas : hôte en `position:relative; isolation:isolate`,
+   son `> .container` promu `z-index:1` pour peindre au-dessus du décor
+   `z-index:0`) est reproduit ICI, localement, scopé `.service-page--sites`
+   UNIQUEMENT — Home/Applications non touchées. 4 hôtes sur cette page :
+   "Positionnement", "Fondations", "Choix technique" (fond
+   `--color-bg-soft` opaque, comme les 2 hôtes déjà validés sur
+   Applications) et la section CTA finale (`.sites-final-cta-section`,
+   déjà utilisée par la règle d'espacement footer ci-dessus — le décor
+   vient se peindre derrière la carte `.service-cta`, elle-même opaque,
+   jamais par-dessus son texte/ses boutons). Aucun de ces 4 hôtes ne porte
+   de background Ember translucide (contrairement aux 4 sections du
+   micro-sprint DA précédent) : aucun risque de masquer les filaments
+   (`PageFilaments`, Canvas fixed z-index:-1, NON MODIFIÉ) ni d'être
+   masqué par eux — les deux couches restent indépendantes comme partout
+   ailleurs sur le site. */
+.service-page--sites .sites-positioning-section,
+.service-page--sites .sites-foundations-section,
+.service-page--sites .sites-tech-section,
+.service-page--sites .sites-final-cta-section {
+  position: relative;
+  isolation: isolate;
+}
+
+.service-page--sites .sites-positioning-section > .container,
+.service-page--sites .sites-foundations-section > .container,
+.service-page--sites .sites-tech-section > .container,
+.service-page--sites .sites-final-cta-section > .container {
+  position: relative;
+  z-index: 1;
 }
 
 .service-tech-choice {

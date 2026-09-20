@@ -1,0 +1,129 @@
+---
+// PositioningSituations — micro-sprint "Positionnement interactif"
+// (PROMPT_CLAUDE_CODE_SITES_PRO_POSITIONNEMENT_INTERACTIF_CTA), utilisé
+// UNIQUEMENT par /sites-professionnels/. Remplace la grille statique de 8
+// petites cases par un sélecteur de 6 situations client réelles : le
+// visiteur choisit sa situation, lit ce que le studio peut construire avec
+// lui, puis accède à Contact.
+//
+// SOURCE UNIQUE : ce composant reçoit `situations` (array) en prop —
+// alimenté par sites-professionnels.astro, jamais recopié en dur ici. Une
+// seule structure DOM (radio caché + <label> visible + panneau) génère à
+// la fois :
+// - le PANNEAU desktop (grille CSS ≥900px, cartes 2 colonnes/3 rangées à
+//   gauche, panneau unique à droite, positionnement via `display:contents`
+//   + placement Grid explicite sur le panneau uniquement — les cartes
+//   s'auto-placent dans les 2 colonnes restantes, aucune règle par carte) ;
+// - l'ACCORDÉON mobile (aucune grille : flux naturel, chaque panneau suit
+//   directement SA propre carte dans le DOM, exactement l'ordre où il doit
+//   apparaître visuellement).
+// Jamais deux contenus divergents : les deux présentations viennent du
+// MÊME balisage, seul le CSS (media query) change leur agencement visuel.
+//
+// MÉCANISME — aucun JavaScript : un vrai groupe de boutons radio natifs
+// (name partagé, un seul coché à la fois, forme la source de vérité).
+// `:checked ~ .sites-situations__panel` (CSS pur) affiche le panneau de LA
+// carte cochée, masque les 5 autres — fonctionne intégralement sans JS
+// (repli sans JavaScript = mécanisme PRINCIPAL, pas une simple dégradation :
+// la situation 01 est cochée côté serveur via l'attribut HTML `checked`,
+// donc déjà visible/accessible au premier rendu, avant toute hydratation).
+// Navigation clavier native : Tab entre dans le groupe sur l'option cochée,
+// les flèches déplacent la sélection parmi les 6 — comportement NATIF du
+// navigateur, jamais réimplémenté en JS/ARIA (évite tout risque de pattern
+// tabs/accordéon mal assemblé, prompt §5 : "pas de aria-pressed arbitraire
+// cumulée avec un accordéon contradictoire"). `<fieldset>`/`<legend>`
+// donnent au groupe son nom accessible nativement, sans rôle ARIA inventé.
+//
+// Radio visuellement masqué (technique "visually-hidden", clip+absolute,
+// AUCUN `display:none` — resterait dans l'arbre d'accessibilité et
+// focusable au clavier) ; `:focus-visible` sur le radio stylise sa <label>
+// adjacente (services.css) pour un focus clavier visible.
+import ActionLink from "../ui/ActionLink.astro";
+
+// Micro-sprint "Positionnement mise en valeur texte"
+// (PROMPT_CLAUDE_CODE_SITES_PRO_POSITIONNEMENT_MISE_EN_VALEUR_TEXTE) — les
+// paragraphes des panneaux ne sont plus des chaînes brutes mais des tableaux
+// de segments (texte normal / texte à mettre en gras), calculés côté page
+// (sites-professionnels.astro, `buildSegments`) à partir des SIX textes
+// existants, jamais retapés ici : aucune deuxième source éditoriale, aucun
+// risque de désynchronisation. Rendu en <strong> typés Astro (jamais
+// set:html/innerHTML), donc toujours échappé normalement.
+//
+// Micro-finition "Positionnement" (PROMPT_CLAUDE_CODE_SITES_PRO_
+// POSITIONNEMENT_FINITION_EMPHASE) — classe `.sites-situations__highlight`
+// (services.css), DISTINCTE de `.sites-editorial-highlight` utilisée par
+// l'intro de section (sites-professionnels.astro) : l'intro doit rester
+// STRICTEMENT inchangée (consigne du prompt), donc jamais la même règle CSS
+// que ces mots de panneaux, volontairement adoucis (gras 600, couleur à
+// peine plus claire que le texte courant).
+interface Segment {
+  text: string;
+  strong?: boolean;
+}
+
+interface Situation {
+  id: string;
+  title: string;
+  situationSegments: Segment[];
+  responseSegments: Segment[];
+  contactHook: string;
+  noteSegments: Segment[];
+}
+
+interface Props {
+  situations: Situation[];
+}
+
+const { situations } = Astro.props;
+const GROUP_NAME = "sites-situation";
+---
+
+<fieldset class="sites-situations" data-motion="block">
+  <legend class="sites-situations__legend">Choisissez la situation qui vous correspond :</legend>
+  <div class="sites-situations__grid">
+    {situations.map((item, index) => {
+      const radioId = `${GROUP_NAME}-${item.id}`;
+      const panelId = `${GROUP_NAME}-panel-${item.id}`;
+      return (
+        <div class="sites-situations__item">
+          <input
+            type="radio"
+            name={GROUP_NAME}
+            id={radioId}
+            class="sites-situations__radio"
+            checked={index === 0}
+            aria-controls={panelId}
+          />
+          <label for={radioId} class="sites-situations__card">
+            <span class="sites-situations__index" aria-hidden="true">{item.id}</span>
+            <span class="sites-situations__title">{item.title}</span>
+          </label>
+          <div class="sites-situations__panel" id={panelId} aria-labelledby={radioId}>
+            <h3 class="sites-situations__panel-title">{item.title}</h3>
+            <span class="sites-situations__panel-label">Votre situation</span>
+            <p class="sites-situations__panel-text">
+              {item.situationSegments.map((seg) =>
+                seg.strong ? <strong class="sites-situations__highlight">{seg.text}</strong> : seg.text,
+              )}
+            </p>
+            <span class="sites-situations__panel-label">Ce que nous pouvons construire ensemble</span>
+            <p class="sites-situations__panel-text">
+              {item.responseSegments.map((seg) =>
+                seg.strong ? <strong class="sites-situations__highlight">{seg.text}</strong> : seg.text,
+              )}
+            </p>
+            <p class="sites-situations__panel-hook">{item.contactHook}</p>
+            <p class="sites-situations__panel-note">
+              {item.noteSegments.map((seg) =>
+                seg.strong ? <strong class="sites-situations__highlight">{seg.text}</strong> : seg.text,
+              )}
+            </p>
+            <ActionLink href="/contact/" variant="primary" class="sites-situations__panel-cta">
+              Parler de votre projet
+            </ActionLink>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</fieldset>

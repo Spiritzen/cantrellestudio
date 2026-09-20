@@ -25,7 +25,7 @@
 // INCHANGÉ depuis la V1 — copié fidèlement du principe déjà validé de
 // PageFilaments.tsx/HeroScene.tsx (prompt §10 : "ne pas refaire
 // l'architecture, le protéger").
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useTexture } from "@react-three/drei";
@@ -57,15 +57,89 @@ const PHONE_ROTATION_Y = -Math.PI / 2 - Math.PI / 7;
 // d'ORIGINE 7.2 (jamais sur le 5.1 du sprint précédent) : objectif final
 // -40 % au total, soit 7.2 * 0.60 = 4.32 très exactement — valeur imposée
 // par le prompt ("ne pas approximer à 4.5"), conservée telle quelle.
+// V2 ANCRAGE (ce sprint) : redevient uniquement la valeur de RÉFÉRENCE/
+// repli (voir `resolvedScale` dans SitesPhoneModel) — la taille
+// réellement affichée est désormais calculée depuis la vraie place
+// disponible dans `.sites-hero-layout__phone-slot`, mais reste bornée
+// autour de cette valeur pour ne pas dégrader le rendu 1440/1024 déjà
+// validé.
 const PHONE_SCALE = 4.32;
-// Replacé plus à gauche (fraction réduite : plus proche du centre de la
-// composition, moins collé au bord droit qu'au sprint précédent) et
-// remonté (Y positif plus important) pour un meilleur équilibre vertical
-// dans le Hero. Fraction du demi-viewport (calculée depuis la caméra R3F,
-// jamais une valeur pixel figée — cohérent à 1440px et 1024px), ajustée
-// par vérification visuelle réelle (voir rapport).
+// V2 ANCRAGE (ce sprint) : ces 2 constantes ne pilotent plus la position
+// réelle du téléphone (remplacées par l'ancrage DOM → monde ci-dessous,
+// voir `PhoneSlotAnchor`/`measureSlotAnchor`) — conservées UNIQUEMENT
+// comme repli pour la ou les toutes premières frames avant que la mesure
+// du slot ne soit disponible (évite un flash à une position arbitraire).
 const PHONE_RIGHT_FRACTION = 0.4;
 const PHONE_Y_OFFSET = 0.3;
+
+// --- Ancrage responsive sur le slot DOM (V2 ANCRAGE RESPONSIVE 3D) --------
+// Cause du défaut à 2560×1440 (voir audit, rapport) : la position n'était
+// dérivée que d'une fraction arbitraire du viewport R3F plein écran
+// (`viewport.width` dépend de l'aspect ratio de la FENÊTRE, pas de la
+// largeur réelle, plafonnée par `--content-width`, du Container centré) —
+// aucun rapport avec la vraie boîte englobante de
+// `.sites-hero-layout__phone-slot`. Sur un écran large/haut, le Hero (donc
+// le slot) occupe une fraction PLUS PETITE de la hauteur de la fenêtre
+// (texte qui tient sur moins de lignes dans un Container plafonné), alors
+// que l'ancien calcul gardait la même fraction fixe indépendamment de la
+// vraie mise en page — le téléphone dérivait donc sous le slot, dans la
+// section suivante opaque.
+interface PhoneSlotAnchor {
+  /** Centre du slot, en fraction (0..1) de la largeur de la fenêtre, TEL
+   * QU'IL SERAIT à scroll=0 (voir `measureSlotAnchor` — robuste à une
+   * mesure prise pendant que la page est déjà scrollée). */
+  fracX: number;
+  /** Idem en fraction de la hauteur de la fenêtre. */
+  fracY: number;
+  /** Dimensions réelles du slot en pixels CSS — utilisées pour calculer
+   * l'échelle (place réellement disponible), jamais pour le centre. */
+  pxWidth: number;
+  pxHeight: number;
+  /** FIX "limiter au Hero" — position ABSOLUE (repère document, jamais
+   * viewport) du bord bas de `.sites-hero-section` (la vraie section Hero,
+   * pas seulement le slot), c'est-à-dire `rect.bottom + window.scrollY`.
+   * Comme pour `fracX`/`fracY`, cette valeur ne dépend PAS du scroll au
+   * moment de la mesure (le terme `+ window.scrollY` l'annule) : c'est la
+   * distance, en pixels, entre le HAUT DU DOCUMENT et le bas du Hero.
+   * Comparée à `window.scrollY` courant (lu à chaque frame, jamais
+   * remesurée), elle indique si le Hero est encore au moins partiellement
+   * visible (`scrollY < heroBottomRestPx`) : un seuil DÉRIVÉ de la vraie
+   * frontière DOM, jamais un nombre de pixels arbitraire. `Infinity` si
+   * `.sites-hero-section` est introuvable (repli sûr : ne jamais masquer
+   * le téléphone par erreur). */
+  heroBottomRestPx: number;
+}
+
+/** Mesure `.sites-hero-layout__phone-slot` (centre + taille, pour
+ * l'ancrage et l'échelle) ET `.sites-hero-section` (frontière basse, pour
+ * savoir quand le téléphone a quitté le Hero — FIX "limiter au Hero").
+ * ROBUSTE au scroll : `rect.top`/`rect.bottom` seuls suivraient le DOM
+ * vers le haut pendant qu'on défile (le Canvas est fixed — jamais voulu
+ * ici), donc on recompose la position que ces éléments AURAIENT à
+ * scroll=0 (`rect.top/bottom + window.scrollY`) avant toute conversion.
+ * Un simple appel ponctuel (resize/ResizeObserver), jamais par frame. */
+function measureSlotAnchor(slotEl: HTMLElement, heroSectionEl: HTMLElement | null): PhoneSlotAnchor | null {
+  const rect = slotEl.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  if (rect.width === 0 || rect.height === 0 || viewportWidth === 0 || viewportHeight === 0) {
+    // Slot pas encore mis en page (ex. display:none temporaire) — on
+    // ignore cette mesure plutôt que de diviser par 0 / ancrer sur du vide.
+    return null;
+  }
+  const restTop = rect.top + window.scrollY;
+  const restLeft = rect.left; // pas de scroll horizontal sur ce site
+  const heroBottomRestPx = heroSectionEl
+    ? heroSectionEl.getBoundingClientRect().bottom + window.scrollY
+    : Infinity;
+  return {
+    fracX: (restLeft + rect.width / 2) / viewportWidth,
+    fracY: (restTop + rect.height / 2) / viewportHeight,
+    pxWidth: rect.width,
+    pxHeight: rect.height,
+    heroBottomRestPx,
+  };
+}
 
 // --- Animation d'entrée + idle (storyboard imposé) ------------------------
 // Position de repos = position/rotation actuelles ci-dessus, considérées
@@ -263,9 +337,47 @@ interface PhoneInteractionBridge {
 interface SitesPhoneModelProps {
   reducedMotion: boolean;
   interactionRef: RefObject<PhoneInteractionBridge>;
+  slotAnchor: PhoneSlotAnchor | null;
 }
 
-function SitesPhoneModel({ reducedMotion, interactionRef }: SitesPhoneModelProps) {
+// Marge de sécurité appliquée à la place mesurée du slot avant de calculer
+// l'échelle d'ajustement (évite que le téléphone touche les bords du slot).
+const PHONE_FIT_MARGIN = 0.88;
+// Garde-fous autour de PHONE_SCALE (valeur validée à 1440/1024) : le calcul
+// ci-dessous dérive une échelle RÉELLE depuis la place disponible dans le
+// slot (jamais une valeur unique imposée à toutes les résolutions, prompt
+// §2), mais reste borné autour de cette référence pour rester proche du
+// rendu déjà accepté et interdire toute croissance incontrôlée en 4K/
+// ultra-wide.
+const PHONE_SCALE_MIN_RATIO = 0.75;
+const PHONE_SCALE_MAX_RATIO = 1.15;
+
+/** Boîte englobante LOCALE (espace du rig, avant `scale`) combinée de
+ * `PhoneBody` + `ScreenDisplay`, puis pivotée de `PHONE_ROTATION_Y` (seule
+ * transformation du rig qui affecte la projection écran hors animation :
+ * une rotation autour de Y mélange X/Z mais laisse Y — donc la hauteur
+ * écran — inchangée). Sert uniquement à connaître, à `scale=1`, la largeur/
+ * hauteur RÉELLES du modèle une fois orienté comme à l'écran, pour calculer
+ * l'échelle qui le fait tenir dans le slot mesuré. Calculée une seule fois
+ * au chargement du GLB (jamais par frame). */
+function computePhoneFootprint(phoneBody: THREE.Mesh, screenDisplay: THREE.Mesh) {
+  const box = new THREE.Box3();
+  [phoneBody, screenDisplay].forEach((root) => {
+    root.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry) return;
+      mesh.geometry.computeBoundingBox();
+      if (mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox);
+    });
+  });
+  if (box.isEmpty()) return null;
+  box.applyMatrix4(new THREE.Matrix4().makeRotationY(PHONE_ROTATION_Y));
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  return { width: size.x, height: size.y };
+}
+
+function SitesPhoneModel({ reducedMotion, interactionRef, slotAnchor }: SitesPhoneModelProps) {
   // `nodes` ciblés PAR NOM (jamais un index) — inchangé depuis la V1,
   // étendu au 3e node.
   const { nodes } = useGLTF(phoneGlbUrl) as unknown as {
@@ -274,10 +386,36 @@ function SitesPhoneModel({ reducedMotion, interactionRef }: SitesPhoneModelProps
   const phoneBody = nodes.PhoneBody;
   const screenDisplay = nodes.ScreenDisplay;
 
+  // Échelle responsive — dérivée de la vraie place disponible dans le slot
+  // DOM (largeur ET hauteur, prompt §2), jamais d'une fraction fixe de
+  // l'écran. `viewport`/`size` (R3F) donnent respectivement les dimensions
+  // du plan z=0 en unités monde et la taille CSS réelle du canvas (= la
+  // fenêtre, Canvas plein écran) : leur ratio convertit des pixels CSS du
+  // slot en unités monde, DPR-neutre (`size` n'est jamais en pixels
+  // physiques contrairement à `gl.domElement`).
+  const { viewport, size } = useThree();
+  const phoneFootprint = useMemo(
+    () => (phoneBody && screenDisplay ? computePhoneFootprint(phoneBody, screenDisplay) : null),
+    [phoneBody, screenDisplay],
+  );
+  const resolvedScale = useMemo(() => {
+    if (!phoneFootprint || !slotAnchor || size.width === 0 || size.height === 0) {
+      // Repli — pas encore mesuré (première frame) ou GLB sans geometry
+      // exploitable : ancienne valeur fixe validée, jamais 0/NaN.
+      return PHONE_SCALE;
+    }
+    const worldPerPxX = viewport.width / size.width;
+    const worldPerPxY = viewport.height / size.height;
+    const availableWidth = slotAnchor.pxWidth * worldPerPxX * PHONE_FIT_MARGIN;
+    const availableHeight = slotAnchor.pxHeight * worldPerPxY * PHONE_FIT_MARGIN;
+    const fitScale = Math.min(availableWidth / phoneFootprint.width, availableHeight / phoneFootprint.height);
+    return THREE.MathUtils.clamp(fitScale, PHONE_SCALE * PHONE_SCALE_MIN_RATIO, PHONE_SCALE * PHONE_SCALE_MAX_RATIO);
+  }, [phoneFootprint, slotAnchor, viewport.width, viewport.height, size.width, size.height]);
+
   // Animation d'entrée + idle — tout vit sur CE groupe (ref), jamais sur le
-  // groupe parent qui porte la position finale [phoneX, PHONE_Y_OFFSET, 0]
-  // (SitesPhoneSceneContent, recalculée automatiquement au resize via
-  // useThree().viewport — ne doit jamais être court-circuitée par
+  // groupe parent qui porte la position finale [phoneX, phoneY, 0]
+  // (SitesPhoneSceneContent, ancrée sur le slot DOM réel et recalculée
+  // automatiquement au resize — ne doit jamais être court-circuitée par
   // l'animation). Ici, seul un décalage LOCAL (X) et la rotation Y sont
   // pilotés image par image ; au repos les deux valent respectivement 0 et
   // PHONE_ROTATION_Y, soit EXACTEMENT la position/rotation finale déjà
@@ -632,12 +770,15 @@ function SitesPhoneModel({ reducedMotion, interactionRef }: SitesPhoneModelProps
     // Props déclaratives = état de départ EXACT de l'animation (position
     // locale décalée à droite, rotation = finale - 2.25 tours) : évite
     // tout flash de la pose finale avant le premier tick de `useFrame`.
-    // `scale` reste statique (jamais animé, proportions inchangées).
+    // `scale` reste STATIQUE pendant l'animation (jamais animé par
+    // useFrame, proportions inchangées) — seule sa VALEUR est désormais
+    // `resolvedScale` (calculée depuis le slot réel) au lieu de la
+    // constante `PHONE_SCALE` fixe.
     <group
       ref={rigRef}
       position={[ENTRY_START_X_OFFSET, 0, 0]}
       rotation={[0, PHONE_ROTATION_Y - ENTRY_SPIN_RADIANS, 0]}
-      scale={PHONE_SCALE}
+      scale={resolvedScale}
     >
       {/* Corps du téléphone — INCHANGÉ. */}
       <primitive object={phoneBody} />
@@ -711,11 +852,86 @@ function SitesPhoneEnvironment() {
 interface SitesPhoneSceneContentProps {
   reducedMotion: boolean;
   interactionRef: RefObject<PhoneInteractionBridge>;
+  slotAnchor: PhoneSlotAnchor | null;
 }
 
-function SitesPhoneSceneContent({ reducedMotion, interactionRef }: SitesPhoneSceneContentProps) {
+function SitesPhoneSceneContent({ reducedMotion, interactionRef, slotAnchor }: SitesPhoneSceneContentProps) {
+  // Position de REPOS (scroll=0) du groupe téléphone — centre du slot DOM
+  // converti en unités monde au plan z=0 (profondeur réelle du rig, jamais
+  // touchée par l'entrée/l'idle : voir SitesPhoneModel). `viewport.width`/
+  // `height` (R3F) sont déjà les dimensions, en unités monde, du plan z=0
+  // pour LA caméra réellement utilisée (fov/aspect/distance) — convertir
+  // une fraction (0..1) de fenêtre en unités monde est donc `(frac - 0.5)
+  // * viewport.<axe>` (Y inversé : haut d'écran = +Y monde). Repli sur
+  // l'ancienne fraction fixe tant que le slot n'a pas encore été mesuré
+  // (une poignée de premières frames, jamais après). INCHANGÉ par le FIX
+  // "limiter au Hero" ci-dessous : cette position de repos reste la SEULE
+  // source de vérité pour scroll=0 (aucune double compensation).
   const { viewport } = useThree();
-  const phoneX = (viewport.width / 2) * PHONE_RIGHT_FRACTION;
+  const phoneX = slotAnchor ? (slotAnchor.fracX - 0.5) * viewport.width : (viewport.width / 2) * PHONE_RIGHT_FRACTION;
+  const phoneY = slotAnchor ? (0.5 - slotAnchor.fracY) * viewport.height : PHONE_Y_OFFSET;
+
+  // FIX "limiter au Hero" (PROMPT_CLAUDE_CODE_FIX_PHONE_LIMITER_AU_HERO) —
+  // cause exacte (voir rapport) : le groupe téléphone n'était positionné
+  // QU'à partir de l'ancre DE REPOS ci-dessus, jamais recalé pendant le
+  // scroll — le Canvas restant fixed, le téléphone restait donc épinglé au
+  // même point de l'ÉCRAN au lieu de sortir de cadre avec le Hero, et
+  // redevenait visible dès qu'une section suivante au fond translucide
+  // (Ember, micro-sprint DA) repassait à cet endroit de l'écran.
+  //
+  // Couche INDÉPENDANTE de l'entrée/idle/drag (SitesPhoneModel, rig
+  // interne NON touché ici) : seul CE groupe extérieur (position globale)
+  // reçoit, en plus de la position de repos, une translation verticale
+  // égale au déplacement RÉEL du Hero à l'écran pendant le scroll — le
+  // téléphone quitte donc le cadre avec sa section, comme un élément qui
+  // lui appartiendrait visuellement, sans que le rig d'animation ne le
+  // sache ni n'y participe.
+  const outerGroupRef = useRef<THREE.Group>(null);
+  const { invalidate } = useThree();
+
+  // `frameloop` peut valoir "demand" (reduced-motion ou onglet masqué,
+  // voir SitesPhoneScene ci-dessous) : un `useFrame` ne s'exécute alors
+  // QUE si une frame est explicitement replanifiée. Un `scroll` DOM ne
+  // déclenche pas cela tout seul (R3F ne l'observe pas par défaut) — sans
+  // cet appel, le téléphone resterait figé pendant qu'on défile sous ce
+  // mode, reproduisant exactement le bug pour les utilisateurs reduced-
+  // motion. `invalidate()` seul (jamais de state React) : aucun re-render,
+  // conforme à "pas de recalcul React à chaque pixel de scroll".
+  useEffect(() => {
+    const onScroll = () => invalidate();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [invalidate]);
+
+  useFrame((state) => {
+    const group = outerGroupRef.current;
+    if (!group) return;
+    // Lecture événementielle simple (comme `window.scrollY` déjà lu par
+    // HeroSpheres.tsx) — jamais de state/prop React recalculée par pixel.
+    const scrollY = window.scrollY;
+    // Même conversion DPR-neutre que `resolvedScale` (SitesPhoneModel) :
+    // unités monde par pixel CSS vertical, pour CETTE caméra/ce canvas.
+    const worldPerPxY = state.viewport.height / state.size.height;
+    // Le Hero défile vers le HAUT de l'écran quand `scrollY` augmente
+    // (comportement natif du DOM) ; +Y monde = vers le HAUT de l'écran
+    // (cf. commentaire `phoneY` ci-dessus) — donc `+ scrollY * worldPerPxY`
+    // fait suivre exactement ce même déplacement au téléphone. Seule
+    // translation ajoutée : X inchangé (pas de scroll horizontal sur ce
+    // site), rotation/scale du rig interne jamais touchés (autre groupe).
+    group.position.set(phoneX, phoneY + scrollY * worldPerPxY, 0);
+    // Masquage complémentaire déterminé depuis la vraie frontière DOM du
+    // Hero (`heroBottomRestPx`, mesuré une fois au repos — voir
+    // `measureSlotAnchor`), jamais un seuil de scroll arbitraire : dès que
+    // le bord bas du Hero a défilé au-dessus du haut du viewport
+    // (`scrollY >= heroBottomRestPx`), le Hero n'est plus visible DU TOUT
+    // — le téléphone (qui lui appartient visuellement) ne doit plus
+    // l'être non plus, même derrière un fond translucide. Repli `true`
+    // (visible) tant que `slotAnchor` n'est pas encore mesuré, cohérent
+    // avec le principe déjà appliqué à `phoneX`/`phoneY`. Seul CE groupe
+    // est masqué : jamais le Canvas entier, jamais "future-horizontal-
+    // waves" (groupe frère, toujours vide pour l'instant).
+    group.visible = slotAnchor ? scrollY < slotAnchor.heroBottomRestPx : true;
+  });
 
   return (
     <>
@@ -731,9 +947,15 @@ function SitesPhoneSceneContent({ reducedMotion, interactionRef }: SitesPhoneSce
       <directionalLight position={[-3, -1, -3]} intensity={0.7} color="#A5A8AE" />
       <SitesPhoneEnvironment />
 
-      {/* Groupe téléphone — seule géométrie de ce sprint. */}
-      <group position={[phoneX, PHONE_Y_OFFSET, 0]}>
-        <SitesPhoneModel reducedMotion={reducedMotion} interactionRef={interactionRef} />
+      {/* Groupe téléphone — position/visibilité pilotées IMPÉRATIVEMENT
+          (ref + useFrame ci-dessus), plus de prop JSX `position` statique :
+          évite tout conflit entre une réaffectation déclarative (au
+          re-render, ex. resize) et la translation de scroll appliquée
+          image par image. `visible` par défaut (non précisé ici) = `true`,
+          conforme à la valeur de repli du useFrame tant que `slotAnchor`
+          n'est pas mesuré. */}
+      <group ref={outerGroupRef}>
+        <SitesPhoneModel reducedMotion={reducedMotion} interactionRef={interactionRef} slotAnchor={slotAnchor} />
       </group>
 
       {/* Emplacement réservé pour les futures vagues horizontales (prompt
@@ -749,6 +971,11 @@ export default function SitesPhoneScene() {
   // INCHANGÉ depuis la V1 (prompt §10 : "ne pas refaire l'architecture").
   const [tabVisible, setTabVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
+  // Ancrage responsive (V2 ANCRAGE) — null jusqu'à la première mesure
+  // (useLayoutEffect ci-dessous, avant le premier paint navigateur : pas
+  // de flash visible côté Canvas, qui se monte de toute façon de façon
+  // asynchrone/après Suspense GLB).
+  const [slotAnchor, setSlotAnchor] = useState<PhoneSlotAnchor | null>(null);
 
   // Pont d'interaction (drag souris) — objet muté directement, jamais de
   // state React dessus (même principe que `pointerRef` dans HeroScene.tsx,
@@ -767,6 +994,57 @@ export default function SitesPhoneScene() {
     const onMotionChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
     motionQuery.addEventListener("change", onMotionChange);
     return () => motionQuery.removeEventListener("change", onMotionChange);
+  }, []);
+
+  // Mesure de l'ancrage — séparée de l'effet d'interaction ci-dessous
+  // (autre préoccupation, autre cycle de vie) même s'il cible le même
+  // élément DOM. `useLayoutEffect` : mesure avant le premier paint, pas de
+  // flash à la position de repli. Se déclenche sur resize/ResizeObserver
+  // UNIQUEMENT — jamais sur scroll (voir `measureSlotAnchor` : le Canvas
+  // doit rester fixed pendant le scroll, prompt §3, donc l'ancrage ne doit
+  // JAMAIS être recalculé pendant un scroll sous peine de faire suivre le
+  // téléphone vers le haut comme le DOM). Les 2 événements (resize fenêtre
+  // + ResizeObserver du slot) sont coalescés dans une seule frame via
+  // requestAnimationFrame pour ne jamais forcer 2 reflows consécutifs.
+  useLayoutEffect(() => {
+    const slot = document.querySelector<HTMLElement>(".sites-hero-layout__phone-slot");
+    if (!slot) return;
+    // FIX "limiter au Hero" — vraie section Hero (pas seulement le slot),
+    // posée par le micro-sprint DA (`sites-professionnels.astro`) : sert
+    // uniquement à mesurer SA frontière basse (`heroBottomRestPx`, voir
+    // `measureSlotAnchor`). `null` accepté (repli `Infinity`, jamais
+    // masquer par erreur) si cette classe venait à disparaître.
+    const heroSection = document.querySelector<HTMLElement>(".sites-hero-section");
+
+    let pendingFrame = 0;
+    const measure = () => {
+      pendingFrame = 0;
+      const anchor = measureSlotAnchor(slot, heroSection);
+      if (anchor) setSlotAnchor(anchor);
+    };
+    const scheduleMeasure = () => {
+      if (pendingFrame) return;
+      pendingFrame = requestAnimationFrame(measure);
+    };
+
+    measure();
+
+    const resizeObserver = new ResizeObserver(scheduleMeasure);
+    resizeObserver.observe(slot);
+    // La frontière basse du Hero peut changer indépendamment de la taille
+    // du slot (ex. la colonne de texte change de nombre de lignes sans que
+    // le slot lui-même ne soit redimensionné) — observée séparément,
+    // toujours coalescée dans le même `scheduleMeasure`.
+    if (heroSection) resizeObserver.observe(heroSection);
+    window.addEventListener("resize", scheduleMeasure);
+    window.addEventListener("orientationchange", scheduleMeasure);
+
+    return () => {
+      if (pendingFrame) cancelAnimationFrame(pendingFrame);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", scheduleMeasure);
+      window.removeEventListener("orientationchange", scheduleMeasure);
+    };
   }, []);
 
   useEffect(() => {
@@ -876,7 +1154,7 @@ export default function SitesPhoneScene() {
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         camera={{ fov: 34, position: [0, 0, 7] }}
       >
-        <SitesPhoneSceneContent reducedMotion={reducedMotion} interactionRef={interactionRef} />
+        <SitesPhoneSceneContent reducedMotion={reducedMotion} interactionRef={interactionRef} slotAnchor={slotAnchor} />
       </Canvas>
     </div>
   );

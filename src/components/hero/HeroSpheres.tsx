@@ -35,7 +35,7 @@
 // aucun listener de scroll séparé à synchroniser avec Canvas — la lecture
 // directe dans useFrame est plus simple et se fige naturellement dès que
 // le frameloop passe en "demand", cf. HeroScene.tsx).
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
@@ -50,6 +50,7 @@ import HeroEnvironmentImage from "./HeroEnvironmentImage";
 // sphère (PROMPT_CLAUDE_CODE_TEST_BALL_GLB_HERO.txt / HeroBallGlb.tsx,
 // désormais superflu).
 import { useHeroBallModel } from "./useHeroBallModel";
+import type { HeroSphereAnchor } from "./HeroScene";
 
 interface HeroSpheresProps {
   /** prefers-reduced-motion actif : pose stable/apaisée (voir §14 CS-S6B). */
@@ -57,6 +58,11 @@ interface HeroSpheresProps {
   /** Pointeur "souris fine" détecté (desktop) : autorise l'influence pointeur. */
   pointerEnabled: boolean;
   pointerRef: React.RefObject<{ x: number; y: number }>;
+  /** V2 ANCRAGE RESPONSIVE 3D ÉTAPE 2 — ancre mesurée sur `.home-hero__stage`
+   * (voir HeroScene.tsx) : centre réel de la colonne droite du Hero, plus
+   * la hauteur du header. `null` tant que la première mesure n'est pas
+   * encore disponible (repli sur `RIGHT_FRACTION`, voir plus bas). */
+  heroAnchor: HeroSphereAnchor | null;
 }
 
 // Palette — reflets ivoire, accent Ember ponctuel via la lumière plutôt
@@ -71,6 +77,13 @@ const EMBER = "#E45F36";
 const NEUTRAL_SECONDARY = "#A5A8AE";
 
 // --- Rig (translation globale droite -> centre au scroll, CS-S6B/C, INCHANGÉ) -
+// V2 ANCRAGE RESPONSIVE 3D ÉTAPE 2 — `RIGHT_FRACTION` (fraction arbitraire
+// du viewport R3F plein écran, sans lien avec la vraie zone DOM
+// `.home-hero__stage`) ne pilote plus le positionnement réel : conservée
+// UNIQUEMENT comme repli tant que `heroAnchor` (mesuré dans HeroScene.tsx,
+// même principe que l'ancrage du téléphone sur /sites-professionnels/)
+// n'est pas encore disponible. RIG_LAMBDA/FILAMENTS_LAMBDA (amortissement)
+// INCHANGÉS.
 const RIGHT_FRACTION = 0.27;
 const RIG_LAMBDA = 3.2;
 const FILAMENTS_LAMBDA = 2.0;
@@ -218,7 +231,7 @@ function orbitOffset(radius: number, angle: number, tiltAxis: THREE.Vector3, til
   return out;
 }
 
-export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef }: HeroSpheresProps) {
+export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef, heroAnchor }: HeroSpheresProps) {
   const rigRef = useRef<THREE.Group>(null);
   const filamentsRigRef = useRef<THREE.Group>(null);
   const largeMeshRef = useRef<THREE.Mesh>(null);
@@ -248,6 +261,30 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
   const lastScrollY = useRef(0);
   const heroHeight = useRef(600);
   const measured = useRef(false);
+
+  // Micro-sprint "sphères prêtes avant affichage" — le rig des 3 sphères
+  // (JSX plus bas, `visible={revealed}`) reste caché jusqu'à ce que TOUTES
+  // les conditions réelles soient réunies : environnement HDR assigné
+  // (`envReady`, signalé par HeroEnvironmentImage — jamais un délai fixe)
+  // ET ancrage DOM mesuré (`heroAnchor !== null`, prop). La géométrie/le
+  // matériau du GLB sont déjà garantis prêts par construction : le corps de
+  // ce composant ne s'exécute pas tant que le Suspense de `useHeroBallModel`
+  // (via `useGLTF`) n'a pas résolu (vérifié par audit — aucune condition
+  // supplémentaire à ajouter pour ça). `revealed` (state, pas seulement une
+  // ref) est nécessaire pour que la prop JSX `visible` reflète le
+  // basculement de façon stable : elle ne bascule qu'UNE FOIS, jamais
+  // reréinitialisée par un futur re-render (ex. resize -> nouvel
+  // `heroAnchor`) — exactement le "verrou de premier affichage" demandé
+  // (prompt §4), jamais une ré-occultation au resize.
+  const envReady = useRef(false);
+  const revealedRef = useRef(false);
+  const [revealed, setRevealed] = useState(false);
+  // Référence STABLE (deps `[]`) : voir HeroEnvironmentImage.tsx — une
+  // closure recréée à chaque rendu relancerait son effet de chargement
+  // (téléchargement + bake PMREM en double).
+  const handleEnvironmentReady = useCallback(() => {
+    envReady.current = true;
+  }, []);
 
   // PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — geometry
   // + material extraits UNE SEULE FOIS de BALL.glb (cache useGLTF, un seul
@@ -317,14 +354,54 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     // Progression 0 (haut de page, ancrage droite) -> 1 (scène recentrée,
     // devenue fond permanent) sur la hauteur réelle du Hero. INCHANGÉ.
     const progress = THREE.MathUtils.clamp(scrollY / Math.max(heroHeight.current, 1), 0, 1);
-    const rightOffset = state.viewport.width * RIGHT_FRACTION;
-    const targetX = THREE.MathUtils.lerp(rightOffset, 0, progress);
+
+    // V2 ANCRAGE RESPONSIVE 3D ÉTAPE 2 — position HORIZONTALE de repos
+    // (progress=0, haut du Hero) dérivée du centre RÉEL de
+    // `.home-hero__stage` (mesuré dans HeroScene.tsx), jamais d'une
+    // fraction arbitraire du viewport plein écran (`RIGHT_FRACTION`, repli
+    // UNIQUEMENT tant que `heroAnchor` n'est pas encore mesuré). Cause
+    // exacte corrigée ici (voir rapport pour la démonstration complète) :
+    // `RIGHT_FRACTION * viewport.width` ignorait que `.container` est
+    // plafonné (`--content-width`, global.css) — sur un écran large, le
+    // stage réel (donc le texte auquel il doit rester visuellement
+    // rattaché) n'avance plus au-delà de ce plafond, alors que l'ancienne
+    // fraction, purement proportionnelle à la largeur de la FENÊTRE,
+    // continuait de grandir : la composition dérivait loin du texte plafonné.
+    // Vertical (Y) : DÉLIBÉRÉMENT INCHANGÉ (`LARGE_ANCHOR.y`, plus bas dans
+    // ce fichier, reste l'unique pilote — rig.position.y reste 0 à toutes
+    // les phases de scroll, comme avant ce sprint). Audit détaillé (voir
+    // rapport) : contrairement à l'axe X, l'axe Y d'un plan à z=0 pour une
+    // caméra perspective à FOV fixe est INDÉPENDANT de la résolution/du
+    // ratio d'aspect (seule la largeur du plan visible varie avec l'aspect,
+    // sa hauteur ne dépend que du FOV/de la distance) — vérifié à la fois
+    // analytiquement et par un test de redimensionnement EN DIRECT (même
+    // session, même horloge d'orbite, comparaison 1440×900 -> 2560×1440) :
+    // à la même phase orbitale exacte, le dégagement vertical entre le
+    // header et la sphère moyenne était plus grand à 2560×1440 qu'à
+    // 1440×900, jamais l'inverse. Un ancrage Y basé sur le centre littéral
+    // du stage a été testé puis ABANDONNÉ : ce centre se trouve, par
+    // construction de la grille (`align-items:center`), sensiblement plus
+    // haut que `LARGE_ANCHOR.y` (délibérément choisi bas pour laisser de la
+    // place à l'orbite de la Terre) — le substituer aurait rapproché la
+    // composition du header au lieu de l'en éloigner, une RÉGRESSION.
+    const anchorX = heroAnchor ? (heroAnchor.fracX - 0.5) * state.viewport.width : state.viewport.width * RIGHT_FRACTION;
+    const targetX = THREE.MathUtils.lerp(anchorX, 0, progress);
     const targetZ = THREE.MathUtils.lerp(0, -1.15, progress);
     const targetScale = THREE.MathUtils.lerp(1, 0.82, progress);
     // V2 HERO 3D RÉDUCTION 20% — 0.8 en haut du Hero -> 1.0 une fois le
     // Hero défilé. À progress=1 ceci vaut exactement 1 : aucune section
     // suivante n'est affectée.
     const heroFactor = THREE.MathUtils.lerp(HERO_SIZE_FACTOR, 1, progress);
+
+    // Micro-sprint "sphères prêtes avant affichage" — conditions RÉELLES
+    // (jamais un délai fixe, prompt §2) : environnement assigné + ancrage
+    // DOM mesuré. `justRevealing` n'est vrai qu'UNE SEULE frame dans toute
+    // la vie du composant (`revealedRef` latché juste après) : c'est le
+    // moment précis où le rig doit être posé EXACTEMENT sur sa cible
+    // (jamais un amorti en cours de route, voir plus bas) avant de devenir
+    // visible, pour garantir zéro saut visuel à l'apparition.
+    const ready = envReady.current && heroAnchor !== null;
+    const justRevealing = ready && !revealedRef.current;
 
     if (reducedMotion) {
       // CS-S6B §14 — pose stable/apaisée, INCHANGÉ dans son principe :
@@ -361,6 +438,14 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
         smallMeshRef.current.position.copy(smallPos.current);
         smallMeshRef.current.scale.setScalar(smallBallScale * heroFactor);
       }
+      // Reveal — cette branche pose déjà TOUJOURS une position exacte
+      // (jamais d'amorti), donc aucun "snap" supplémentaire n'est requis
+      // ici : la pose ci-dessus est déjà, par construction, la bonne pose
+      // pour le scroll/l'ancrage courants.
+      if (justRevealing) {
+        revealedRef.current = true;
+        setRevealed(true);
+      }
       return;
     }
 
@@ -372,10 +457,23 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
     const energyLambda = targetEnergy > energy.current ? ENERGY_ATTACK_LAMBDA : ENERGY_RELEASE_LAMBDA;
     energy.current = THREE.MathUtils.damp(energy.current, targetEnergy, energyLambda, delta);
 
-    // --- Rig sphères : translation + retrait + échelle, amorti (INCHANGÉ) -
-    rigX.current = THREE.MathUtils.damp(rigX.current, targetX, RIG_LAMBDA, delta);
-    rigZ.current = THREE.MathUtils.damp(rigZ.current, targetZ, RIG_LAMBDA, delta);
-    rigScale.current = THREE.MathUtils.damp(rigScale.current, targetScale, RIG_LAMBDA, delta);
+    // --- Rig sphères : translation + retrait + échelle, amorti (mécanique
+    // de damping continue INCHANGÉE). SEULE nouveauté (micro-sprint
+    // "sphères prêtes avant affichage") : sur l'unique frame où la
+    // composition devient visible (`justRevealing`), poser directement la
+    // cible SANS amorti — sinon la toute première frame visible montrerait
+    // le rig encore "en chemin" depuis sa valeur initiale (0/0/1), soit
+    // exactement le déplacement provisoire refusé par Sébastien. Toutes
+    // les frames suivantes reprennent l'amorti normal, à l'identique.
+    if (justRevealing) {
+      rigX.current = targetX;
+      rigZ.current = targetZ;
+      rigScale.current = targetScale;
+    } else {
+      rigX.current = THREE.MathUtils.damp(rigX.current, targetX, RIG_LAMBDA, delta);
+      rigZ.current = THREE.MathUtils.damp(rigZ.current, targetZ, RIG_LAMBDA, delta);
+      rigScale.current = THREE.MathUtils.damp(rigScale.current, targetScale, RIG_LAMBDA, delta);
+    }
     rig.position.x = rigX.current;
     rig.position.z = rigZ.current;
     rig.scale.setScalar(rigScale.current);
@@ -465,6 +563,17 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
       smallMeshRef.current.position.copy(smallPos.current);
       smallMeshRef.current.scale.setScalar(smallBallScale * heroFactor);
     }
+
+    // Reveal — déclenché ICI, après que le rig ET les 3 sphères ont déjà
+    // reçu leur pose correcte pour cette frame (snap ci-dessus + positions
+    // orbitales toujours exactes) : la première frame réellement peinte
+    // avec `revealed=true` est donc déjà la bonne, jamais une frame
+    // intermédiaire. Un seul flag pour tout le rig (prompt §3 : "ne pas
+    // révéler séparément" les 3 sphères dans des états incohérents).
+    if (justRevealing) {
+      revealedRef.current = true;
+      setRevealed(true);
+    }
   });
 
   return (
@@ -492,7 +601,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
         <Lightformer form="rect" color={IVORY} intensity={0.9} position={[0, -3.4, -2]} scale={[4, 2, 1]} />
       </Environment>
       */}
-      <HeroEnvironmentImage />
+      <HeroEnvironmentImage onReady={handleEnvironmentReady} />
 
       {/* Filaments — géométrie générée ci-dessus (biais horizontal) ;
           rendu (couleur/opacité alternée, rig, mouvement) INCHANGÉ. */}
@@ -513,8 +622,16 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef 
       {/* Rig des sphères — hiérarchie orbitale CS-S6D : grosse (centre),
           moyenne (orbite la grosse), petite (orbite la moyenne). Positions
           initiales JSX = ancrage/orbite à l'angle de phase de départ,
-          pour éviter tout flash de position avant le premier useFrame. */}
-      <group ref={rigRef}>
+          pour éviter tout flash de position avant le premier useFrame.
+          Micro-sprint "sphères prêtes avant affichage" — `visible={revealed}`
+          (state, jamais une ref seule ici : la prop JSX doit refléter le
+          basculement de façon stable, immunisée contre un futur re-render
+          dû à un nouvel `heroAnchor` au resize, prompt §4 "pas une animation
+          de rechargement à chaque resize") masque TOUT le rig (donc les 3
+          sphères ensemble, jamais séparément) tant que l'environnement HDR
+          et l'ancrage DOM ne sont pas prêts. Les filaments (`filamentsRigRef`
+          ci-dessus) restent NON concernés, toujours visibles. */}
+      <group ref={rigRef} visible={revealed}>
         {/* PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — les
             3 sphères procédurales (<sphereGeometry> + sphereMaterial,
             commentées ci-dessous chacune, jamais supprimées) sont
