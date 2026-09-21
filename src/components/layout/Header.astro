@@ -317,10 +317,26 @@ const isServiceActive = services.some((item) => currentPath.startsWith(item.href
     color: var(--color-accent);
   }
 
+  /* Micro-sprint correctif "Header / menu mobile" (PROMPT_CLAUDE_CODE_
+     CORRECTIF_HEADER_MENU_MOBILE_POST_AUDIT, cause #1 démontrée par
+     l'audit) — `.site-header__inner` a `grid-template-columns: auto 1fr
+     auto`, mais sous 1100px `.site-header__nav` (2ᵉ enfant du DOM) passe
+     en `display:none` : un élément `display:none` est totalement exclu
+     du placement automatique de la grille CSS, pas seulement invisible —
+     les 2 enfants restants (`.site-header__brand`, `.site-header__actions`)
+     se plaçaient donc automatiquement dans les colonnes 1 et 2 (jamais 1
+     et 3), collant le hamburger près du logo au lieu du bord droit
+     (mesuré : `gridTemplateColumns` résolvait à "152px 56px 0px", 3ᵉ
+     colonne vide). `grid-column: 3` fixe la position explicitement, quel
+     que soit l'état d'affichage de la nav. Aucun effet à ≥1100px : la nav
+     y est réellement affichée, `.site-header__actions` y atterrissait
+     déjà naturellement en 3ᵉ colonne — pas besoin de scoper cette règle à
+     un breakpoint. */
   .site-header__actions {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    grid-column: 3;
   }
 
   /* CTA Header : discret, moins massif que les CTA Hero/CTA final (qui

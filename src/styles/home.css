@@ -362,26 +362,373 @@
 }
 
 /* ==========================================================================
-   D. RÉALISATIONS PHARES — grille (l'apparence de chaque carte vit dans
-   ProjectCard)
+   D. RÉALISATIONS PHARES — micro-sprint "Landing Réalisations, DA Preuves
+   Sur mesure" (PROMPT_CLAUDE_CODE_LANDING_REALISATIONS_DA_PREUVES_SUR_
+   MESURE). Transpose FIDÈLEMENT les valeurs déjà validées sur la section
+   "Preuves" de /developpement-sur-mesure/ (`.custom-proofs-*`, voir
+   services.css) : mêmes proportions, mêmes couleurs/tokens, même
+   mécanique de lightbox — implémentation ENTIÈREMENT LOCALE à cette page
+   (`.home-projects-*`, jamais partagée avec services.css), comme demandé
+   ("reproduire fidèlement... dans un composant dédié à la landing").
+   L'apparence de chaque carte vit désormais ici (composition de page),
+   `ProjectCard.astro` n'est plus utilisé par la Home après ce sprint mais
+   reste disponible ailleurs, non supprimé.
    ========================================================================== */
 
 .home-projects__grid {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.home-projects__row {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-md);
-  margin-top: var(--space-lg);
 }
 
 @media (min-width: 900px) {
-  .home-projects__grid {
-    grid-template-columns: 1.4fr 1fr;
+  .home-projects__row {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-.home-projects__secondary {
-  display: grid;
+.home-projects__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition: border-color 260ms ease, box-shadow 260ms ease, transform 260ms ease;
+}
+
+.home-projects__card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px -34px rgba(228, 95, 54, 0.24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-projects__card {
+    transition: border-color 260ms ease, box-shadow 260ms ease;
+  }
+
+  .home-projects__card:hover {
+    transform: none;
+  }
+}
+
+.home-projects__media {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-soft);
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font: inherit;
+  text-align: inherit;
+  cursor: default;
+}
+
+@media (min-width: 900px) {
+  .home-projects__media {
+    cursor: zoom-in;
+  }
+}
+
+.home-projects__media:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.home-projects__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 320ms ease;
+}
+
+@media (min-width: 900px) {
+  .home-projects__card:hover .home-projects__img {
+    transform: scale(1.035);
+  }
+
+  .home-projects__card:hover .home-projects__media {
+    box-shadow: inset 0 0 0 1px rgba(228, 95, 54, 0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-projects__img {
+    transition: none;
+  }
+
+  .home-projects__card:hover .home-projects__img {
+    transform: none;
+  }
+}
+
+.home-projects__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-md);
+}
+
+/* Catégorie en Ember atténué (~80% d'intensité visuelle), MÊME formule que
+   `.custom-proofs__label` sur "Preuves" (`color: var(--color-accent);
+   opacity: .8`), posée uniquement sur ce span (jamais sur la carte
+   entière). */
+.home-projects__category {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.home-projects__title {
+  font-size: 1.375rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.home-projects__card--secondary .home-projects__title {
+  font-size: 1.1875rem;
+}
+
+.home-projects__summary {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.home-projects__tech {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0 0 var(--space-md) 0;
+  padding: 0;
+}
+
+.home-projects__tech li {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.home-projects__link {
+  align-self: flex-start;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.2em;
+  font-weight: 600;
+}
+
+.home-projects__link:hover {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
+.home-projects__link:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Carte vedette Sereno — image à gauche / contenu à droite UNIQUEMENT
+   ≥900px, MÊMES proportions que `.custom-proofs__card--featured` ; en
+   dessous, reprend le layout colonne par défaut (image AU-DESSUS du texte),
+   comme les 2 cartes secondaires (prompt §1/§18). */
+@media (min-width: 900px) {
+  .home-projects__card--featured {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .home-projects__card--featured .home-projects__media {
+    width: 46%;
+    flex: none;
+    aspect-ratio: auto;
+    min-height: 320px;
+    border-bottom: none;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .home-projects__card--featured .home-projects__body {
+    justify-content: center;
+    padding: var(--space-lg);
+  }
+
+  .home-projects__card--featured .home-projects__title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Lightbox grand format — MÊME recette que `.custom-proofs__lightbox-*`
+   (Preuves, Sur mesure) après son correctif de gabarit : cadre à largeur/
+   hauteur EXPLICITES (jamais seulement `max-*`), IDENTIQUE pour les 3
+   projets ; image forcée `width:100%;height:100%;object-fit:contain`
+   (jamais `width:auto`) ; overlay flouté 0.7 avec repli si `backdrop-
+   filter` est indisponible ; en-tête opaque (titre + croix), jamais
+   superposée aux commandes du logiciel photographié. Implémentation
+   indépendante (classes `.home-projects__lightbox-*`), z-index au-dessus du
+   header sticky (100, global.css) et de toute scène Canvas fixed
+   (HeroScene, z-index négatif) de cette page. */
+.home-projects__lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 12, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: max(var(--space-xl), env(safe-area-inset-top)) max(var(--space-xl), env(safe-area-inset-right))
+    max(var(--space-xl), env(safe-area-inset-bottom)) max(var(--space-xl), env(safe-area-inset-left));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .home-projects__lightbox-backdrop {
+    background: rgba(10, 10, 12, 0.82);
+  }
+}
+
+.home-projects__lightbox-backdrop[hidden] {
+  display: none;
+}
+
+.home-projects__lightbox {
+  position: relative;
+  width: min(92vw, 1600px);
+  height: min(88vh, 920px);
+  max-width: 94vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: 0 50px 110px -40px rgba(0, 0, 0, 0.65);
+}
+
+@supports (height: 1dvh) {
+  .home-projects__lightbox {
+    height: min(88dvh, 920px);
+  }
+}
+
+.home-projects__lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-md);
+  flex: none;
+  margin-bottom: var(--space-sm);
+}
+
+.home-projects__lightbox-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.home-projects__lightbox-media {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.home-projects__lightbox-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.home-projects__lightbox-close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.home-projects__lightbox-close:hover,
+.home-projects__lightbox-close:focus-visible {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.home-projects__lightbox-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-projects__lightbox-backdrop:not([hidden]) {
+    animation: home-projects-lightbox-fade-in 180ms ease;
+  }
+
+  .home-projects__lightbox {
+    animation: home-projects-lightbox-in 220ms ease;
+  }
+}
+
+@keyframes home-projects-lightbox-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes home-projects-lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ==========================================================================

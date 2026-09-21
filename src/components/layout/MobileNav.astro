@@ -77,13 +77,92 @@ function isActive(href: string) {
   const toggle = document.getElementById("mobile-nav-toggle");
   const backdrop = document.getElementById("mobile-nav-backdrop");
   const panel = document.getElementById("mobile-nav-panel");
+  const header = toggle?.closest("header");
 
-  if (toggle && backdrop && panel) {
+  if (toggle && backdrop && panel && header) {
+    // Micro-sprint correctif "Header / menu mobile" (PROMPT_CLAUDE_CODE_
+    // CORRECTIF_HEADER_MENU_MOBILE_POST_AUDIT, cause #2 démontrée par
+    // l'audit) — `backdrop`/`panel` étaient des descendants DOM de
+    // `<header>`, dont `backdrop-filter` (Header.astro) crée un bloc
+    // englobant pour leurs `position:fixed` : mesuré à ~72-88px de haut
+    // au lieu du viewport entier. Portail DOM, UNE SEULE FOIS au montage
+    // (jamais dans openMenu/closeMenu — éviterait duplication/écouteurs
+    // multiples), même technique que les modales déjà validées du site
+    // (CustomStartingPoint/CustomUseCases/CustomProofs) : les références
+    // `backdrop`/`panel` restent valables après `appendChild` (déplace le
+    // nœud existant, ne le recrée pas), le CSS scopé Astro continue de
+    // s'appliquer (basé sur l'attribut `data-astro-cid-*` déjà posé sur
+    // ces éléments, pas sur leur position dans le DOM). Le bouton
+    // hamburger (`toggle`), lui, RESTE dans le Header.
+    document.body.appendChild(backdrop);
+    document.body.appendChild(panel);
+
+    // Même seuil que Header.astro/MobileNav (CSS plus bas) : jamais un
+    // état hybride où le drawer mobile resterait ouvert alors que la nav
+    // desktop est déjà visible.
+    const MOBILE_QUERY = "(max-width: 1099px)";
+    const isMobile = () => window.matchMedia(MOBILE_QUERY).matches;
+
+    // Verrouillage de scroll — cause #3 démontrée par l'audit :
+    // `document.body.style.overflow = "hidden"` n'empêchait pas un
+    // `scrollBy` programmatique (peu fiable sur iOS Safari en général).
+    // Remplacé par la technique déjà éprouvée sur les 3 modales du site :
+    // `position:fixed` + `top:-scrollY` + restauration exacte du style
+    // inline précédent et de la position de scroll.
+    let savedScrollY = 0;
+    let savedBodyStyle: string | null = null;
+    let inertedEls: HTMLElement[] = [];
+
+    function lockScroll() {
+      savedScrollY = window.scrollY;
+      savedBodyStyle = document.body.getAttribute("style");
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${savedScrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+    }
+
+    function unlockScroll() {
+      if (savedBodyStyle) {
+        document.body.setAttribute("style", savedBodyStyle);
+      } else {
+        document.body.removeAttribute("style");
+      }
+      window.scrollTo(0, savedScrollY);
+    }
+
+    // Empêche d'atteindre le contenu de page (liens du <main>, du Footer)
+    // au clavier/lecteur d'écran pendant que le drawer est ouvert — le
+    // <header> est explicitement EXCLU (le bouton hamburger doit rester
+    // utilisable pour refermer, jamais placé dans un ancêtre aria-hidden),
+    // de même que le backdrop/panel eux-mêmes (le drawer ne doit jamais
+    // s'auto-masquer).
+    function setInert() {
+      inertedEls = Array.from(document.body.children).filter(
+        (el): el is HTMLElement =>
+          el instanceof HTMLElement && el !== header && el !== backdrop && el !== panel,
+      );
+      inertedEls.forEach((el) => {
+        el.setAttribute("inert", "");
+        el.setAttribute("aria-hidden", "true");
+      });
+    }
+
+    function removeInert() {
+      inertedEls.forEach((el) => {
+        el.removeAttribute("inert");
+        el.removeAttribute("aria-hidden");
+      });
+      inertedEls = [];
+    }
+
     const openMenu = () => {
       toggle.setAttribute("aria-expanded", "true");
       panel.hidden = false;
       backdrop.hidden = false;
-      document.body.style.overflow = "hidden";
+      lockScroll();
+      setInert();
       const firstFocusable = panel.querySelector<HTMLElement>("a, button");
       firstFocusable?.focus();
       document.addEventListener("keydown", onKeydown);
@@ -94,7 +173,8 @@ function isActive(href: string) {
       toggle.setAttribute("aria-expanded", "false");
       panel.hidden = true;
       backdrop.hidden = true;
-      document.body.style.overflow = "";
+      removeInert();
+      unlockScroll();
       document.removeEventListener("keydown", onKeydown);
       if (returnFocus) toggle.focus();
     };
@@ -119,6 +199,20 @@ function isActive(href: string) {
     panel.addEventListener("click", (event) => {
       const target = event.target;
       if (target instanceof HTMLElement && target.closest("a")) {
+        // `returnFocus: false` : une navigation (changement de page) va
+        // démonter ce document — inutile et potentiellement trompeur de
+        // rendre le focus à un bouton sur le point de disparaître.
+        closeMenu({ returnFocus: false });
+      }
+    });
+
+    // Passage mobile -> desktop pendant que le menu est ouvert (rotation,
+    // redimensionnement de fenêtre) : fermeture + nettoyage complet
+    // (scroll/inert) plutôt que de laisser un drawer mobile ouvert
+    // derrière une nav desktop désormais visible. Pas de `returnFocus` :
+    // ce n'est pas une fermeture demandée par l'utilisateur sur le bouton.
+    window.addEventListener("resize", () => {
+      if (toggle.getAttribute("aria-expanded") === "true" && !isMobile()) {
         closeMenu({ returnFocus: false });
       }
     });
@@ -201,7 +295,17 @@ function isActive(href: string) {
     background: var(--color-surface);
     border-left: 1px solid var(--color-border-strong);
     z-index: 61;
-    padding: var(--space-xl) var(--space-md) var(--space-md) var(--space-md);
+    /* `top:0; bottom:0` (au lieu d'une hauteur fixe type `100vh`) suit
+       déjà nativement la hauteur RÉELLE du viewport visuel, y compris
+       quand les barres Safari iOS apparaissent/disparaissent — cette
+       partie n'a pas besoin de `dvh`. `env(safe-area-inset-*)` ajoute en
+       plus, de façon purement additive (0px de fallback sur tout appareil
+       sans encoche/Dynamic Island), la marge nécessaire pour ne jamais
+       faire passer le premier lien ou le CTA sous une zone système —
+       NON VÉRIFIÉ sur un iPhone réel (pas d'environnement iOS disponible
+       ici), à confirmer par Sébastien (voir rapport). */
+    padding: calc(var(--space-xl) + env(safe-area-inset-top, 0px)) var(--space-md)
+      calc(var(--space-md) + env(safe-area-inset-bottom, 0px)) var(--space-md);
     overflow-y: auto;
   }
 

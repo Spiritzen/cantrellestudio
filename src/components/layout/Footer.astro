@@ -21,6 +21,17 @@
 // site-wide sans toucher au Header principal (jugé déjà complet, prompt
 // §10 : "évaluer d'abord" avant d'ajouter au Header — décision : ne pas
 // l'y ajouter, voir rapport CS-S12D).
+//
+// Micro-sprint "Footer ancrage Amiens/France" (PROMPT_CLAUDE_CODE_FOOTER_
+// ANCRAGE_AMIENS_FRANCE) — intitulé du lien ci-dessus remplacé par « Basé
+// à Amiens · Projets partout en France » (implantation locale sans laisser
+// croire à une exclusivité Amiénoise). Le `href` vers /developpement-web-
+// amiens/ est CONSERVÉ tel quel : cette landing parle explicitement de ce
+// double positionnement (studio basé à Amiens, projets menés partout en
+// France — voir son Hero/eyebrow), donc le lien reste pertinent et non
+// trompeur sous le nouveau libellé. Même balise `<li><a>`, même classes
+// `.site-footer__col`, donc même style/alignement que les 4 autres liens
+// de la colonne — aucun ajustement CSS nécessaire.
 import Container from "../ui/Container.astro";
 // Micro-sprint pré-déploiement GitHub Pages — tous les liens internes
 // ci-dessous sont des <a> bruts (pas d'ActionLink) : passage explicite par
@@ -51,25 +62,37 @@ const STUDIO_PHONE_HREF = "tel:+33629464593";
         </p>
       </div>
 
-      <nav class="site-footer__col" aria-label="Services">
-        <p class="site-footer__col-title">Services</p>
-        <ul>
-          <li><a href={withBase("/applications-metier-saas/")}>Applications métier & SaaS</a></li>
-          <li><a href={withBase("/sites-professionnels/")}>Sites professionnels</a></li>
-          <li><a href={withBase("/developpement-sur-mesure/")}>Développement sur mesure</a></li>
-        </ul>
-      </nav>
+      <!-- Micro-sprint "Footer mobile compact & centré" (PROMPT_CLAUDE_CODE_
+           FOOTER_MOBILE_COMPACT_CENTRE) — wrapper ajouté UNIQUEMENT pour
+           permettre une grille 2 colonnes (Services / Studio côte à côte)
+           sous 700px, SANS toucher au rendu ≥700px : `display: contents`
+           par défaut (voir <style> plus bas) fait disparaître ce <div> du
+           calcul de grille, ses 2 enfants <nav> redeviennent alors des
+           éléments directs de `.site-footer__grid`, donc EXACTEMENT le même
+           DOM effectif pour la grille 3 colonnes desktop qu'avant ce
+           sprint. Seul le median-query mobile lui redonne un vrai
+           `display: grid`. -->
+      <div class="site-footer__nav-group">
+        <nav class="site-footer__col" aria-label="Services">
+          <p class="site-footer__col-title">Services</p>
+          <ul>
+            <li><a href={withBase("/applications-metier-saas/")}>Applications métier & SaaS</a></li>
+            <li><a href={withBase("/sites-professionnels/")}>Sites professionnels</a></li>
+            <li><a href={withBase("/developpement-sur-mesure/")}>Développement sur mesure</a></li>
+          </ul>
+        </nav>
 
-      <nav class="site-footer__col" aria-label="Studio">
-        <p class="site-footer__col-title">Studio</p>
-        <ul>
-          <li><a href={withBase("/realisations/")}>Réalisations</a></li>
-          <li><a href={withBase("/methode/")}>Méthode</a></li>
-          <li><a href={withBase("/a-propos/")}>À propos</a></li>
-          <li><a href={withBase("/contact/")}>Contact</a></li>
-          <li><a href={withBase("/developpement-web-amiens/")}>Développement web à Amiens</a></li>
-        </ul>
-      </nav>
+        <nav class="site-footer__col" aria-label="Studio">
+          <p class="site-footer__col-title">Studio</p>
+          <ul>
+            <li><a href={withBase("/realisations/")}>Réalisations</a></li>
+            <li><a href={withBase("/methode/")}>Méthode</a></li>
+            <li><a href={withBase("/a-propos/")}>À propos</a></li>
+            <li><a href={withBase("/contact/")}>Contact</a></li>
+            <li><a href={withBase("/developpement-web-amiens/")}>Basé à Amiens · Projets partout en France</a></li>
+          </ul>
+        </nav>
+      </div>
     </div>
 
     <div class="site-footer__bottom">
@@ -107,6 +130,15 @@ const STUDIO_PHONE_HREF = "tel:+33629464593";
     .site-footer__grid {
       grid-template-columns: 1.4fr 1fr 1fr;
     }
+  }
+
+  /* Micro-sprint "Footer mobile compact & centré" — `contents` par défaut :
+     ce wrapper n'existe pas pour la grille ≥700px ci-dessus (ses 2 <nav>
+     enfants sont traités comme 2 items directs de `.site-footer__grid`,
+     comportement strictement identique à avant ce sprint). Seule la
+     media query mobile plus bas lui donne un vrai `display: grid`. */
+  .site-footer__nav-group {
+    display: contents;
   }
 
   .site-footer__brand-name {
@@ -208,5 +240,85 @@ const STUDIO_PHONE_HREF = "tel:+33629464593";
 
   .site-footer__legal a:hover {
     color: var(--color-accent);
+  }
+
+  /* ==========================================================================
+     Micro-sprint "Footer mobile compact & centré" (PROMPT_CLAUDE_CODE_
+     FOOTER_MOBILE_COMPACT_CENTRE) — RIEN ci-dessus n'est modifié : toutes
+     les règles de base restent les valeurs desktop/tablette (≥700px,
+     breakpoint déjà existant de `.site-footer__grid`, réutilisé tel quel
+     plutôt qu'un nouveau seuil inventé). Ce bloc ne s'applique QUE sous
+     700px et ne touche à rien d'autre sur le site (Header, Hero, CTA,
+     PageFilaments/DotWave, téléphone 3D, modales : hors périmètre de ce
+     fichier).
+     ========================================================================== */
+  @media (max-width: 699px) {
+    /* Paddings verticaux extérieurs resserrés (identité + colonnes de nav
+       fusionnées en une seule rangée 2 colonnes ci-dessous font déjà
+       gagner la majeure partie de la hauteur ; ce resserrement réduit le
+       reste sans écraser la respiration). */
+    :global(.site-footer__inner) {
+      padding-block: var(--space-lg) var(--space-md);
+    }
+
+    /* Composition centrée dans le device (prompt §D) : le bloc identité et
+       le bloc de navigation restent empilés (grid 1 colonne héritée
+       ci-dessus), mais l'écart entre les deux est resserré et le bloc
+       identité devient un vrai bloc centré. */
+    .site-footer__grid {
+      gap: var(--space-md);
+    }
+
+    .site-footer__brand {
+      text-align: center;
+    }
+
+    .site-footer__contact {
+      margin-top: var(--space-xs);
+    }
+
+    /* Espacement tactile correct (prompt §A) sans changer le texte ni la
+       couleur : simple zone de clic élargie autour de chaque coordonnée. */
+    .site-footer__contact a {
+      display: inline-block;
+      padding-block: 0.25rem;
+    }
+
+    /* Navigation SERVICES / STUDIO : 2 colonnes équilibrées côte à côte
+       (prompt §B), au lieu de 2 listes empilées pleine largeur. Le texte
+       de chaque colonne reste aligné à gauche à l'intérieur de sa colonne
+       (priorité donnée par le prompt à la lisibilité d'intitulés comme
+       « Développement sur mesure » plutôt qu'à un centrage ligne par
+       ligne qui les rendrait plus difficiles à lire une fois coupés). */
+    .site-footer__nav-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md) var(--space-sm);
+      text-align: left;
+    }
+
+    /* Cible tactile un peu plus confortable pour chaque lien de nav, sans
+       toucher à l'espacement desktop (règle de base .site-footer__col a,
+       plus haut, non modifiée). */
+    .site-footer__col a {
+      display: inline-block;
+      padding-block: 0.1875rem;
+    }
+
+    /* Bas de footer regroupé et centré (prompt §C), copyright au-dessus
+       des liens légaux, écart extérieur nettement réduit (était 4rem). */
+    .site-footer__bottom {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-top: var(--space-lg);
+      padding-top: var(--space-sm);
+      gap: var(--space-xs);
+    }
+
+    .site-footer__legal {
+      justify-content: center;
+    }
   }
 </style>

@@ -10,52 +10,309 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Container from "../components/ui/Container.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
+// Micro-sprint "Filaments / vagues" (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_
+// FILAMENTS_VAGUES_EXISTANTES) — réutilisation STRICTE du composant
+// existant (Canvas Three.js/R3F fixed plein viewport, déjà validé sur
+// Applications métier & SaaS et Sites professionnels) : ni le composant
+// ni son montage/directive ne sont modifiés, voir plus bas.
+import PageFilaments from "../components/hero/PageFilaments";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
-import ServiceProofCard from "../components/services/ServiceProofCard.astro";
+// Micro-sprint "Point de départ interactif + footer" (PROMPT_CLAUDE_CODE_
+// DEV_SUR_MESURE_POINT_DE_DEPART_INTERACTIF_FOOTER) — remplace l'ancienne
+// liste statique `.service-chips` de la section "Point de départ" (prompt
+// §2/§3/§4, voir composant pour le mécanisme desktop/mobile).
+import CustomStartingPoint from "../components/services/CustomStartingPoint.astro";
+// Micro-sprint "Cas d'usage interactif" (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_
+// CAS_USAGE_INTERACTIF) — remplace l'ancienne liste `.service-chips` (6
+// étiquettes) + le diagramme "hub" (`.service-hub`) de la section "Cas
+// d'usage" par 4 situations client cliquables + 1 panneau explicatif (voir
+// composant pour le mécanisme desktop/mobile, indépendant de Point de
+// départ).
+import CustomUseCases from "../components/services/CustomUseCases.astro";
+// Micro-sprint "Preuves Sereno/AgencyOS/Trajet Formateur" (PROMPT_CLAUDE_
+// CODE_DEV_SUR_MESURE_PREUVES_SERENO_AGENCYOS_TRAJET_FORMATEUR) — remplace
+// `RelatedCaseStudy`×2 (Sereno/AgencyOS) + `ServiceProofCard` (GlassTrack,
+// retiré de CETTE section — toujours défini dans serviceProofs.ts, non
+// supprimé du projet) par une carte vedette (Sereno) + 2 cartes secondaires
+// (AgencyOS, Trajet Formateur).
+import CustomProofs from "../components/services/CustomProofs.astro";
+// Micro-sprint "Mode de collaboration, parcours interactif" (PROMPT_
+// CLAUDE_CODE_DEV_SUR_MESURE_MODE_COLLABORATION_PARCOURS_INTERACTIF) —
+// remplace la rangée statique `.service-process` de la section "Mode de
+// collaboration" par un parcours chronologique interactif en 5 étapes
+// (voir composant : ni la mise en page "choix gauche/panneau droite" ni la
+// modale mobile des sections précédentes ne sont réutilisées ici).
+import CustomCollaboration from "../components/services/CustomCollaboration.astro";
+// Micro-sprint "Repères, réassurance finale" (PROMPT_CLAUDE_CODE_DEV_SUR_
+// MESURE_REPERES_REASSURANCE_FINALE) — remplace le tableau technique
+// `.service-matrix` (4 lignes framework) + la FAQ de 3 questions de la
+// section "Repères" par une présentation éditoriale NON interactive de 3
+// principes (voir composant : aucun radio, aucune modale, juste un stagger
+// `data-motion="block"` délégué au chemin générique existant de
+// ServiceMotion.astro, non modifié).
+import CustomPrinciples from "../components/services/CustomPrinciples.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
-import RelatedCaseStudy from "../components/relations/RelatedCaseStudy.astro";
-import { glasstrack } from "../data/serviceProofs";
+// Micro-sprint "DotWave 3 sections" (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_
+// DOTWAVE_TROIS_SECTIONS) — réutilisation STRICTE du composant existant
+// (Home Expertises/Capacités, Applications "Le point de départ"/"Stack",
+// Sites pro "Positionnement"/"Fondations"/CTA final) : ni le composant ni
+// expertise-dot-wave.css ne sont modifiés, voir montage dans les 3
+// sections ciblées plus bas + stacking scopé `.service-page--custom` dans
+// services.css.
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
 import { projectMedia } from "../data/projectMedia";
 import { withBase } from "../utils/paths";
 import { caseStudyContent } from "../data/caseStudyContent";
-import { getProofsForService } from "../data/serviceCaseStudyMap";
+// Micro-sprint "Preuves Sereno/AgencyOS/Trajet Formateur" — capture réelle
+// fournie par Sébastien (vérifiée présente avant usage), seule image de ce
+// projet sur le site : aucun mockup généré, aucune image externe.
+import trajetPreview from "../assets/projects/trajet-formateur/trajetPreview.jpg";
 import "../styles/services.css";
 
-// CS-S10B — preuve phare AgencyOS / secondaire Sereno (choix justifié dans
-// le rapport : AgencyOS démontre le mieux la modularité et l'intégration de
-// plusieurs domaines, l'angle même de cette page). BeatStudio/MyDashServ/
-// Ink Red Plumes retirés de cette page (test anti-surcharge §36 : 3 blocs
-// promotionnels maximum une fois les 2 études de cas ajoutées) ; GlassTrack
-// conservé seul, meilleur accord thématique avec "audit de l'existant /
-// intégration" — voir rapport, section arbitrages.
-const customProofs = getProofsForService("developpement-sur-mesure");
+// Micro-sprint "Preuves Sereno/AgencyOS/Trajet Formateur" — Sereno devient
+// la preuve PHARE sur cette page (hiérarchie désormais reflétée aussi dans
+// serviceCaseStudyMap.ts, source de vérité de la relation Service↔Projet —
+// voir ce fichier pour la justification), AgencyOS repasse secondaire aux
+// côtés de Trajet Formateur (démonstrateur sans étude de cas interne, donc
+// absent de serviceCaseStudyMap.ts par design — prompt : "ne pas inventer
+// une page étude de cas Trajet Formateur"). Titre/stack lus depuis
+// caseStudyContent.ts/projectMedia.ts (sources déjà en place, jamais
+// réinventées) ; angle et texte de présentation écrits pour CETTE carte
+// précisément (le prompt fournit son propre angle, distinct de celui déjà
+// utilisé ailleurs dans serviceCaseStudyMap.ts pour la relation inverse).
+const proofsFeatured = {
+  variant: "featured" as const,
+  label: "Application métier / SaaS",
+  title: "Sereno",
+  angle: "Traduire des règles métier en un outil clair.",
+  description: [
+    "La facturation électronique ne se résume pas à un formulaire : statuts de cycle de vie, documents normés et contrôles qui doivent bloquer une émission incorrecte avant qu'elle ne parte.",
+    "Sereno traduit ces contraintes en une suite d'étapes explicites : créer, contrôler, émettre, suivre, corriger par avoir si nécessaire.",
+  ],
+  techNotes: caseStudyContent.sereno.stackShort,
+  image: projectMedia.sereno.primary,
+  imageAlt: projectMedia.sereno.primaryAlt,
+  ctaLabel: "Voir l'étude de cas Sereno",
+  ctaHref: "/realisations/sereno/",
+};
 
-const useCases = [
-  "Connecter une API",
-  "Créer une API",
-  "Automatiser un workflow",
-  "Moderniser un existant",
-  "Créer un outil interne",
-  "Construire une expérience web spécifique",
+const proofsSecondary = [
+  {
+    variant: "secondary" as const,
+    label: "Application métier / SaaS",
+    title: "AgencyOS",
+    angle: "Réunir plusieurs activités dans un même outil.",
+    description: [
+      "Une agence ou une structure de services jongle souvent entre plusieurs outils (CRM, gestion des clients, projets, tâches, équipes, suivi du temps et facturation).",
+      "AgencyOS réunit ces domaines dans une plateforme unique, avec une isolation des données par organisation.",
+    ],
+    techNotes: caseStudyContent.agencyos.stackShort,
+    image: projectMedia.agencyos.primary,
+    imageAlt: projectMedia.agencyos.primaryAlt,
+    ctaLabel: `Voir l'étude de cas AgencyOS`,
+    ctaHref: "/realisations/agencyos/",
+  },
+  {
+    variant: "secondary" as const,
+    label: "Démonstrateur métier",
+    title: "Trajet Formateur",
+    angle: "Adapter la planification aux contraintes de déplacement.",
+    description: [
+      "Une affectation ne dépend pas que des disponibilités : les distances, les durées estimées et les horaires entrent aussi dans l'équation.",
+      "Le démonstrateur illustre une architecture full-stack (React / Spring Boot) et des règles de faisabilité appliquées côté serveur.",
+      "L'intégration de services de géolocalisation externes reste une perspective de préparation, pas une fonctionnalité livrée en production.",
+    ],
+    techNotes: ["React / Spring Boot", "Règles de faisabilité métier", "Perspective : intégration GPS"],
+    image: trajetPreview,
+    imageAlt: "Interface de planification du projet démonstrateur Trajet Formateur",
+    ctaLabel: "Voir le projet sur GitHub",
+    ctaHref: "https://github.com/Spiritzen/trajet-formateur",
+    ctaExternal: true,
+  },
 ];
 
-const hubNodes = ["API", "Automatisation", "Données", "Interface"];
+// Micro-sprint "Point de départ interactif + footer" — SOURCE UNIQUE des 5
+// choix (prompt §2 : labels/ordre existants conservés à l'identique) et de
+// leur contenu explicatif (titre bénéfice + 2-3 phrases + résultat concret,
+// contenu adapté des propositions du prompt §21, aucune promesse d'audit
+// formel/compatibilité garantie/résultat chiffré non sourcé). Consommée à
+// la fois par le rendu serveur (panneau desktop / accordéon mobile sans JS)
+// et par la modale mobile (JSON embarqué, voir CustomStartingPoint.astro) :
+// un seul texte, jamais dupliqué.
+const startingPoints = [
+  {
+    id: "01",
+    label: "Audit de l'existant",
+    title: "Comprendre avant de construire",
+    body: [
+      "Le studio commence par examiner les outils déjà en place, leurs usages réels et leurs limites concrètes.",
+      "L'objectif est de distinguer ce qui fonctionne bien de ce qui mérite réellement d'évoluer.",
+    ],
+    result: "Une vision claire de l'existant avant toute décision.",
+  },
+  {
+    id: "02",
+    label: "Compréhension des contraintes",
+    title: "Partir de votre réalité",
+    body: [
+      "Processus internes, utilisateurs, budget, délais et dépendances techniques sont pris en compte dès le départ.",
+      "Ces éléments orientent les choix plutôt que d'être découverts après coup.",
+    ],
+    result: "Des choix adaptés au fonctionnement réel de votre activité.",
+  },
+  {
+    id: "03",
+    label: "Architecture déjà en place",
+    title: "S'appuyer sur les bonnes fondations",
+    body: [
+      "Applications, API et architecture existantes sont étudiées pour repérer ce qui peut être réutilisé.",
+      "Les points nécessitant une adaptation sont identifiés séparément, sans tout remettre à plat par principe.",
+    ],
+    result: "Éviter une reconstruction inutile lorsque l'existant le permet.",
+  },
+  {
+    id: "04",
+    label: "Données et compatibilité",
+    title: "Faire communiquer les bons outils",
+    body: [
+      "Formats, circulation des données, accès et compatibilités sont examinés avant toute connexion prévue.",
+      "Cette étape évite les mauvaises surprises une fois le développement engagé.",
+    ],
+    result: "Anticiper les contraintes d'intégration en amont.",
+  },
+  {
+    id: "05",
+    label: "Évolution progressive plutôt que rupture",
+    title: "Avancer sans tout bouleverser",
+    body: [
+      "Les priorités sont identifiées pour organiser une progression par étapes, lorsque le contexte du projet le permet.",
+      "Chaque étape reste mesurable avant de passer à la suivante.",
+    ],
+    result: "Faire évoluer l'outil au rythme réel des besoins.",
+  },
+];
 
+// Micro-sprint "Cas d'usage interactif" — SOURCE UNIQUE des 4 situations
+// client (libellés/ordre/icônes imposés par le prompt §17-22) et de leur
+// panneau (repère, titre, situation/développement/bénéfice, matière
+// rédactionnelle du prompt §31 adaptée légèrement pour l'harmonie du site,
+// aucun résultat chiffré ni promesse automatique). Consommée à la fois par
+// le rendu serveur (panneau desktop / accordéon mobile sans JS) et par la
+// modale mobile (JSON embarqué, voir CustomUseCases.astro).
+const useCaseItems = [
+  {
+    id: "01",
+    label: "Mes outils ne communiquent pas",
+    icon: "link" as const,
+    title: "Relier vos outils sans tout remplacer.",
+    situation:
+      "Plusieurs logiciels sont utilisés en parallèle, les informations sont ressaisies d'un outil à l'autre et les échanges entre systèmes restent difficiles.",
+    development:
+      "Le studio analyse les possibilités de connexion réelles, puis développe selon le besoin une API, une passerelle ou une synchronisation adaptée entre vos outils.",
+    benefit: "Moins de doubles saisies et des informations mieux synchronisées entre vos outils.",
+  },
+  {
+    id: "02",
+    label: "Je répète les mêmes tâches",
+    icon: "cycle" as const,
+    title: "Automatiser les tâches répétitives.",
+    situation:
+      "Des transferts manuels, des créations de documents, des notifications ou d'autres étapes reviennent régulièrement et prennent du temps.",
+    development:
+      "Le studio modélise le déroulé réel de la tâche puis automatise un workflow, avec les validations nécessaires aux bons moments.",
+    benefit: "Réduire les manipulations répétitives et libérer du temps pour l'essentiel.",
+  },
+  {
+    id: "03",
+    label: "Mon logiciel ne me suffit plus",
+    icon: "trend" as const,
+    title: "Faire évoluer votre logiciel existant.",
+    situation: "Un outil reste fonctionnel au quotidien, mais il a atteint ses limites face à de nouveaux besoins.",
+    development:
+      "Le studio audite son architecture, puis ajoute une fonctionnalité ciblée, modernise l'interface ou intègre un nouveau module selon ce qui est réellement faisable.",
+    benefit: "Faire évoluer l'outil sans reconstruction complète lorsque ce n'est pas nécessaire.",
+  },
+  {
+    id: "04",
+    label: "Il me manque un outil spécifique",
+    icon: "tool" as const,
+    title: "Créer la solution adaptée à votre métier.",
+    situation: "Les solutions prêtes à l'emploi ne couvrent pas un processus ou une règle métier précise du quotidien.",
+    development:
+      "Le studio conçoit une application, une interface métier ou un outil interne sur mesure, intégré à l'existant lorsque c'est utile.",
+    benefit: "Des usages mieux couverts, sans imposer une méthode de travail inadaptée.",
+  },
+];
+
+// Micro-sprint "Mode de collaboration, parcours interactif" — SOURCE
+// UNIQUE des 5 étapes (prompt §"Contenu des cinq étapes" : intitulés et
+// fond des informations déjà présents conservés, rédaction clarifiée/
+// enrichie comme autorisé, aucune promesse d'audit détaillé/documentation/
+// maintenance/GPS/SLA/support garantis hors prestations convenues).
 const collaborationSteps = [
-  { title: "Échange initial", text: "Comprendre le besoin réel, le contexte et les contraintes techniques existantes." },
-  { title: "Audit si existant", text: "Lire le code, les données et l'architecture déjà en place avant de proposer quoi que ce soit." },
-  { title: "Proposition d'architecture", text: "Choisir les briques techniques selon le besoin, pas l'inverse." },
-  { title: "Développement itératif", text: "Avancer par étapes courtes, avec un périmètre maîtrisé à chaque livraison." },
-  { title: "Livraison et suivi", text: "Mettre en production proprement et documenter ce qui doit évoluer." },
+  {
+    id: "01",
+    icon: "discussion" as const,
+    name: "Échange initial",
+    title: "Comprendre votre besoin avant de parler technique.",
+    text: "Nous échangeons sur votre activité, vos objectifs et les difficultés rencontrées afin de définir ensemble ce que la solution doit réellement vous apporter.",
+    outcome: "Un premier cadrage du besoin et des objectifs du projet.",
+  },
+  {
+    id: "02",
+    icon: "audit" as const,
+    name: "Audit de l'existant",
+    title: "Identifier ce qui peut être conservé et amélioré.",
+    text: "Lorsque des outils sont déjà en place, nous examinons leur fonctionnement, leurs données, leurs contraintes et leurs possibilités d'évolution.",
+    outcome: "Une vision claire des éléments réutilisables et des points à faire évoluer.",
+  },
+  {
+    id: "03",
+    icon: "architecture" as const,
+    name: "Proposition d'architecture",
+    title: "Construire une solution adaptée à votre environnement.",
+    text: "Nous définissons les composants, les connexions et les technologies nécessaires, en privilégiant une architecture cohérente avec vos besoins.",
+    outcome: "Une proposition de solution et un périmètre technique compréhensible.",
+  },
+  {
+    id: "04",
+    icon: "code" as const,
+    name: "Développement itératif",
+    title: "Avancer progressivement, avec des validations régulières.",
+    text: "Le développement est organisé en étapes maîtrisées. Chaque livraison permet de vérifier que la solution répond bien au besoin avant de poursuivre.",
+    outcome: "Une progression visible et des ajustements possibles au fil du projet.",
+  },
+  {
+    id: "05",
+    icon: "delivery" as const,
+    name: "Livraison et suivi",
+    title: "Mettre votre solution en service et préparer la suite.",
+    text: "Nous préparons la mise en production, les vérifications et la documentation utile. Selon le projet et les prestations convenues, nous pouvons également accompagner ses évolutions.",
+    outcome: "Une solution livrée avec les éléments nécessaires à son utilisation et à sa maintenance.",
+  },
 ];
 
-const matrix = [
-  { label: "Application métier", href: "/applications-metier-saas/", stack: "Spring Boot / Rails / React / PostgreSQL" },
-  { label: "Site de contenu", href: "/sites-professionnels/", stack: "Astro / TypeScript / CSS" },
-  { label: "Expérience interactive", stack: "React / Three.js / Web APIs" },
-  { label: "Intégration / héritage", stack: "API REST / SQL / stack existante" },
+const principles = [
+  {
+    id: "existant",
+    icon: "layers" as const,
+    title: "S'adapter à votre existant",
+    text: "Nous privilégions la réutilisation de ce qui fonctionne déjà. Une nouvelle fonctionnalité ou une connexion entre vos outils peut parfois suffire, sans reconstruire l'ensemble.",
+  },
+  {
+    id: "bases-fiables",
+    icon: "shield" as const,
+    title: "Construire sur des bases fiables",
+    text: "Nous prenons en compte la sécurité, la qualité du code, les données et la maintenabilité dès la conception, selon les exigences réelles du projet.",
+  },
+  {
+    id: "evolutions",
+    icon: "trend" as const,
+    title: "Préparer les évolutions utiles",
+    text: "Nous concevons une solution capable d'accompagner votre activité, en privilégiant des choix techniques cohérents avec vos besoins actuels et les évolutions envisagées.",
+  },
 ];
 ---
 
@@ -64,11 +321,16 @@ const matrix = [
   description="API, automatisation, intégration, modernisation et outils web spécifiques : une architecture choisie selon votre besoin, votre existant et vos contraintes."
 >
   <div class="service-page service-page--custom">
+    <!-- Micro-sprint "Filaments / vagues" — couche de fond persistante pour
+         TOUTE la page, montée UNE SEULE FOIS ici (jamais par section),
+         même montage/directive que sur Applications métier & SaaS et
+         Sites professionnels : aucune hydratation sous 900px. -->
+    <PageFilaments client:media="(min-width: 900px)" />
     <Container>
       <ServiceBreadcrumb current="Développement sur mesure" />
     </Container>
 
-    <section class="service-page__section">
+    <section class="service-page__section custom-hero-section">
       <Container>
         <ServiceHero
           eyebrow="Développement sur mesure"
@@ -80,7 +342,8 @@ const matrix = [
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="custom-existing-title">
+    <section class="service-page__section service-page__section--soft custom-existing-section" aria-labelledby="custom-existing-title">
+      <ExpertiseDotWave />
       <Container>
         <SectionHeading
           id="custom-existing-title"
@@ -88,77 +351,34 @@ const matrix = [
           title="Tout ne démarre pas sur une page blanche."
           intro="Quand un existant est déjà en place, le studio commence par l'audit et la compréhension, pas par une réécriture complète."
         />
-        <ul class="service-chips" data-motion="block">
-          <li>Audit de l'existant</li>
-          <li>Compréhension des contraintes</li>
-          <li>Architecture déjà en place</li>
-          <li>Données et compatibilité</li>
-          <li>Évolution progressive plutôt que rupture</li>
-        </ul>
+        <CustomStartingPoint points={startingPoints} />
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="custom-usecases-title">
+    <section class="service-page__section custom-usecases-section" aria-labelledby="custom-usecases-title">
       <Container>
         <SectionHeading
           id="custom-usecases-title"
           eyebrow="Cas d'usage"
-          title="Des besoins qui sortent du cadre standard."
-          intro="Import/export, synchronisation, traitements ou intégration d'un service externe s'ajoutent souvent à ces familles."
+          title="Votre besoin est particulier. Notre réponse aussi."
+          intro="Découvrez comment un développement sur mesure peut répondre à des situations concrètes, en s'adaptant à vos outils et à votre façon de travailler."
         />
-        <ul class="service-chips" data-motion="block">
-          {useCases.map((item) => (
-            <li>{item}</li>
-          ))}
-        </ul>
-
-        <div
-          class="service-hub"
-          data-motion="block"
-          role="img"
-          aria-label="Schéma : votre existant au centre, connecté à l'API, l'automatisation, les données et l'interface."
-        >
-          <div class="service-hub__center">Votre existant</div>
-          {hubNodes.map((node) => (
-            <div class="service-hub__node">{node}</div>
-          ))}
-        </div>
+        <CustomUseCases items={useCaseItems} />
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="custom-proofs-title">
+    <section class="service-page__section service-page__section--soft custom-proofs-section" aria-labelledby="custom-proofs-title">
+      <ExpertiseDotWave />
       <Container>
         <SectionHeading id="custom-proofs-title" eyebrow="Preuves" title="Des besoins atypiques, déjà travaillés." />
-        <div class="related-case-study-pair">
-          {customProofs.map((proof) => (
-            <RelatedCaseStudy
-              role={proof.role}
-              title={proof.projectSlug === "agencyos" ? "AgencyOS" : "Sereno"}
-              category="Application métier / SaaS"
-              angle={proof.angle}
-              capabilities={caseStudyContent[proof.projectSlug].proves.slice(0, 3)}
-              image={projectMedia[proof.projectSlug].primary}
-              imageAlt={projectMedia[proof.projectSlug].primaryAlt}
-              href={`/realisations/${proof.projectSlug}/`}
-            />
-          ))}
-        </div>
-        <p class="service-architecture__note">Un besoin plus atypique a aussi été travaillé :</p>
-        <div class="service-proofs-grid">
-          <ServiceProofCard
-            title={glasstrack.title}
-            description={glasstrack.angle}
-            facts={glasstrack.facts}
-            isDemonstrator={glasstrack.isDemonstrator}
-          />
-        </div>
+        <CustomProofs featured={proofsFeatured} secondary={proofsSecondary} />
         <p class="service-architecture__note">
           D'autres projets sont présentés dans les <a href={withBase("/realisations/")}>réalisations</a>.
         </p>
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="custom-process-title">
+    <section class="service-page__section custom-process-section" aria-labelledby="custom-process-title">
       <Container>
         <SectionHeading
           id="custom-process-title"
@@ -166,57 +386,24 @@ const matrix = [
           title="Comment se déroule un projet sur mesure."
           intro="Les mêmes étapes que pour tout projet du studio, avec une attention particulière portée à l'existant."
         />
-        <ol class="service-process" data-motion="block">
-          {collaborationSteps.map((step, i) => (
-            <li>
-              <span class="service-process__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
-            </li>
-          ))}
-        </ol>
+        <CustomCollaboration steps={collaborationSteps} />
       </Container>
     </section>
 
-    <section class="service-page__section service-page__section--soft" aria-labelledby="custom-matrix-title">
+    <section class="service-page__section service-page__section--soft custom-matrix-section" aria-labelledby="custom-matrix-title">
+      <ExpertiseDotWave />
       <Container>
-        <SectionHeading id="custom-matrix-title" eyebrow="Repères" title="Une matrice légère, pas une encyclopédie." />
-        <dl class="service-matrix" data-motion="block">
-          {matrix.map((row) => (
-            <div class="service-matrix__row">
-              <dt>{row.href ? <a href={withBase(row.href)}>{row.label}</a> : row.label}</dt>
-              <dd>{row.stack}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div class="service-faq" data-motion="block">
-          <details>
-            <summary>Le studio peut-il intervenir sur un projet existant ?</summary>
-            <p>
-              Oui. Après un audit de l'existant (code, données, contraintes), le studio évalue ce qui peut être
-              conservé, adapté ou modernisé progressivement.
-            </p>
-          </details>
-          <details>
-            <summary>Peut-il connecter des API ou automatiser un workflow ?</summary>
-            <p>
-              Oui — connexion à des services externes, automatisation d'étapes répétitives, synchronisation de
-              données ou création d'une API dédiée font partie des besoins fréquemment traités.
-            </p>
-          </details>
-          <details>
-            <summary>Comment cadrer un besoin atypique avant de développer ?</summary>
-            <p>
-              En clarifiant d'abord le problème réel et les contraintes techniques existantes — voir
-              <a href={withBase("/methode/")}>la méthode</a> pour le déroulé complet du cadrage.
-            </p>
-          </details>
-        </div>
+        <SectionHeading
+          id="custom-matrix-title"
+          eyebrow="Repères"
+          title="La bonne solution, sans complexité inutile."
+          intro="Chaque projet possède ses propres contraintes. Notre rôle est de choisir une approche adaptée à votre activité, à votre environnement et à vos objectifs, sans vous imposer une technologie ou une refonte dont vous n'avez pas besoin."
+        />
+        <CustomPrinciples principles={principles} />
       </Container>
     </section>
 
-    <section class="service-page__section" aria-labelledby="custom-cta-title">
+    <section class="service-page__section custom-cta-section" aria-labelledby="custom-cta-title">
       <Container>
         <ServiceCta
           headingId="custom-cta-title"

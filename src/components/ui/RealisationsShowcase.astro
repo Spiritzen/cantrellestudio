@@ -1,0 +1,299 @@
+---
+// RealisationsShowcase — micro-sprint "Landing Réalisations, DA Preuves Sur
+// mesure" (PROMPT_CLAUDE_CODE_LANDING_REALISATIONS_DA_PREUVES_SUR_MESURE),
+// utilisé UNIQUEMENT par la landing (index.astro), section "Réalisations".
+// Transpose l'esthétique ET le comportement (cartes, images, lightbox) déjà
+// validés sur la section "Preuves" de /developpement-sur-mesure/
+// (CustomProofs.astro, source de vérité visuelle du prompt — INSPECTÉ,
+// jamais modifié) : carte Sereno vedette pleine largeur (image gauche /
+// contenu droite sur desktop), puis AgencyOS et Belkhir Dépannage à égalité
+// dans une rangée en dessous. Contenu ÉDITORIAL inchangé (prompt §2) :
+// mêmes title/category/summary/technologies que l'ancien `<ProjectCard>`,
+// lus depuis la Content Collection `realisations` par index.astro, jamais
+// réécrits ici — seul le TRAITEMENT visuel change.
+//
+// `ProjectCard.astro` n'est ni modifié ni supprimé (peut rester disponible
+// ailleurs) : simplement plus utilisé par la landing après ce sprint, son
+// layout à 2 colonnes (vedette gauche / pile secondaire droite) étant
+// structurellement différent de celui demandé ici.
+//
+// CRITIQUE — compatibilité HomeMotion.astro (prompt §5, "ne pas retoucher
+// les valeurs d'animation validées") : la racine de CE composant CONSERVE
+// exactement le nom de classe `.home-projects__grid` (sélecteur déjà utilisé
+// par `setupRealisations()` dans HomeMotion.astro pour trouver le
+// conteneur ET les cartes `[data-motion="project"]`) — AUCUNE ligne de
+// HomeMotion.astro n'a besoin d'être modifiée. Chaque carte porte
+// `data-motion="project"` (jamais "proof", valeur réservée à ServiceMotion/
+// Sur mesure) pour rester révélée individuellement avec le replay
+// bidirectionnel déjà en place.
+//
+// Lightbox : MÊME recette que CustomProofs.astro après son correctif de
+// gabarit (cadre à largeur/hauteur explicites, `getBestSrc()` pour charger
+// le plus grand candidat du `srcset`, overlay flou 0.7, en-tête titre+croix,
+// verrouillage de scroll + `inert` + piège de focus, déplacement en fin de
+// <body> pour échapper à tout ancêtre animé par GSAP) — reproduite ici avec
+// son propre préfixe de classes (`.home-projects__lightbox-*`), jamais
+// partagée avec la page Sur mesure (implémentations indépendantes, comme
+// demandé : "ne pas chambouler ses composants").
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { withBase } from "../../utils/paths";
+
+interface RealisationCard {
+  slug: string;
+  title: string;
+  category: string;
+  summary: string;
+  technologies: string[];
+  image: ImageMetadata;
+  imageAlt: string;
+}
+
+interface Props {
+  featured: RealisationCard;
+  secondary: RealisationCard[];
+}
+
+const { featured, secondary } = Astro.props as Props;
+---
+
+<div class="home-projects__grid">
+  <article class="home-projects__card home-projects__card--featured" data-motion="project">
+    <button
+      type="button"
+      class="home-projects__media"
+      data-lightbox-trigger
+      data-project-title={featured.title}
+      aria-label={`Agrandir l'image du projet ${featured.title}`}
+    >
+      <Picture
+        src={featured.image}
+        alt={featured.imageAlt}
+        formats={["avif", "webp"]}
+        widths={[480, 768, 1100, 1400]}
+        sizes="(min-width: 900px) 46vw, 100vw"
+        loading="lazy"
+        decoding="async"
+        class="home-projects__img"
+      />
+    </button>
+    <div class="home-projects__body">
+      <span class="home-projects__category">{featured.category}</span>
+      <h3 class="home-projects__title">{featured.title}</h3>
+      <p class="home-projects__summary">{featured.summary}</p>
+      {featured.technologies.length > 0 && (
+        <ul class="home-projects__tech">
+          {featured.technologies.map((tech) => (
+            <li>{tech}</li>
+          ))}
+        </ul>
+      )}
+      <a class="home-projects__link" href={withBase(`/realisations/${featured.slug}/`)}>
+        Voir l'étude de cas <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </article>
+
+  <div class="home-projects__row">
+    {secondary.map((card) => (
+      <article class="home-projects__card home-projects__card--secondary" data-motion="project">
+        <button
+          type="button"
+          class="home-projects__media"
+          data-lightbox-trigger
+          data-project-title={card.title}
+          aria-label={`Agrandir l'image du projet ${card.title}`}
+        >
+          <Picture
+            src={card.image}
+            alt={card.imageAlt}
+            formats={["avif", "webp"]}
+            widths={[320, 480, 640, 900, 1300]}
+            sizes="(min-width: 900px) 30vw, 100vw"
+            loading="lazy"
+            decoding="async"
+            class="home-projects__img"
+          />
+        </button>
+        <div class="home-projects__body">
+          <span class="home-projects__category">{card.category}</span>
+          <h3 class="home-projects__title">{card.title}</h3>
+          <p class="home-projects__summary">{card.summary}</p>
+          {card.technologies.length > 0 && (
+            <ul class="home-projects__tech">
+              {card.technologies.map((tech) => (
+                <li>{tech}</li>
+              ))}
+            </ul>
+          )}
+          <a class="home-projects__link" href={withBase(`/realisations/${card.slug}/`)}>
+            Voir l'étude de cas <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <div class="home-projects__lightbox-backdrop" data-lightbox-backdrop hidden>
+    <div class="home-projects__lightbox" role="dialog" aria-modal="true" aria-labelledby="home-projects-lightbox-title" data-lightbox>
+      <div class="home-projects__lightbox-header">
+        <h3 class="home-projects__lightbox-title" id="home-projects-lightbox-title" data-lightbox-title></h3>
+        <button type="button" class="home-projects__lightbox-close" data-lightbox-close aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="home-projects__lightbox-media">
+        <img class="home-projects__lightbox-img" data-lightbox-img alt="" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Reprend fidèlement le mécanisme de CustomProofs.astro (Sur mesure,
+  // "Preuves"), déjà corrigé pour un gabarit unifié entre les 3 projets —
+  // voir ce fichier pour le détail de la cause/du correctif d'origine.
+  // Implémentation INDÉPENDANTE (classes `.home-projects-*`, jamais
+  // partagée) : aucune modification de CustomProofs.astro ni de la page
+  // Sur mesure.
+  function getBestSrc(img: HTMLImageElement): string {
+    const srcset = img.getAttribute("srcset") || "";
+    if (!srcset) return img.currentSrc || img.src;
+    let bestUrl = "";
+    let bestWidth = -1;
+    srcset.split(",").forEach((entry) => {
+      const parts = entry.trim().split(/\s+/);
+      const url = parts[0];
+      const descriptor = parts[1];
+      const width = descriptor && descriptor.endsWith("w") ? parseInt(descriptor, 10) : 0;
+      if (url && width > bestWidth) {
+        bestWidth = width;
+        bestUrl = url;
+      }
+    });
+    return bestUrl || img.currentSrc || img.src;
+  }
+
+  const root = document.querySelector<HTMLElement>(".home-projects__grid");
+  if (root) {
+    const backdrop = root.querySelector<HTMLElement>("[data-lightbox-backdrop]");
+    const dialog = root.querySelector<HTMLElement>("[data-lightbox]");
+    const closeBtn = root.querySelector<HTMLButtonElement>("[data-lightbox-close]");
+    const lightboxImg = root.querySelector<HTMLImageElement>("[data-lightbox-img]");
+    const lightboxTitle = root.querySelector<HTMLElement>("[data-lightbox-title]");
+    const triggers = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-lightbox-trigger]"));
+
+    if (backdrop && dialog && closeBtn && lightboxImg && lightboxTitle && triggers.length > 0) {
+      // Couche top-level non piégée : déplacée en fin de <body> au montage,
+      // indépendante de tout ancêtre animé par HomeMotion (opacity/transform
+      // posés sur les cartes elles-mêmes, jamais sur ce backdrop une fois
+      // déplacé — prompt §5, "les modales ne doivent pas subir l'opacity/
+      // transform d'une carte animée par GSAP").
+      document.body.appendChild(backdrop);
+
+      const DESKTOP_QUERY = "(min-width: 900px)";
+      const isDesktop = () => window.matchMedia(DESKTOP_QUERY).matches;
+
+      let lastTrigger: HTMLElement | null = null;
+      let savedScrollY = 0;
+      let savedBodyStyle: string | null = null;
+      let inertedEls: HTMLElement[] = [];
+
+      function lockScroll() {
+        savedScrollY = window.scrollY;
+        savedBodyStyle = document.body.getAttribute("style");
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${savedScrollY}px`;
+        document.body.style.left = "0";
+        document.body.style.right = "0";
+        document.body.style.width = "100%";
+      }
+
+      function unlockScroll() {
+        if (savedBodyStyle) {
+          document.body.setAttribute("style", savedBodyStyle);
+        } else {
+          document.body.removeAttribute("style");
+        }
+        window.scrollTo(0, savedScrollY);
+      }
+
+      function setInert() {
+        inertedEls = Array.from(document.body.children).filter(
+          (el): el is HTMLElement => el instanceof HTMLElement && el !== backdrop,
+        );
+        inertedEls.forEach((el) => {
+          el.setAttribute("inert", "");
+          el.setAttribute("aria-hidden", "true");
+        });
+      }
+
+      function removeInert() {
+        inertedEls.forEach((el) => {
+          el.removeAttribute("inert");
+          el.removeAttribute("aria-hidden");
+        });
+        inertedEls = [];
+      }
+
+      function onKeydown(event: KeyboardEvent) {
+        if (event.key === "Escape") {
+          closeLightbox();
+          return;
+        }
+        if (event.key === "Tab") {
+          event.preventDefault();
+          closeBtn!.focus();
+        }
+      }
+
+      function openLightbox(trigger: HTMLButtonElement) {
+        const img = trigger.querySelector("img");
+        if (!img || !backdrop) return;
+
+        lightboxImg!.src = getBestSrc(img);
+        lightboxImg!.alt = img.alt;
+        lightboxTitle!.textContent = trigger.dataset.projectTitle || "";
+
+        lastTrigger = trigger;
+        lockScroll();
+        setInert();
+        backdrop.hidden = false;
+        document.addEventListener("keydown", onKeydown);
+        closeBtn!.focus();
+      }
+
+      function closeLightbox() {
+        if (!backdrop || backdrop.hidden) return;
+        backdrop.hidden = true;
+        document.removeEventListener("keydown", onKeydown);
+        removeInert();
+        unlockScroll();
+        lightboxImg!.src = "";
+        if (lastTrigger && lastTrigger.isConnected) lastTrigger.focus();
+        lastTrigger = null;
+      }
+
+      closeBtn.addEventListener("click", () => closeLightbox());
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeLightbox();
+      });
+      dialog.addEventListener("click", (event) => event.stopPropagation());
+
+      triggers.forEach((trigger) => {
+        trigger.addEventListener("click", (event) => {
+          if (!isDesktop()) return;
+          event.preventDefault();
+          openLightbox(trigger);
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        if (backdrop && !backdrop.hidden && !isDesktop()) closeLightbox();
+      });
+    }
+  }
+</script>

@@ -209,6 +209,20 @@ main:has(.apps-final-cta-section) + footer {
   margin-top: 0;
 }
 
+/* Micro-sprint "Point de départ interactif + footer" (PROMPT_CLAUDE_CODE_
+   DEV_SUR_MESURE_POINT_DE_DEPART_INTERACTIF_FOOTER §5) — MÊME trou, MÊME
+   cause exacte que ci-dessus, vérifiée par lecture directe : `.custom-cta-
+   section` (posée au micro-sprint "Finitions couleurs/fonds/CTA") n'avait
+   JAMAIS reçu la règle `main:has(...)` correspondante — un simple oubli de
+   ce sprint précédent, jamais corrigé depuis, confirmé par recherche dans
+   tout ce fichier avant modification (aucun `main:has(.custom-cta-section)`
+   n'existait). MÊME correction, MÊME principe (jamais une marge négative/
+   position/transform arbitraire) : `.custom-cta-section` n'existe QUE sur
+   /developpement-sur-mesure/, donc aucun effet sur les autres pages. */
+main:has(.custom-cta-section) + footer {
+  margin-top: 0;
+}
+
 /* Micro-sprint "Hero aligné sur la landing" §4 — petits labels/eyebrows en
    Ember, MÊME formule que `.home-kicker--accent`/`.section-heading__eyebrow`
    dans home.css (color: var(--color-accent); opacity: .8), token existant
@@ -2090,129 +2104,1669 @@ main:has(.sites-final-cta-section) + footer {
    C. DÉVELOPPEMENT SUR MESURE — cas d'usage, diagramme hub, matrice
    ========================================================================== */
 
-.service-hub {
+/* Micro-sprint "Point de départ interactif + footer" (PROMPT_CLAUDE_CODE_
+   DEV_SUR_MESURE_POINT_DE_DEPART_INTERACTIF_FOOTER) — voir
+   CustomStartingPoint.astro pour le détail du mécanisme (technique radio
+   native adaptée de PositioningSituations.astro, NON modifié). Composant
+   propre à cette page uniquement (jamais importé ailleurs), classes non
+   préfixées `.service-page--custom` par simple cohérence avec `.service-hub`
+   /`.service-process`/`.service-matrix` juste en dessous, déjà spécifiques à
+   cette page sans ce préfixe. */
+.custom-starting {
   margin-top: var(--space-lg);
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-sm);
-  max-width: 40rem;
 }
 
-@media (min-width: 700px) {
-  .service-hub {
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
+.custom-starting__fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* Légende accessible, jamais affichée : le titre H2 + l'intro de la section
+   (SectionHeading, juste au-dessus) portent déjà le message visible — même
+   principe et même technique "visually-hidden" que `.client-journey__legend`. */
+.custom-starting__legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Mobile / repli sans JS — flux normal, chaque panneau suit directement SON
+   PROPRE choix (accordéon). */
+.custom-starting__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.custom-starting__item {
+  display: contents;
+}
+
+/* Radio "visually hidden" — même technique que `.sites-situations__radio`
+   (jamais `display:none` : reste focusable au clavier, Tab/flèches natives
+   du groupe). */
+.custom-starting__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.custom-starting__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease, transform 220ms ease;
+}
+
+.custom-starting__index {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.custom-starting__label {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* Hover — réaction discrète, volontairement plus légère que l'état actif
+   (jamais le même poids visuel) : contour un peu plus visible + très léger
+   soulèvement, aucune couleur Ember (réservée à l'état sélectionné). */
+.custom-starting__choice:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-elevated);
+  transform: translateY(-1px);
+}
+
+/* Micro-finition "Point de départ, finitions CSS" (PROMPT_CLAUDE_CODE_DEV_
+   SUR_MESURE_POINT_DE_DEPART_FINITIONS_CSS §1) — remplace le trait Ember
+   latéral (jugé trop générique/"template IA") par un contour complet Ember
+   discret + une ombre orange légère à deux couches (liseré 1px + halo doux),
+   jamais un lift ici (réservé au hover ci-dessus) : la sélection se lit par
+   le contour/l'ombre, pas par un déplacement. Fond légèrement plus dense
+   (`--color-surface-elevated`, déjà utilisé, inchangé), titre ivoire réglé
+   juste en dessous. */
+.custom-starting__radio:checked + .custom-starting__choice {
+  border-color: rgba(228, 95, 54, 0.55);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 0 0 1px rgba(228, 95, 54, 0.12), 0 10px 24px -14px rgba(228, 95, 54, 0.28);
+}
+
+.custom-starting__radio:checked + .custom-starting__choice .custom-starting__label {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.custom-starting__radio:focus-visible + .custom-starting__choice {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-starting__choice {
+    transition: none;
+  }
+
+  .custom-starting__choice:hover {
+    transform: none;
   }
 }
 
-.service-hub__center {
-  grid-column: 1 / -1;
-  border: 1px solid var(--color-accent-deep);
-  border-radius: var(--radius-md);
+/* Panneau — masqué par défaut, révélé par le radio coché de SON PROPRE item
+   (accordéon mobile / repli sans JS). Desktop : surchargé plus bas (reste
+   dans la grille, jamais `display:none`, pour stabiliser la hauteur). */
+.custom-starting__panel {
+  display: none;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  max-width: 34rem;
   background: var(--color-surface);
-  padding: var(--space-sm) var(--space-md);
-  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.custom-starting__radio:checked ~ .custom-starting__panel {
+  display: block;
+}
+
+/* Micro-finition "Point de départ, finitions CSS" (PROMPT_CLAUDE_CODE_DEV_
+   SUR_MESURE_POINT_DE_DEPART_FINITIONS_CSS §2) — repère de progression en
+   tête de panneau ("01/05 · Audit de l'existant"), plus petit que le grand
+   titre juste en dessous (qui garde toute son importance visuelle). Compteur
+   en Ember discret (même formule d'atténuation que les eyebrows de cette
+   page : `color: var(--color-accent); opacity: .85`), séparateur neutre,
+   libellé en ton clair (`--color-text-secondary`, déjà utilisé par le corps
+   du panneau). Remplace l'ancien `.custom-starting__panel-index` (numéro
+   seul) — même nom de classe non réutilisé ailleurs, renommage sûr. */
+.custom-starting__panel-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: 0 0 var(--space-xs) 0;
   font-family: var(--font-display);
+  font-size: 0.8125rem;
+}
+
+.custom-starting__panel-counter {
   font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.custom-starting__panel-meta-sep {
+  color: var(--color-text-muted);
+}
+
+.custom-starting__panel-meta-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.custom-starting__panel-title {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.1875rem;
+}
+
+.custom-starting__panel-text {
+  margin: 0 0 var(--space-xs) 0;
+  color: var(--color-text-secondary);
   font-size: 0.9375rem;
-  letter-spacing: 0.04em;
+}
+
+.custom-starting__panel-text:last-of-type {
+  margin-bottom: var(--space-sm);
+}
+
+.custom-starting__panel-result {
+  margin: var(--space-sm) 0 0 0;
+  font-size: 0.9375rem;
+}
+
+/* Même formule EXACTE que les autres micro-labels Ember de cette page
+   (`.service-page--custom .service-hero__eyebrow` etc., plus haut dans ce
+   fichier) : token existant uniquement. */
+.custom-starting__panel-result-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-accent);
+  opacity: 0.8;
 }
 
-.service-hub__node {
+/* Desktop — colonne gauche ~40% (choix) / droite ~60% (panneau unique),
+   jamais `display:none` sur les panneaux : les 5 restent dans la grille,
+   seul celui coché est visible (visibility/opacity) — la zone de droite
+   occupe donc TOUJOURS la hauteur du panneau le plus grand, ce qui élimine
+   les sauts de page au changement de choix (prompt §3). */
+@media (min-width: 900px) {
+  .custom-starting__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-rows: repeat(5, auto);
+    column-gap: var(--space-xl);
+    row-gap: var(--space-sm);
+    align-items: start;
+  }
+
+  .custom-starting__choice {
+    grid-column: 1;
+  }
+
+  .custom-starting__panel {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / -1;
+    margin-top: 0;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .custom-starting__radio:checked ~ .custom-starting__panel {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  .custom-starting__panel {
+    transition: none;
+  }
+}
+
+/* Une fois le script initialisé (`.custom-starting--js`, posé par
+   CustomStartingPoint.astro), le panneau inline cède la place à la modale
+   sous 900px — jamais au-dessus (media query mutuellement exclusive de
+   celle du bloc desktop ci-dessus). Sans JS, cette classe n'existe jamais :
+   l'accordéon reste le seul mécanisme, toujours fonctionnel. */
+@media (max-width: 899px) {
+  .custom-starting--js .custom-starting__panel {
+    display: none !important;
+  }
+}
+
+/* Modale mobile — couche top-level (déplacée en fin de <body> par le
+   script), z-index au-dessus de tout le reste du site (header: 100 dans
+   global.css, valeur la plus haute déjà utilisée dans tout le dépôt avant
+   ce sprint). N'existe jamais visuellement ≥900px (aucune modale desktop),
+   même si le script ne s'exécutait pas. */
+.custom-starting__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  background: rgba(10, 11, 13, 0.75);
+  padding: max(var(--space-md), env(safe-area-inset-top)) max(var(--space-md), env(safe-area-inset-right))
+    max(var(--space-md), env(safe-area-inset-bottom)) max(var(--space-md), env(safe-area-inset-left));
+}
+
+.custom-starting__modal-backdrop[hidden] {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .custom-starting__modal-backdrop {
+    display: none;
+  }
+}
+
+.custom-starting__modal {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  max-height: 80vh;
+  max-height: min(80vh, calc(100dvh - 2 * var(--space-md)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: auto;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-md) var(--space-md) var(--space-md);
+}
+
+.custom-starting__modal .custom-starting__panel-meta {
+  margin-top: 0;
+}
+
+.custom-starting__modal-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
-  padding: var(--space-sm);
-  text-align: center;
-  font-size: 0.875rem;
+  color: var(--color-accent);
+  cursor: pointer;
 }
 
-/* CS-S9B — "mode de collaboration" : bandeau de process léger, numéroté,
-   inspiré du rythme Méthode de la Home (CS-S8B) mais namespacé et
-   volontairement plus sobre (pas de rail/ligne de progression ici). */
-.service-process {
-  list-style: none;
-  margin: var(--space-lg) 0 0 0;
-  padding: 0;
+.custom-starting__modal-close:hover,
+.custom-starting__modal-close:focus-visible {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.custom-starting__modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .custom-starting__modal-backdrop:not([hidden]) {
+    animation: custom-starting-fade-in 180ms ease;
+  }
+
+  .custom-starting__modal {
+    animation: custom-starting-modal-in 180ms ease;
+  }
+}
+
+@keyframes custom-starting-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes custom-starting-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Micro-sprint "Preuves Sereno/AgencyOS/Trajet Formateur" (PROMPT_CLAUDE_
+   CODE_DEV_SUR_MESURE_PREUVES_SERENO_AGENCYOS_TRAJET_FORMATEUR) — remplace
+   `.related-case-study-pair`/`.service-proofs-grid` (GlassTrack) de CETTE
+   section uniquement : classes ENTIÈREMENT LOCALES (`.custom-proofs-*`),
+   `.related-case-study*`/`.service-proof*` (partagées par les 3 pages
+   services) ne sont ni modifiées ni référencées ici. Media en `object-fit:
+   contain` (jamais `cover`, même règle que `.related-case-study__img` :
+   une capture UI est une preuve, jamais recadrée destructivement).
+   AUCUN trait/liseré Ember sur les cartes (prompt §4/§43 : le supprimer
+   explicitement, y compris un éventuel ::before/::after — aucun n'est posé
+   ici). Hover : léger lift (4px) + ombre Ember diffuse à faible opacité
+   UNIQUEMENT (prompt §44), jamais de bordure Ember — le focus clavier
+   (:focus-visible sur le lien) reste un traitement VISUELLEMENT DISTINCT
+   du hover, jamais un `:focus-within` sur toute la carte (évite tout état
+   "collé" après retour d'un lien externe, prompt §45). */
+.custom-proofs {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.custom-proofs__row {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-md);
 }
 
 @media (min-width: 900px) {
-  .service-process {
-    grid-template-columns: repeat(5, 1fr);
+  .custom-proofs__row {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-.service-process li {
-  border-top: 1px solid var(--color-border-strong);
-  padding-top: var(--space-sm);
+.custom-proofs__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition: border-color 260ms ease, box-shadow 260ms ease, transform 260ms ease;
 }
 
-.service-process__index {
-  display: block;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
-  margin-bottom: var(--space-xs);
+.custom-proofs__card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px -34px rgba(228, 95, 54, 0.24);
 }
 
-.service-process li h3 {
-  font-size: 1.0625rem;
-  margin: 0 0 0.375rem 0;
+@media (prefers-reduced-motion: reduce) {
+  .custom-proofs__card {
+    transition: border-color 260ms ease, box-shadow 260ms ease;
+  }
+
+  .custom-proofs__card:hover {
+    transform: none;
+  }
 }
 
-.service-process li p {
-  font-size: 0.875rem;
+/* Micro-sprint "Modale grand format images Preuves" (PROMPT_CLAUDE_CODE_
+   DEV_SUR_MESURE_MODAL_IMAGES_PREUVES) — `.custom-proofs__media` est
+   désormais un <button> (déclencheur de la lightbox, voir composant) :
+   reset des styles natifs de bouton, le rendu visuel reste IDENTIQUE à
+   avant (mêmes propriétés ci-dessous, inchangées). Curseur/zoom réservés
+   au DESKTOP (≥900px, prompt §"fonctionnalité demandée pour desktop") :
+   sous ce seuil, l'image garde son apparence/comportement d'origine
+   (bouton toujours présent pour un balisage simple et cohérent, mais son
+   clic est un no-op géré côté script — voir `isDesktop()`). */
+.custom-proofs__media {
+  position: relative;
+  width: 100%;
   margin: 0;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-soft);
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font: inherit;
+  text-align: inherit;
+  cursor: default;
 }
 
-.service-matrix {
-  margin-top: var(--space-lg);
-  display: grid;
-  gap: 0;
+@media (min-width: 900px) {
+  .custom-proofs__media {
+    cursor: zoom-in;
+  }
+}
+
+.custom-proofs__media:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.custom-proofs__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 320ms ease;
+}
+
+/* Léger zoom très subtil au survol (prompt §4), desktop uniquement — sur
+   la carte entière (`:hover`), jamais seulement sur l'image, pour rester
+   cohérent avec le lift déjà posé sur `.custom-proofs__card:hover`. */
+@media (min-width: 900px) {
+  .custom-proofs__card:hover .custom-proofs__img {
+    transform: scale(1.035);
+  }
+}
+
+/* Micro-sprint "Fix modale Preuves, taille unifiée" §"cartes" point 1 —
+   renforcement Ember discret SUR LA ZONE D'IMAGE au survol (liseré interne
+   fin, jamais un déplacement/lift supplémentaire), complémentaire à l'ombre
+   diffuse déjà posée sur `.custom-proofs__card:hover` (ombre = contour
+   extérieur de la carte, liseré = contour intérieur de l'image) : les deux
+   accents restent DISTINCTS l'un de l'autre plutôt que de se superposer sur
+   la même arête. Jamais posé sur `.custom-proofs__lightbox-media` (classe
+   différente) : ce hover ne peut donc jamais s'appliquer à la modale
+   ouverte. */
+@media (min-width: 900px) {
+  .custom-proofs__card:hover .custom-proofs__media {
+    box-shadow: inset 0 0 0 1px rgba(228, 95, 54, 0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-proofs__img {
+    transition: none;
+  }
+
+  .custom-proofs__card:hover .custom-proofs__img {
+    transform: none;
+  }
+}
+
+.custom-proofs__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-md);
+}
+
+/* Micro-sprint "Fix modale Preuves, taille unifiée" (PROMPT_CLAUDE_CODE_
+   FIX_MODAL_PREUVES_TAILLE_UNIFIEE §"cartes de la section Preuves" point 2)
+   — libellé de catégorisation en Ember à 80% d'opacité VISUELLE, MÊME
+   formule que les autres micro-labels Ember de cette page (`color: var(
+   --color-accent); opacity: .8`), posée uniquement sur ce span (aucun
+   enfant, donc aucun risque de rendre la carte ou d'autres textes
+   translucides). */
+.custom-proofs__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.custom-proofs__title {
+  font-size: 1.375rem;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.custom-proofs__card--secondary .custom-proofs__title {
+  font-size: 1.1875rem;
+}
+
+.custom-proofs__angle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.custom-proofs__text {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.custom-proofs__text:last-of-type {
+  margin-bottom: var(--space-sm);
+}
+
+.custom-proofs__notes {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0 0 var(--space-md) 0;
+  padding: 0;
+}
+
+.custom-proofs__notes li {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.custom-proofs__cta {
+  align-self: flex-start;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.2em;
+  font-weight: 600;
+}
+
+.custom-proofs__cta:hover {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
+.custom-proofs__cta:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Carte vedette — image à gauche / contenu à droite (prompt §"desktop —
+   point crucial") UNIQUEMENT ≥900px ; en dessous, reprend le layout
+   colonne par défaut (image AU-DESSUS du texte), comme les 2 cartes
+   secondaires. */
+@media (min-width: 900px) {
+  .custom-proofs__card--featured {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .custom-proofs__card--featured .custom-proofs__media {
+    width: 46%;
+    flex: none;
+    aspect-ratio: auto;
+    min-height: 320px;
+    border-bottom: none;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .custom-proofs__card--featured .custom-proofs__body {
+    justify-content: center;
+    padding: var(--space-lg);
+  }
+
+  .custom-proofs__card--featured .custom-proofs__title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Lightbox grand format — micro-sprint correctif "Fix modale Preuves,
+   taille unifiée" (PROMPT_CLAUDE_CODE_FIX_MODAL_PREUVES_TAILLE_UNIFIEE).
+   CAUSE RÉELLE du rendu minuscule précédent : voir le commentaire détaillé
+   dans CustomProofs.astro (script) — en résumé, l'ancien `.custom-proofs__
+   lightbox` n'avait que des `max-width`/`max-height` (jamais de largeur/
+   hauteur EXPLICITES), donc un `display:flex` sans enfant contraint se
+   réduisait à la taille INTRINSÈQUE de l'image chargée : minuscule pour
+   AgencyOS/Trajet Formateur, dont le JS ne demandait de toute façon qu'un
+   petit candidat responsive (calculé pour la vignette de carte, jamais pour
+   un grand format). CORRECTIF : `.custom-proofs__lightbox` a maintenant une
+   largeur ET une hauteur EXPLICITES (`width`/`height`, pas seulement
+   `max-*`) — un vrai CADRE fixe, IDENTIQUE pour les 3 projets, à l'intérieur
+   duquel l'image est forcée à `width:100%;height:100%;object-fit:contain`
+   (jamais `width:auto`) : elle occupe donc TOUJOURS le même espace visuel,
+   quelle que soit sa résolution source réelle (voir aussi le JS,
+   `getBestSrc()`, qui charge désormais le plus grand candidat disponible).
+   Structure enrichie d'un EN-TÊTE opaque (titre + croix), pour ne plus
+   jamais superposer la croix aux commandes du logiciel photographié. */
+.custom-proofs__lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Overlay sombre 0.7 + flou du contenu derrière (prompt §"fond de la
+     modale") : le site reste perceptible sans rivaliser avec l'image.
+     Fallback explicite si `backdrop-filter` est indisponible (Firefox <103,
+     très rare aujourd'hui) : overlay légèrement plus sombre pour compenser
+     l'absence de flou, jamais un fond opaque. */
+  background: rgba(10, 10, 12, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: max(var(--space-xl), env(safe-area-inset-top)) max(var(--space-xl), env(safe-area-inset-right))
+    max(var(--space-xl), env(safe-area-inset-bottom)) max(var(--space-xl), env(safe-area-inset-left));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .custom-proofs__lightbox-backdrop {
+    background: rgba(10, 10, 12, 0.82);
+  }
+}
+
+.custom-proofs__lightbox-backdrop[hidden] {
+  display: none;
+}
+
+/* Cadre — largeur/hauteur EXPLICITES (jamais seulement `max-*`), MÊME
+   gabarit pour les 3 projets (prompt : "objectif visuel non négociable").
+   Contenu PLEINEMENT OPAQUE (jamais d'opacité sur ce conteneur) : seul le
+   backdrop ci-dessus porte la transparence/le flou. */
+.custom-proofs__lightbox {
+  position: relative;
+  width: min(92vw, 1600px);
+  height: min(88vh, 920px);
+  max-width: 94vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: 0 50px 110px -40px rgba(0, 0, 0, 0.65);
+}
+
+@supports (height: 1dvh) {
+  .custom-proofs__lightbox {
+    height: min(88dvh, 920px);
+  }
+}
+
+.custom-proofs__lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex: none;
+  margin-bottom: var(--space-sm);
+}
+
+.custom-proofs__lightbox-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+/* Zone image — occupe tout l'espace restant sous l'en-tête (`flex:1`,
+   `min-height:0` indispensable pour qu'un enfant flex puisse RÉELLEMENT se
+   réduire sous la hauteur EXPLICITE du parent, sinon le cadre déborderait
+   silencieusement). L'image y est forcée `width:100%;height:100%;
+   object-fit:contain` : c'est CE forçage — absent avant ce correctif — qui
+   garantit le même grand gabarit pour les 3 projets. */
+.custom-proofs__lightbox-media {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--color-bg-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+}
+
+.custom-proofs__lightbox-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Croix — même esprit que les 2 autres modales de cette page (44×44, accent
+   Ember, jamais agressive), désormais dans l'EN-TÊTE opaque (jamais
+   superposée à l'image ni à ses commandes). */
+.custom-proofs__lightbox-close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.custom-proofs__lightbox-close:hover,
+.custom-proofs__lightbox-close:focus-visible {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.custom-proofs__lightbox-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .custom-proofs__lightbox-backdrop:not([hidden]) {
+    animation: custom-proofs-lightbox-fade-in 180ms ease;
+  }
+
+  .custom-proofs__lightbox {
+    animation: custom-proofs-lightbox-in 220ms ease;
+  }
+}
+
+@keyframes custom-proofs-lightbox-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes custom-proofs-lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Micro-sprint "Finitions couleurs/fonds/CTA" (PROMPT_CLAUDE_CODE_DEV_
+   SUR_MESURE_FINITIONS_COULEURS_FONDS_CTA) — rejoint la même famille
+   visuelle qu'Applications métier & SaaS / Sites professionnels : eyebrows
+   en Ember atténué, MÊME formule que `.service-page--apps .service-hero__
+   eyebrow`/`.service-cta__eyebrow`/`.section-heading__eyebrow` plus haut
+   (color: var(--color-accent); opacity: .8), token existant uniquement.
+   Couvre les 7 libellés demandés : le `.service-hero__eyebrow` du Hero
+   ("Développement sur mesure"), les 5 `.section-heading__eyebrow` des
+   sections ("Point de départ", "Cas d'usage", "Preuves", "Mode de
+   collaboration", "Repères") et le `.service-cta__eyebrow` du CTA final
+   ("Un besoin qui sort du cadre ?"). `html` devant `.section-heading__
+   eyebrow` pour les mêmes raisons de spécificité que `.service-page--apps`/
+   `.service-page--sites` ci-dessus (composant stylé par son propre bloc
+   scopé Astro). Scopée `.service-page--custom` : aucun effet sur les 4
+   autres pages qui partagent ce fichier. */
+.service-page--custom .service-hero__eyebrow,
+.service-page--custom .service-cta__eyebrow,
+html .service-page--custom .section-heading__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* Fonds chauds — reprend fidèlement le même mécanisme et les mêmes valeurs
+   que `.apps-hero-section`/`.apps-architecture-section`/`.apps-cadrage-
+   section`/`.apps-final-cta-section` (plus haut dans ce fichier) : simple
+   `background` radial-gradient Ember toujours translucide (alpha max
+   0.14), jamais un aplat orange plein/uniforme. Limité aux 4 zones
+   demandées (Hero, "Cas d'usage", "Mode de collaboration", fond de section
+   du CTA final) ; "Point de départ", "Preuves", "Repères" et le Footer
+   gardent leur fond antérieur (`--color-bg-soft` ou transparent), non
+   touchés. Classes ajoutées uniquement sur les <section> de cette page
+   (developpement-sur-mesure.astro), scopées `.service-page--custom`. */
+.service-page--custom .custom-hero-section {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+.service-page--custom .custom-usecases-section {
+  background: radial-gradient(circle at 50% 20%, rgba(228, 95, 54, 0.12), rgba(228, 95, 54, 0) 65%);
+}
+
+.service-page--custom .custom-process-section {
+  background: radial-gradient(circle at 30% 50%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 65%);
+}
+
+.service-page--custom .custom-cta-section {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+/* Carte CTA final — 80% d'opacité (alpha CSS 0.8, soit 20% de transparence)
+   MÊME technique que `.service-page--apps .service-cta`/`.service-page--
+   sites .service-cta` ci-dessus : `color-mix()` uniquement sur le
+   BACKGROUND, jamais `opacity` sur `.service-cta` entier — texte/
+   paragraphes/boutons/bordure/focus restent pleinement opaques et nets.
+   Le halo chaud de `.custom-cta-section` (ci-dessus) reste ainsi
+   perceptible au travers de la carte. Scopée `.service-page--custom` :
+   sans effet sur la landing ni sur les 2 autres pages services. */
+.service-page--custom .service-cta {
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+}
+
+/* Micro-sprint "DotWave 3 sections" (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_
+   DOTWAVE_TROIS_SECTIONS) — réutilisation STRICTE du composant
+   `ExpertiseDotWave`/`expertise-dot-wave.css` (Home Expertises/Capacités,
+   Applications "Le point de départ"/"Stack", Sites pro "Positionnement"/
+   "Fondations"/CTA final) : ni ce composant ni sa feuille CSS partagée ne
+   sont modifiés — le stacking nécessaire (identique à celui déjà appliqué
+   là-bas : hôte en `position:relative; isolation:isolate`, son
+   `> .container` promu `z-index:1` pour peindre au-dessus du décor
+   `z-index:0`) est reproduit ICI, MÊME formule que le bloc "DotWave local"
+   de `.service-page--sites` plus haut dans ce fichier, scopé
+   `.service-page--custom` UNIQUEMENT. Exactement 3 hôtes, comme demandé :
+   "Point de départ" (`custom-existing-section`), "Preuves" (`custom-
+   proofs-section`) et "Repères" (`custom-matrix-section`) — jamais le
+   Hero, "Cas d'usage", "Mode de collaboration" ou le CTA final, qui
+   gardent leur halo Ember translucide (bloc précédent) sans aucun décor à
+   points. Ces 3 hôtes restent par ailleurs `service-page__section--soft`
+   (fond gris existant, inchangé) : le décor vient simplement se peindre
+   derrière le contenu, sur ce même fond. */
+.service-page--custom .custom-existing-section,
+.service-page--custom .custom-proofs-section,
+.service-page--custom .custom-matrix-section {
+  position: relative;
+  isolation: isolate;
+}
+
+.service-page--custom .custom-existing-section > .container,
+.service-page--custom .custom-proofs-section > .container,
+.service-page--custom .custom-matrix-section > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Micro-sprint "Cas d'usage interactif" (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_
+   CAS_USAGE_INTERACTIF) — remplace `.service-hub` (diagramme "Votre
+   existant" + 4 nœuds, supprimé du markup, plus aucune référence dans le
+   projet) par le même système interactif que "Point de départ"
+   (`.custom-starting`, juste au-dessus) : classes ENTIÈREMENT
+   INDÉPENDANTES (`.custom-usecases-*`), aucune règle partagée, mêmes
+   VALEURS de DA (contour + box-shadow Ember de l'état actif, hover neutre,
+   entête "01/04 · libellé") pour la cohérence demandée par le prompt, sans
+   coupler les deux composants entre eux. */
+.custom-usecases {
+  margin-top: var(--space-lg);
+}
+
+.custom-usecases__fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* Légende accessible, jamais affichée : le titre H2 + l'intro de la section
+   (SectionHeading, juste au-dessus) portent déjà le message visible. */
+.custom-usecases__legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
-  max-width: 52rem;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.service-matrix__row {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  border-top: 1px solid var(--color-border);
+/* Mobile / repli sans JS — flux normal, chaque panneau suit directement SON
+   PROPRE choix (accordéon). */
+.custom-usecases__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
-.service-matrix__row:first-child {
-  border-top: none;
+.custom-usecases__item {
+  display: contents;
 }
 
-.service-matrix__row dt {
+.custom-usecases__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.custom-usecases__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
   padding: var(--space-sm) var(--space-md);
-  font-weight: 600;
-  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease, transform 220ms ease;
 }
 
-.service-matrix__row dt a {
-  color: var(--color-text);
+.custom-usecases__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-text-muted);
 }
 
-.service-matrix__row dt a:hover,
-.service-matrix__row dt a:focus-visible {
+.custom-usecases__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.custom-usecases__label {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* Hover — réaction discrète, volontairement plus légère que l'état actif. */
+.custom-usecases__choice:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-elevated);
+  transform: translateY(-1px);
+}
+
+/* État sélectionné — contour complet Ember discret + ombre orange légère à
+   deux couches (liseré 1px + halo doux), MÊMES valeurs que `.custom-
+   starting__radio:checked + .custom-starting__choice` (prompt §"desktop —
+   point crucial" : "pas de petit trait orange latéral, pas de néon ni de
+   gros glow"), jamais un lift ici (réservé au hover ci-dessus). L'icône
+   passe en Ember, le fond légèrement plus dense. */
+.custom-usecases__radio:checked + .custom-usecases__choice {
+  border-color: rgba(228, 95, 54, 0.55);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 0 0 1px rgba(228, 95, 54, 0.12), 0 10px 24px -14px rgba(228, 95, 54, 0.28);
+}
+
+.custom-usecases__radio:checked + .custom-usecases__choice .custom-usecases__icon {
   color: var(--color-accent);
 }
 
-.service-matrix__row dd {
+.custom-usecases__radio:checked + .custom-usecases__choice .custom-usecases__label {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.custom-usecases__radio:focus-visible + .custom-usecases__choice {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-usecases__choice {
+    transition: none;
+  }
+
+  .custom-usecases__choice:hover {
+    transform: none;
+  }
+}
+
+/* Panneau — masqué par défaut, révélé par le radio coché de SON PROPRE item
+   (accordéon mobile / repli sans JS). Desktop : surchargé plus bas (reste
+   dans la grille, jamais `display:none`, pour stabiliser la hauteur). */
+.custom-usecases__panel {
+  display: none;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  max-width: 36rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.custom-usecases__radio:checked ~ .custom-usecases__panel {
+  display: block;
+}
+
+.custom-usecases__panel-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: 0 0 var(--space-xs) 0;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+}
+
+.custom-usecases__panel-counter {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.custom-usecases__panel-meta-sep {
+  color: var(--color-text-muted);
+}
+
+.custom-usecases__panel-meta-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.custom-usecases__panel-title {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.1875rem;
+}
+
+.custom-usecases__panel-block {
+  margin-bottom: var(--space-sm);
+}
+
+.custom-usecases__panel-block:last-child {
+  margin-bottom: 0;
+}
+
+.custom-usecases__panel-block-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+.custom-usecases__panel-text {
   margin: 0;
-  padding: var(--space-sm) var(--space-md);
   color: var(--color-text-secondary);
   font-size: 0.9375rem;
 }
 
-@media (max-width: 599px) {
-  .service-matrix__row {
+/* Desktop — colonne gauche ~43% (choix) / droite ~57% (panneau unique),
+   MÊME principe que "Point de départ" : les 4 panneaux restent dans la
+   grille en permanence (visibility/opacity, jamais `display:none`), donc la
+   colonne de droite occupe TOUJOURS la hauteur du panneau le plus grand —
+   aucun saut de page au changement de choix. */
+@media (min-width: 900px) {
+  .custom-usecases__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr);
+    grid-template-rows: repeat(4, auto);
+    column-gap: var(--space-xl);
+    row-gap: var(--space-sm);
+    align-items: start;
+  }
+
+  .custom-usecases__choice {
+    grid-column: 1;
+  }
+
+  .custom-usecases__panel {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / -1;
+    margin-top: 0;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .custom-usecases__radio:checked ~ .custom-usecases__panel {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  .custom-usecases__panel {
+    transition: none;
+  }
+}
+
+/* Une fois le script initialisé (`.custom-usecases--js`), le panneau inline
+   cède la place à la modale sous 900px — jamais au-dessus (media query
+   mutuellement exclusive du bloc desktop ci-dessus). Sans JS, cette classe
+   n'existe jamais : l'accordéon reste le seul mécanisme, toujours
+   fonctionnel. */
+@media (max-width: 899px) {
+  .custom-usecases--js .custom-usecases__panel {
+    display: none !important;
+  }
+}
+
+/* Modale mobile — même formule que `.custom-starting__modal-backdrop`
+   (couche top-level déplacée en fin de <body> par le script, z-index
+   au-dessus de tout le reste du site). N'existe jamais visuellement
+   ≥900px. */
+.custom-usecases__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  background: rgba(10, 11, 13, 0.75);
+  padding: max(var(--space-md), env(safe-area-inset-top)) max(var(--space-md), env(safe-area-inset-right))
+    max(var(--space-md), env(safe-area-inset-bottom)) max(var(--space-md), env(safe-area-inset-left));
+}
+
+.custom-usecases__modal-backdrop[hidden] {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .custom-usecases__modal-backdrop {
+    display: none;
+  }
+}
+
+.custom-usecases__modal {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  max-height: 80vh;
+  max-height: min(80vh, calc(100dvh - 2 * var(--space-md)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: auto;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-md) var(--space-md) var(--space-md);
+}
+
+.custom-usecases__modal .custom-usecases__panel-meta {
+  margin-top: 0;
+}
+
+.custom-usecases__modal-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.custom-usecases__modal-close:hover,
+.custom-usecases__modal-close:focus-visible {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.custom-usecases__modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .custom-usecases__modal-backdrop:not([hidden]) {
+    animation: custom-usecases-fade-in 180ms ease;
+  }
+
+  .custom-usecases__modal {
+    animation: custom-usecases-modal-in 180ms ease;
+  }
+}
+
+@keyframes custom-usecases-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes custom-usecases-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Micro-sprint "Mode de collaboration, parcours interactif" (PROMPT_
+   CLAUDE_CODE_DEV_SUR_MESURE_MODE_COLLABORATION_PARCOURS_INTERACTIF) —
+   remplace `.service-process` (bandeau statique CS-S9B, retiré du markup —
+   plus aucune référence dans le projet) par un parcours chronologique
+   interactif. Technique VOLONTAIREMENT différente de `.custom-starting-*`/
+   `.custom-usecases-*` (prompt : "SANS réutiliser... la modale mobile") :
+   aucune modale ici, mécanisme 100% CSS (radio natif + label + panneau),
+   repli mobile natif en accordéon (jamais de JS requis pour ouvrir une
+   étape — donc structurellement impossible de reproduire le bug "premier
+   clic sans effet" déjà corrigé ailleurs, puisqu'il n'y a ici ni modale ni
+   JS d'ouverture). Barre de progression pilotée par `:has()` (déjà utilisé
+   ailleurs dans ce fichier, ex. `main:has(.custom-cta-section)`), un simple
+   repère de lecture, jamais un indicateur de chargement réel. */
+.custom-collab {
+  margin-top: var(--space-lg);
+}
+
+.custom-collab__fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* Légende accessible, jamais affichée : le titre H2 + l'intro de la
+   section (SectionHeading, juste au-dessus) portent déjà le message
+   visible. */
+.custom-collab__legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.custom-collab__progress {
+  margin-bottom: var(--space-md);
+}
+
+.custom-collab__progress-track {
+  position: relative;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+  overflow: hidden;
+}
+
+.custom-collab__progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 20%;
+  background: var(--color-accent);
+  border-radius: inherit;
+  transition: width 280ms ease;
+}
+
+/* 5 largeurs fixes (composant toujours à 5 étapes) — aucun JS, la portion
+   Ember suit simplement le radio réellement coché. */
+.custom-collab:has(#custom-collab-02:checked) .custom-collab__progress-fill {
+  width: 40%;
+}
+
+.custom-collab:has(#custom-collab-03:checked) .custom-collab__progress-fill {
+  width: 60%;
+}
+
+.custom-collab:has(#custom-collab-04:checked) .custom-collab__progress-fill {
+  width: 80%;
+}
+
+.custom-collab:has(#custom-collab-05:checked) .custom-collab__progress-fill {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-collab__progress-fill {
+    transition: none;
+  }
+}
+
+/* Mobile / tablette étroite — repli natif en accordéon : flux normal,
+   chaque panneau suit directement SON PROPRE choix. */
+.custom-collab__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.custom-collab__item {
+  display: contents;
+}
+
+/* Radio "visually hidden" — même technique que `.custom-starting__radio` :
+   jamais `display:none`, reste focusable au clavier (Tab/flèches natives
+   du groupe). */
+.custom-collab__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.custom-collab__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+}
+
+.custom-collab__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  color: var(--color-text-muted);
+}
+
+.custom-collab__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.custom-collab__index {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.custom-collab__name {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.custom-collab__choice:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-elevated);
+}
+
+/* État actif — contour Ember LÉGER + ombre orange TRÈS diffuse (prompt :
+   "pas de petit trait orange vertical... pas de gros glow"), fond
+   légèrement plus présent. Icône/numéro passent en Ember, nom en ivoire. */
+.custom-collab__radio:checked + .custom-collab__choice {
+  border-color: rgba(228, 95, 54, 0.5);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 14px 32px -26px rgba(228, 95, 54, 0.3);
+}
+
+.custom-collab__radio:checked + .custom-collab__choice .custom-collab__icon,
+.custom-collab__radio:checked + .custom-collab__choice .custom-collab__index {
+  color: var(--color-accent);
+}
+
+.custom-collab__radio:checked + .custom-collab__choice .custom-collab__name {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.custom-collab__radio:focus-visible + .custom-collab__choice {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-collab__choice {
+    transition: none;
+  }
+}
+
+/* Panneau — accordéon mobile par défaut (masqué, révélé par le radio coché
+   de SON PROPRE item, juste en dessous de son intitulé). Desktop :
+   surchargé plus bas (reste dans la grille, jamais retiré, pour stabiliser
+   la hauteur sans saut). */
+.custom-collab__panel {
+  display: none;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.custom-collab__radio:checked ~ .custom-collab__panel {
+  display: block;
+}
+
+.custom-collab__panel-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: 0 0 var(--space-xs) 0;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+}
+
+.custom-collab__panel-counter {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.custom-collab__panel-meta-sep {
+  color: var(--color-text-muted);
+}
+
+.custom-collab__panel-meta-name {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.custom-collab__panel-title {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.1875rem;
+}
+
+.custom-collab__panel-text {
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+}
+
+.custom-collab__panel-outcome {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.custom-collab__panel-outcome-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* Desktop — rangée de 5 choix + UN SEUL panneau sous la rangée (prompt
+   §"Desktop — parcours horizontal"). Placement EXPLICITE par position
+   (`:nth-of-type`, composant toujours à 5 étapes fixes) : les 5 `.choice`
+   occupent chacun leur propre colonne en ligne 1, les 5 `.panel` sont
+   TOUS co-localisés en ligne 2 pleine largeur (jamais `display:none` ici)
+   — un seul est réellement visible (`visibility`/`opacity`) à la fois,
+   mais la ligne 2 se dimensionne sur le panneau le plus grand : aucun saut
+   de hauteur au changement d'étape (même principe déjà validé sur Point de
+   départ/Cas d'usage, transposé colonne→ligne ici). Seuil relevé à 960px
+   plutôt que le 900px habituel du site : à 900px pile, les noms les plus
+   longs ("Proposition d'architecture") se compriment trop (prompt §5,
+   "plutôt basculer vers le parcours mobile que comprimer en micro-
+   caractères") — vérifié visuellement avant ce choix. */
+@media (min-width: 960px) {
+  .custom-collab__grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    column-gap: var(--space-sm);
+  }
+
+  .custom-collab__choice {
+    grid-row: 1;
+    height: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    text-align: left;
+  }
+
+  .custom-collab__item:nth-of-type(1) .custom-collab__choice {
+    grid-column: 1;
+  }
+
+  .custom-collab__item:nth-of-type(2) .custom-collab__choice {
+    grid-column: 2;
+  }
+
+  .custom-collab__item:nth-of-type(3) .custom-collab__choice {
+    grid-column: 3;
+  }
+
+  .custom-collab__item:nth-of-type(4) .custom-collab__choice {
+    grid-column: 4;
+  }
+
+  .custom-collab__item:nth-of-type(5) .custom-collab__choice {
+    grid-column: 5;
+  }
+
+  .custom-collab__name {
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+
+  .custom-collab__panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: block;
+    margin-top: var(--space-lg);
+    max-width: 40rem;
+    margin-inline: auto;
+    text-align: center;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .custom-collab__panel-meta {
+    justify-content: center;
+  }
+
+  .custom-collab__radio:checked ~ .custom-collab__panel {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (min-width: 960px) and (prefers-reduced-motion: reduce) {
+  .custom-collab__panel {
+    transition: none;
+  }
+}
+
+/* Micro-sprint "Repères, réassurance finale" (PROMPT_CLAUDE_CODE_DEV_SUR_
+   MESURE_REPERES_REASSURANCE_FINALE) — remplace `.service-matrix*`
+   ci-dessus (tableau technique 4 lignes, supprimé du markup, classes
+   désormais mortes et retirées : confirmées exclusives à cette page,
+   aucune autre page ne les référence) par une présentation éditoriale NON
+   interactive de 3 principes (voir CustomPrinciples.astro). Volontairement
+   PAS de cards encadrées ni de trait orange vertical (prompt §DA) : simple
+   colonne/ligne + une fine séparation graphite (`border-top`/`border-left`
+   selon le gabarit), aération large, icône à accent Ember discret. `.service
+   -faq` (juste au-dessus, apps/sites) n'est pas touchée : toujours utilisée
+   par applications-metier-saas.astro et sites-professionnels.astro. */
+.custom-principles {
+  margin: var(--space-lg) 0 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xl);
+  max-width: 68rem;
+}
+
+.custom-principles__item {
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.custom-principles__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-accent);
+  opacity: 0.85;
+  margin-bottom: var(--space-md);
+}
+
+.custom-principles__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.custom-principles__title {
+  margin: 0 0 var(--space-xs) 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.custom-principles__text {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 899px) {
+  .custom-principles {
     grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    max-width: 34rem;
   }
 }

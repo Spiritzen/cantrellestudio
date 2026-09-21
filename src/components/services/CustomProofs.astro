@@ -1,0 +1,324 @@
+---
+// CustomProofs — micro-sprint "Preuves Sereno/AgencyOS/Trajet Formateur"
+// (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_PREUVES_SERENO_AGENCYOS_TRAJET_
+// FORMATEUR), utilisé UNIQUEMENT par /developpement-sur-mesure/, section
+// "Preuves". Remplace `.related-case-study-pair` (2× RelatedCaseStudy,
+// Sereno/AgencyOS) + le bloc GlassTrack isolé (ServiceProofCard) par UNE
+// carte vedette pleine largeur (Sereno, image gauche / contenu droite sur
+// desktop) puis DEUX cartes de même importance (AgencyOS, Trajet Formateur),
+// GlassTrack retiré de CETTE section (reste défini dans serviceProofs.ts,
+// disponible ailleurs si besoin — jamais supprimé du projet).
+//
+// `RelatedCaseStudy.astro` n'est ni importé ni modifié : le layout "vedette
+// horizontale + paire égale" demandé ici diffère structurellement de sa
+// grammaire ("phare plus grand" empilé au-dessus d'un "secondaire" — jamais
+// une vraie mise en page horizontale image/texte). Composant et classes CSS
+// (`.custom-proofs-*`) entièrement locaux à cette section, aucun style
+// partagé/global touché (prompt : "ne pas modifier les styles globaux des
+// cartes d'autres pages").
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { withBase } from "../../utils/paths";
+
+interface ProofCard {
+  variant: "featured" | "secondary";
+  label: string;
+  title: string;
+  angle: string;
+  description: string[];
+  techNotes: string[];
+  image: ImageMetadata;
+  imageAlt: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaExternal?: boolean;
+}
+
+interface Props {
+  featured: ProofCard;
+  secondary: ProofCard[];
+}
+
+const { featured, secondary } = Astro.props as Props;
+---
+
+<div class="custom-proofs">
+  <article class="custom-proofs__card custom-proofs__card--featured" data-motion="proof">
+    <button
+      type="button"
+      class="custom-proofs__media"
+      data-lightbox-trigger
+      data-project-title={featured.title}
+      aria-label={`Agrandir l'image du projet ${featured.title}`}
+    >
+      <Picture
+        src={featured.image}
+        alt={featured.imageAlt}
+        formats={["avif", "webp"]}
+        widths={[480, 768, 1100, 1400]}
+        sizes="(min-width: 900px) 46vw, 100vw"
+        loading="lazy"
+        decoding="async"
+        class="custom-proofs__img"
+      />
+    </button>
+    <div class="custom-proofs__body">
+      <span class="custom-proofs__label">{featured.label}</span>
+      <h3 class="custom-proofs__title">{featured.title}</h3>
+      <p class="custom-proofs__angle">{featured.angle}</p>
+      {featured.description.map((sentence) => (
+        <p class="custom-proofs__text">{sentence}</p>
+      ))}
+      {featured.techNotes.length > 0 && (
+        <ul class="custom-proofs__notes">
+          {featured.techNotes.map((note) => (
+            <li>{note}</li>
+          ))}
+        </ul>
+      )}
+      <a
+        class="custom-proofs__cta"
+        href={featured.ctaExternal ? featured.ctaHref : withBase(featured.ctaHref)}
+        target={featured.ctaExternal ? "_blank" : undefined}
+        rel={featured.ctaExternal ? "noopener noreferrer" : undefined}
+      >
+        {featured.ctaLabel} <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </article>
+
+  <div class="custom-proofs__row">
+    {secondary.map((card) => (
+      <article class="custom-proofs__card custom-proofs__card--secondary" data-motion="proof">
+        <button
+          type="button"
+          class="custom-proofs__media"
+          data-lightbox-trigger
+          data-project-title={card.title}
+          aria-label={`Agrandir l'image du projet ${card.title}`}
+        >
+          <Picture
+            src={card.image}
+            alt={card.imageAlt}
+            formats={["avif", "webp"]}
+            widths={[320, 480, 640, 900, 1300]}
+            sizes="(min-width: 900px) 30vw, 100vw"
+            loading="lazy"
+            decoding="async"
+            class="custom-proofs__img"
+          />
+        </button>
+        <div class="custom-proofs__body">
+          <span class="custom-proofs__label">{card.label}</span>
+          <h3 class="custom-proofs__title">{card.title}</h3>
+          <p class="custom-proofs__angle">{card.angle}</p>
+          {card.description.map((sentence) => (
+            <p class="custom-proofs__text">{sentence}</p>
+          ))}
+          {card.techNotes.length > 0 && (
+            <ul class="custom-proofs__notes">
+              {card.techNotes.map((note) => (
+                <li>{note}</li>
+              ))}
+            </ul>
+          )}
+          <a
+            class="custom-proofs__cta"
+            href={card.ctaExternal ? card.ctaHref : withBase(card.ctaHref)}
+            target={card.ctaExternal ? "_blank" : undefined}
+            rel={card.ctaExternal ? "noopener noreferrer" : undefined}
+          >
+            {card.ctaLabel} <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <div class="custom-proofs__lightbox-backdrop" data-lightbox-backdrop hidden>
+    <div class="custom-proofs__lightbox" role="dialog" aria-modal="true" aria-labelledby="custom-proofs-lightbox-title" data-lightbox>
+      <div class="custom-proofs__lightbox-header">
+        <h3 class="custom-proofs__lightbox-title" id="custom-proofs-lightbox-title" data-lightbox-title></h3>
+        <button type="button" class="custom-proofs__lightbox-close" data-lightbox-close aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="custom-proofs__lightbox-media">
+        <img class="custom-proofs__lightbox-img" data-lightbox-img alt="" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Micro-sprint "Fix modale Preuves, taille unifiée" (PROMPT_CLAUDE_CODE_
+  // FIX_MODAL_PREUVES_TAILLE_UNIFIEE) — CAUSE RÉELLE du bug précédent
+  // (diagnostiquée avant toute modification) : l'image affichée dans la
+  // lightbox réutilisait `img.currentSrc`, c'est-à-dire le candidat
+  // responsive choisi par le NAVIGATEUR pour la taille d'affichage de la
+  // VIGNETTE de carte (calculé depuis l'attribut `sizes` de chaque
+  // <Picture>) — jamais le plus grand fichier réellement généré. La carte
+  // Sereno (vedette, `sizes="46vw"`) obtenait ainsi un candidat nettement
+  // plus large que les cartes secondaires (`sizes="30vw"`), ET l'ancien
+  // `<img>` de la lightbox utilisait `width:auto;height:auto` (taille
+  // intrinsèque de CE candidat, jamais mise à l'échelle du cadre de la
+  // modale) : le gabarit de la lightbox se recalculait donc bêtement à la
+  // taille du fichier choisi pour la vignette, minuscule pour AgencyOS/
+  // Trajet Formateur. CORRECTIF (à la source, sans overlay de CSS) :
+  // - `getBestSrc()` lit le `srcset` du <img> (déjà généré par Astro, aucun
+  //   nouvel export) et choisit explicitement le candidat de plus GRANDE
+  //   largeur disponible, indépendamment de la taille d'affichage de la
+  //   carte d'origine (voir aussi les `widths` élargis à 900/1300 sur les
+  //   cartes secondaires, ci-dessus dans ce fichier — les 3 fichiers
+  //   sources sont réellement ~1920px de large, vérifié avant modification,
+  //   aucune limite de résolution réelle ne justifiait le petit rendu).
+  // - `.custom-proofs__lightbox` a désormais une largeur/hauteur EXPLICITES
+  //   (pas seulement `max-*`, voir CSS) : le cadre ne se réduit plus à la
+  //   taille intrinsèque de l'image, les 3 projets partagent donc
+  //   STRICTEMENT le même grand gabarit visuel.
+  // Réutilise par ailleurs le MÊME socle robuste (verrouillage de scroll
+  // `position:fixed` + restauration exacte, `inert` sur le reste de la
+  // page, piège de focus, déplacement en fin de <body>) déjà validé sur
+  // cette page (CustomStartingPoint.astro, CustomUseCases.astro). Aucune
+  // modification des liens texte (`.custom-proofs__cta`) ni de leur
+  // comportement.
+  function getBestSrc(img: HTMLImageElement): string {
+    const srcset = img.getAttribute("srcset") || "";
+    if (!srcset) return img.currentSrc || img.src;
+    let bestUrl = "";
+    let bestWidth = -1;
+    srcset.split(",").forEach((entry) => {
+      const parts = entry.trim().split(/\s+/);
+      const url = parts[0];
+      const descriptor = parts[1];
+      const width = descriptor && descriptor.endsWith("w") ? parseInt(descriptor, 10) : 0;
+      if (url && width > bestWidth) {
+        bestWidth = width;
+        bestUrl = url;
+      }
+    });
+    return bestUrl || img.currentSrc || img.src;
+  }
+
+  const root = document.querySelector<HTMLElement>(".custom-proofs");
+  if (root) {
+    const backdrop = root.querySelector<HTMLElement>("[data-lightbox-backdrop]");
+    const dialog = root.querySelector<HTMLElement>("[data-lightbox]");
+    const closeBtn = root.querySelector<HTMLButtonElement>("[data-lightbox-close]");
+    const lightboxImg = root.querySelector<HTMLImageElement>("[data-lightbox-img]");
+    const lightboxTitle = root.querySelector<HTMLElement>("[data-lightbox-title]");
+    const triggers = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-lightbox-trigger]"));
+
+    if (backdrop && dialog && closeBtn && lightboxImg && lightboxTitle && triggers.length > 0) {
+      // Couche top-level non piégée : déplacée en fin de <body> au montage,
+      // même garde-fou que les 2 autres modales de cette page.
+      document.body.appendChild(backdrop);
+
+      const DESKTOP_QUERY = "(min-width: 900px)";
+      const isDesktop = () => window.matchMedia(DESKTOP_QUERY).matches;
+
+      let lastTrigger: HTMLElement | null = null;
+      let savedScrollY = 0;
+      let savedBodyStyle: string | null = null;
+      let inertedEls: HTMLElement[] = [];
+
+      function lockScroll() {
+        savedScrollY = window.scrollY;
+        savedBodyStyle = document.body.getAttribute("style");
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${savedScrollY}px`;
+        document.body.style.left = "0";
+        document.body.style.right = "0";
+        document.body.style.width = "100%";
+      }
+
+      function unlockScroll() {
+        if (savedBodyStyle) {
+          document.body.setAttribute("style", savedBodyStyle);
+        } else {
+          document.body.removeAttribute("style");
+        }
+        window.scrollTo(0, savedScrollY);
+      }
+
+      function setInert() {
+        inertedEls = Array.from(document.body.children).filter(
+          (el): el is HTMLElement => el instanceof HTMLElement && el !== backdrop,
+        );
+        inertedEls.forEach((el) => {
+          el.setAttribute("inert", "");
+          el.setAttribute("aria-hidden", "true");
+        });
+      }
+
+      function removeInert() {
+        inertedEls.forEach((el) => {
+          el.removeAttribute("inert");
+          el.removeAttribute("aria-hidden");
+        });
+        inertedEls = [];
+      }
+
+      function onKeydown(event: KeyboardEvent) {
+        if (event.key === "Escape") {
+          closeLightbox();
+          return;
+        }
+        // Piège de focus : un seul élément focusable dans la boîte (la
+        // croix), Tab/Shift+Tab y restent donc systématiquement.
+        if (event.key === "Tab") {
+          event.preventDefault();
+          closeBtn!.focus();
+        }
+      }
+
+      function openLightbox(trigger: HTMLButtonElement) {
+        const img = trigger.querySelector("img");
+        if (!img || !backdrop) return;
+
+        lightboxImg!.src = getBestSrc(img);
+        lightboxImg!.alt = img.alt;
+        lightboxTitle!.textContent = trigger.dataset.projectTitle || "";
+
+        lastTrigger = trigger;
+        lockScroll();
+        setInert();
+        backdrop.hidden = false;
+        document.addEventListener("keydown", onKeydown);
+        closeBtn!.focus();
+      }
+
+      function closeLightbox() {
+        if (!backdrop || backdrop.hidden) return;
+        backdrop.hidden = true;
+        document.removeEventListener("keydown", onKeydown);
+        removeInert();
+        unlockScroll();
+        lightboxImg!.src = "";
+        if (lastTrigger && lastTrigger.isConnected) lastTrigger.focus();
+        lastTrigger = null;
+      }
+
+      closeBtn.addEventListener("click", () => closeLightbox());
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeLightbox();
+      });
+      dialog.addEventListener("click", (event) => event.stopPropagation());
+
+      triggers.forEach((trigger) => {
+        trigger.addEventListener("click", (event) => {
+          if (!isDesktop()) return;
+          event.preventDefault();
+          openLightbox(trigger);
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        if (backdrop && !backdrop.hidden && !isDesktop()) closeLightbox();
+      });
+    }
+  }
+</script>

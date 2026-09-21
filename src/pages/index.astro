@@ -10,7 +10,12 @@ import Container from "../components/ui/Container.astro";
 import ActionLink from "../components/ui/ActionLink.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ServiceItem from "../components/ui/ServiceItem.astro";
-import ProjectCard from "../components/ui/ProjectCard.astro";
+// Micro-sprint "Landing Réalisations, DA Preuves Sur mesure" (PROMPT_
+// CLAUDE_CODE_LANDING_REALISATIONS_DA_PREUVES_SUR_MESURE) — remplace
+// `<ProjectCard>` (toujours défini, non supprimé, simplement plus utilisé
+// ici) par le même traitement visuel/comportemental que "Preuves" sur
+// /developpement-sur-mesure/ (voir composant pour le détail).
+import RealisationsShowcase from "../components/ui/RealisationsShowcase.astro";
 import { projectMedia } from "../data/projectMedia";
 import HeroScene from "../components/hero/HeroScene";
 import HomeMotion from "../components/motion/HomeMotion.astro";
@@ -43,6 +48,24 @@ const featuredRealisations = [...allRealisations]
   })
   .slice(0, 3);
 const [primaryRealisation, ...secondaryRealisations] = featuredRealisations;
+
+// Micro-sprint "Landing Réalisations, DA Preuves Sur mesure" — mise en
+// forme pour `<RealisationsShowcase>` : mêmes champs que l'ancien
+// `<ProjectCard>` (title/category/summary/technologies, `projectMedia`),
+// aucun contenu réécrit. Seule l'image `primary` est reprise (jamais
+// `secondary`, qui alimentait l'ancien mini-visuel en incrustation —
+// absent du traitement "Preuves", donc non repris ici, prompt §2/§27).
+const toRealisationCard = (realisation: (typeof featuredRealisations)[number]) => ({
+  slug: realisation.data.slug,
+  title: realisation.data.shortTitle ?? realisation.data.title,
+  category: realisation.data.category,
+  summary: realisation.data.summary,
+  technologies: realisation.data.technologies ?? [],
+  image: projectMedia[realisation.data.slug]?.primary,
+  imageAlt: projectMedia[realisation.data.slug]?.primaryAlt ?? "",
+});
+const featuredCard = primaryRealisation ? toRealisationCard(primaryRealisation) : null;
+const secondaryCards = secondaryRealisations.map(toRealisationCard);
 
 // --- B. Expertises ---------------------------------------------------------
 const expertises = [
@@ -203,39 +226,7 @@ const capabilityGroups = [
         intro="Logiciel métier, SaaS de gestion ou site professionnel : chaque projet part d'un problème différent, pas d'une stack imposée."
       />
 
-      <div class="home-projects__grid">
-        {primaryRealisation && (
-          <ProjectCard
-            slug={primaryRealisation.data.slug}
-            title={primaryRealisation.data.shortTitle ?? primaryRealisation.data.title}
-            category={primaryRealisation.data.category}
-            summary={primaryRealisation.data.summary}
-            technologies={primaryRealisation.data.technologies}
-            variant="featured"
-            primaryImage={projectMedia[primaryRealisation.data.slug]?.primary}
-            primaryAlt={projectMedia[primaryRealisation.data.slug]?.primaryAlt}
-            secondaryImage={projectMedia[primaryRealisation.data.slug]?.secondary}
-            secondaryAlt={projectMedia[primaryRealisation.data.slug]?.secondaryAlt}
-          />
-        )}
-
-        <div class="home-projects__secondary">
-          {secondaryRealisations.map((realisation) => (
-            <ProjectCard
-              slug={realisation.data.slug}
-              title={realisation.data.shortTitle ?? realisation.data.title}
-              category={realisation.data.category}
-              summary={realisation.data.summary}
-              technologies={realisation.data.technologies}
-              variant="standard"
-              primaryImage={projectMedia[realisation.data.slug]?.primary}
-              primaryAlt={projectMedia[realisation.data.slug]?.primaryAlt}
-              secondaryImage={projectMedia[realisation.data.slug]?.secondary}
-              secondaryAlt={projectMedia[realisation.data.slug]?.secondaryAlt}
-            />
-          ))}
-        </div>
-      </div>
+      {featuredCard && <RealisationsShowcase featured={featuredCard} secondary={secondaryCards} />}
     </Container>
   </section>
 

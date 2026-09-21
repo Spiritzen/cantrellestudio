@@ -86,37 +86,35 @@ export const serviceCaseStudyMap: ServiceCaseStudyLink[] = [
     onProjectPage: "principal",
   },
 
-  // Développement sur mesure — preuve phare AgencyOS, secondaire Sereno.
-  // Choix justifié dans le rapport (§9/§14 du rapport) : AgencyOS démontre
-  // le mieux la modularité et l'intégration de plusieurs domaines métier
-  // dans un système cohérent — l'angle même de cette page (diagramme hub,
-  // "existant au centre, modules autour") — tandis que Sereno démontre
-  // surtout des règles et un workflow réglementaire, angle déjà couvert en
-  // profondeur par la page Applications. AgencyOS reste donc "connexe"
-  // (discret) sur sa PROPRE page, son Service PRINCIPAL restant Applications
-  // métier & SaaS (prompt §11, exemple donné explicitement par le prompt).
-  // Sereno n'affiche pas de Service connexe forcé sur sa propre page.
-  {
-    serviceSlug: SUR_MESURE.slug,
-    serviceLabel: SUR_MESURE.label,
-    serviceHref: SUR_MESURE.href,
-    projectSlug: "agencyos",
-    role: "primary",
-    angle:
-      "AgencyOS illustre une architecture modulaire capable d'intégrer plusieurs domaines métier dans un système cohérent.",
-    onProjectPage: "connexe",
-  },
+  // Développement sur mesure — micro-sprint "Preuves Sereno/AgencyOS/Trajet
+  // Formateur" (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_PREUVES_SERENO_AGENCYOS_
+  // TRAJET_FORMATEUR) — hiérarchie INVERSÉE par décision explicite de
+  // Sébastien : Sereno devient la preuve PHARE (carte vedette pleine largeur)
+  // sur cette page, AgencyOS repasse secondaire (carte de même importance
+  // qu'un 3e projet, Trajet Formateur, ajouté en page — sans entrée dans ce
+  // fichier : aucune étude de cas interne, pas de relation Service↔Projet à
+  // documenter ici). `onProjectPage` INCHANGÉ pour les deux (rôle sur la
+  // page du PROJET lui-même, sans lien avec ce nouveau classement ici) :
+  // AgencyOS reste "connexe" sur sa propre page (Service principal =
+  // Applications métier & SaaS), Sereno n'affiche toujours aucun badge
+  // Service connexe forcé sur la sienne.
   {
     serviceSlug: SUR_MESURE.slug,
     serviceLabel: SUR_MESURE.label,
     serviceHref: SUR_MESURE.href,
     projectSlug: "sereno",
-    role: "secondary",
+    role: "primary",
     angle: "Sereno illustre la traduction de règles métier complexes en un workflow logiciel fiable et testé.",
-    // Pas de onProjectPage : Sereno n'a pas besoin d'un badge "Service
-    // connexe" sur sa propre page pour rester une preuve secondaire valable
-    // ici (prompt §11 : le connexe doit être "réellement pertinent", pas
-    // systématique).
+  },
+  {
+    serviceSlug: SUR_MESURE.slug,
+    serviceLabel: SUR_MESURE.label,
+    serviceHref: SUR_MESURE.href,
+    projectSlug: "agencyos",
+    role: "secondary",
+    angle:
+      "AgencyOS illustre une architecture modulaire capable d'intégrer plusieurs domaines métier dans un système cohérent.",
+    onProjectPage: "connexe",
   },
 ];
 

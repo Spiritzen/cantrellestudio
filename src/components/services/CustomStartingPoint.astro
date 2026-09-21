@@ -1,0 +1,337 @@
+---
+// CustomStartingPoint — micro-sprint "Point de départ interactif + footer"
+// (PROMPT_CLAUDE_CODE_DEV_SUR_MESURE_POINT_DE_DEPART_INTERACTIF_FOOTER),
+// utilisé UNIQUEMENT par /developpement-sur-mesure/, section "Point de
+// départ". Remplace la liste statique `.service-chips` (5 puces sans
+// interaction) par 5 choix cliquables + 1 panneau explicatif.
+//
+// MÉCANISME DESKTOP (≥900px) — même TECHNIQUE que PositioningSituations.astro
+// (radios natifs cachés + <label> visible + panneau CSS pur, aucun JS requis
+// pour choisir/afficher), volontairement ADAPTÉE : ici les 5 panneaux
+// restent réellement dans la grille (jamais `display:none`) et sont
+// simplement rendus invisibles (`visibility/opacity`) sauf celui coché — la
+// zone de droite occupe donc TOUJOURS la hauteur du panneau le plus grand,
+// ce qui élimine les sauts de page au changement de choix (exigence propre
+// à ce sprint, plus stricte que Positioning).
+//
+// MÉCANISME MOBILE (<900px) :
+// - SANS JavaScript : repli natif — le clic sur un choix révèle son panneau
+//   juste en dessous, en CSS pur (`:checked ~ .panel`), comme un accordéon
+//   classique. Fonctionne dès le premier rendu (item 01 coché côté serveur).
+// - AVEC JavaScript : le panneau inline est masqué (classe `.custom-
+//   starting--js`, posée par le script ci-dessous) et le changement de radio
+//   ouvre à la place une MODALE centrée plein viewport (voir script), avec
+//   verrouillage du scroll de fond, piège de focus et fermetures croix/
+//   backdrop/Échap. SOURCE UNIQUE de contenu : le JSON embarqué
+//   (`[data-starting-points]`), sérialisé une seule fois depuis `points` —
+//   jamais un second texte retapé en dur dans le script, jamais de clone DOM
+//   (donc aucune synchronisation à maintenir entre panneau desktop/accordéon
+//   et modale : les deux lisent la MÊME donnée, l'une au rendu serveur,
+//   l'autre au runtime).
+interface StartingPoint {
+  id: string;
+  label: string;
+  title: string;
+  body: string[];
+  result: string;
+}
+
+interface Props {
+  points: StartingPoint[];
+}
+
+const { points } = Astro.props as Props;
+const GROUP_NAME = "custom-starting";
+// Micro-finition "Point de départ, finitions CSS" (PROMPT_CLAUDE_CODE_DEV_
+// SUR_MESURE_POINT_DE_DEPART_FINITIONS_CSS §2) — repère de progression
+// "01/05" en tête de panneau, total calculé depuis `points.length` (jamais
+// un "05" en dur) pour rester correct si la liste évolue un jour.
+const totalPadded = String(points.length).padStart(2, "0");
+---
+
+<div class="custom-starting" data-motion="block">
+  <fieldset class="custom-starting__fieldset">
+    <legend class="custom-starting__legend">Choisissez votre point de départ</legend>
+    <div class="custom-starting__grid">
+      {points.map((point: StartingPoint, index: number) => {
+        const radioId = `${GROUP_NAME}-${point.id}`;
+        const panelId = `${GROUP_NAME}-panel-${point.id}`;
+        return (
+          <div class="custom-starting__item">
+            <input
+              type="radio"
+              name={GROUP_NAME}
+              id={radioId}
+              class="custom-starting__radio"
+              checked={index === 0}
+              aria-controls={panelId}
+              data-point-id={point.id}
+            />
+            <label for={radioId} class="custom-starting__choice">
+              <span class="custom-starting__index" aria-hidden="true">{point.id}</span>
+              <span class="custom-starting__label">{point.label}</span>
+            </label>
+            <div class="custom-starting__panel" id={panelId} aria-labelledby={radioId}>
+              <p class="custom-starting__panel-meta" aria-hidden="true">
+                <span class="custom-starting__panel-counter">{point.id}/{totalPadded}</span>
+                <span class="custom-starting__panel-meta-sep">·</span>
+                <span class="custom-starting__panel-meta-label">{point.label}</span>
+              </p>
+              <h3 class="custom-starting__panel-title">{point.title}</h3>
+              {point.body.map((sentence: string) => (
+                <p class="custom-starting__panel-text">{sentence}</p>
+              ))}
+              <p class="custom-starting__panel-result">
+                <span class="custom-starting__panel-result-label">Résultat</span>
+                {point.result}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </fieldset>
+
+  <script type="application/json" data-starting-points is:inline set:html={JSON.stringify(points)} />
+
+  <div class="custom-starting__modal-backdrop" data-modal-backdrop hidden>
+    <div
+      class="custom-starting__modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="custom-starting-modal-title"
+      data-modal
+    >
+      <button type="button" class="custom-starting__modal-close" data-modal-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18" />
+          <line x1="18" y1="6" x2="6" y2="18" />
+        </svg>
+      </button>
+      <div class="custom-starting__modal-body" data-modal-body>
+        <p class="custom-starting__panel-meta" aria-hidden="true">
+          <span class="custom-starting__panel-counter" data-modal-counter></span>
+          <span class="custom-starting__panel-meta-sep">·</span>
+          <span class="custom-starting__panel-meta-label" data-modal-meta-label></span>
+        </p>
+        <h3 class="custom-starting__panel-title" id="custom-starting-modal-title" data-modal-title></h3>
+        <div data-modal-text></div>
+        <p class="custom-starting__panel-result">
+          <span class="custom-starting__panel-result-label">Résultat</span>
+          <span data-modal-result></span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface StartingPointData {
+    id: string;
+    label: string;
+    title: string;
+    body: string[];
+    result: string;
+  }
+
+  const root = document.querySelector<HTMLElement>(".custom-starting");
+  if (root) {
+    const dataScript = root.querySelector<HTMLScriptElement>("[data-starting-points]");
+    const points: StartingPointData[] = dataScript ? JSON.parse(dataScript.textContent || "[]") : [];
+
+    const backdrop = root.querySelector<HTMLElement>("[data-modal-backdrop]");
+    const modal = root.querySelector<HTMLElement>("[data-modal]");
+    const closeBtn = root.querySelector<HTMLButtonElement>("[data-modal-close]");
+    const modalCounter = root.querySelector<HTMLElement>("[data-modal-counter]");
+    const modalMetaLabel = root.querySelector<HTMLElement>("[data-modal-meta-label]");
+    const modalTitle = root.querySelector<HTMLElement>("[data-modal-title]");
+    const modalText = root.querySelector<HTMLElement>("[data-modal-text]");
+    const modalResult = root.querySelector<HTMLElement>("[data-modal-result]");
+    const radios = Array.from(root.querySelectorAll<HTMLInputElement>(".custom-starting__radio"));
+    const totalPadded = String(points.length).padStart(2, "0");
+
+    if (
+      backdrop &&
+      modal &&
+      closeBtn &&
+      modalCounter &&
+      modalMetaLabel &&
+      modalTitle &&
+      modalText &&
+      modalResult &&
+      radios.length > 0
+    ) {
+      // Couche top-level non piégée : déplacée à la fin de <body> au montage,
+      // jamais laissée sous un ancêtre susceptible de porter un jour un
+      // transform/opacity/overflow (prompt §4) — indépendant de la structure
+      // de la page qui l'a montée.
+      document.body.appendChild(backdrop);
+
+      // Signale que le JS a pris le relais : masque le panneau inline en
+      // dessous de 900px (voir services.css, `.custom-starting--js`).
+      // Ajoutée inconditionnellement (le gate réel est le media query CSS +
+      // les vérifications `isMobile()` ci-dessous), donc aucun effet tant
+      // que le viewport reste ≥900px.
+      root.classList.add("custom-starting--js");
+
+      const MOBILE_QUERY = "(max-width: 899px)";
+      const isMobile = () => window.matchMedia(MOBILE_QUERY).matches;
+
+      let lastTrigger: HTMLElement | null = null;
+      let savedScrollY = 0;
+      let savedBodyStyle: string | null = null;
+      let inertedEls: HTMLElement[] = [];
+
+      function lockScroll() {
+        savedScrollY = window.scrollY;
+        savedBodyStyle = document.body.getAttribute("style");
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${savedScrollY}px`;
+        document.body.style.left = "0";
+        document.body.style.right = "0";
+        document.body.style.width = "100%";
+      }
+
+      function unlockScroll() {
+        if (savedBodyStyle) {
+          document.body.setAttribute("style", savedBodyStyle);
+        } else {
+          document.body.removeAttribute("style");
+        }
+        window.scrollTo(0, savedScrollY);
+      }
+
+      // Rend le reste de la page non accessible clavier/lecteur d'écran
+      // pendant l'ouverture (prompt §4) — `inert` ne met jamais en pause un
+      // Canvas décoratif (PageFilaments/DotWave continuent leur rendu),
+      // il retire seulement le sous-arbre de l'arbre d'accessibilité et du
+      // focus. Ne touche que les enfants directs de <body> autres que le
+      // backdrop lui-même (déjà déplacé en fin de <body> ci-dessus).
+      function setInert() {
+        inertedEls = Array.from(document.body.children).filter(
+          (el): el is HTMLElement => el instanceof HTMLElement && el !== backdrop,
+        );
+        inertedEls.forEach((el) => {
+          el.setAttribute("inert", "");
+          el.setAttribute("aria-hidden", "true");
+        });
+      }
+
+      function removeInert() {
+        inertedEls.forEach((el) => {
+          el.removeAttribute("inert");
+          el.removeAttribute("aria-hidden");
+        });
+        inertedEls = [];
+      }
+
+      function getFocusable(container: HTMLElement) {
+        return Array.from(
+          container.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+          ),
+        );
+      }
+
+      function onKeydown(event: KeyboardEvent) {
+        if (event.key === "Escape") {
+          closeModal();
+          return;
+        }
+        if (event.key === "Tab" && modal) {
+          const focusables = getFocusable(modal);
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      }
+
+      // Bloque les gestes tactiles qui feraient défiler le fond depuis le
+      // backdrop (le scroll interne légitime de `.custom-starting__modal`
+      // n'est jamais concerné : ce listener n'est posé que sur le backdrop).
+      function preventBackdropTouch(event: TouchEvent) {
+        event.preventDefault();
+      }
+
+      function openModal(pointId: string, trigger: HTMLElement) {
+        const point = points.find((p) => p.id === pointId);
+        if (!backdrop || !point) return;
+
+        modalCounter!.textContent = `${point.id}/${totalPadded}`;
+        modalMetaLabel!.textContent = point.label;
+        modalTitle!.textContent = point.title;
+        modalText!.innerHTML = "";
+        point.body.forEach((sentence) => {
+          const paragraph = document.createElement("p");
+          paragraph.className = "custom-starting__panel-text";
+          paragraph.textContent = sentence;
+          modalText!.appendChild(paragraph);
+        });
+        modalResult!.textContent = point.result;
+
+        lastTrigger = trigger;
+        lockScroll();
+        setInert();
+        backdrop.hidden = false;
+        backdrop.addEventListener("touchmove", preventBackdropTouch, { passive: false });
+        document.addEventListener("keydown", onKeydown);
+        closeBtn!.focus();
+      }
+
+      function closeModal() {
+        if (!backdrop || backdrop.hidden) return;
+        backdrop.hidden = true;
+        backdrop.removeEventListener("touchmove", preventBackdropTouch);
+        document.removeEventListener("keydown", onKeydown);
+        removeInert();
+        unlockScroll();
+        if (lastTrigger && lastTrigger.isConnected) lastTrigger.focus();
+        lastTrigger = null;
+      }
+
+      closeBtn.addEventListener("click", () => closeModal());
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeModal();
+      });
+      // Un clic qui démarre dans la boîte ne doit jamais fermer (seul le
+      // backdrop lui-même ferme) : on coupe la remontée vers le backdrop.
+      modal.addEventListener("click", (event) => event.stopPropagation());
+
+      // Micro-sprint correctif "Fix modal premier item" (PROMPT_CLAUDE_CODE_
+      // FIX_MODAL_PREMIER_ITEM_DEV_SUR_MESURE) — CAUSE RÉELLE observée : un
+      // radio ne déclenche `change` que lorsque son état `checked` change
+      // RÉELLEMENT. Le premier choix étant déjà coché côté serveur au
+      // premier rendu (`checked={index === 0}`), un tap dessus ne produit
+      // aucune transition d'état → aucun `change` → la modale ne s'ouvrait
+      // jamais au tout premier appui (il fallait d'abord cocher un AUTRE
+      // choix pour "libérer" une transition vers le 01). CORRECTIF : écouter
+      // `click` plutôt que `change`. `click` se déclenche à CHAQUE
+      // activation (tap, clic, label associé, Entrée/Espace clavier),
+      // QUE l'état coché change ou non — exactement le contrat demandé
+      // ("n'importe lequel des cinq choix, y compris déjà sélectionné").
+      // Le clic sur le <label> déclenche nativement un second clic
+      // synthétique sur son radio associé (`for=`) : un seul listener sur
+      // le radio suffit, aucun risque de double déclenchement (jamais
+      // d'écouteur posé sur le <label> en plus).
+      radios.forEach((radio) => {
+        radio.addEventListener("click", () => {
+          if (!isMobile()) return;
+          openModal(radio.dataset.pointId || "", radio);
+        });
+      });
+
+      // Changement de largeur pendant l'ouverture (rotation, redim.
+      // fenêtre) : la disposition desktop n'a pas besoin de modale.
+      window.addEventListener("resize", () => {
+        if (backdrop && !backdrop.hidden && !isMobile()) closeModal();
+      });
+    }
+  }
+</script>

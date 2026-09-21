@@ -1,0 +1,64 @@
+---
+// CustomPrinciples — micro-sprint "Repères, réassurance finale" (PROMPT_
+// CLAUDE_CODE_DEV_SUR_MESURE_REPERES_REASSURANCE_FINALE), utilisé
+// UNIQUEMENT par /developpement-sur-mesure/, section "Repères" (dernière
+// section avant le CTA). Remplace l'ancien tableau technique 4 lignes
+// (`.service-matrix`, association type de projet → framework) et la FAQ de
+// 3 questions par une présentation éditoriale NON interactive de 3
+// principes (icône + titre court + paragraphe), pour éviter d'enfermer le
+// studio dans des noms de frameworks et de répéter "Mode de collaboration"
+// juste au-dessus.
+//
+// Aucun mécanisme radio/modale ici : contrairement à CustomStartingPoint/
+// CustomUseCases/CustomCollaboration (sections précédentes, non modifiées),
+// le prompt demande explicitement un rendu "NON interactif" — un simple
+// <ul> statique. Le stagger au scroll est délégué SANS AUCUNE modification
+// de ServiceMotion.astro : chaque <li> porte son propre `data-motion=
+// "block"`, et le chemin générique de ServiceMotion (celui utilisé par
+// cette page, qui n'est ni `.service-page--apps` ni `.service-page--sites`)
+// regroupe déjà TOUS les `[data-motion]` d'une même section dans un seul
+// ScrollTrigger avec `stagger` — donc 3 cibles au lieu d'1 suffit à obtenir
+// une apparition séquentielle discrète, sans second moteur d'animation.
+interface Principle {
+  id: string;
+  icon: "layers" | "shield" | "trend";
+  title: string;
+  text: string;
+}
+
+interface Props {
+  principles: Principle[];
+}
+
+const { principles } = Astro.props as Props;
+---
+
+<ul class="custom-principles">
+  {principles.map((principle: Principle) => (
+    <li class="custom-principles__item" data-motion="block">
+      <span class="custom-principles__icon" aria-hidden="true">
+        {principle.icon === "layers" && (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </svg>
+        )}
+        {principle.icon === "shield" && (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />
+            <polyline points="9 12 11 14 15 10" />
+          </svg>
+        )}
+        {principle.icon === "trend" && (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        )}
+      </span>
+      <h3 class="custom-principles__title">{principle.title}</h3>
+      <p class="custom-principles__text">{principle.text}</p>
+    </li>
+  ))}
+</ul>
