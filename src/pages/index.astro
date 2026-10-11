@@ -35,6 +35,23 @@ const websiteSchema = {
   inLanguage: "fr-FR",
 };
 
+// Organization : identité publique de l'entrepreneur. Volontairement SANS
+// adresse postale (adresse officielle réservée aux mentions légales), sans
+// logo ni réseaux sociaux (aucun asset/profil stable à ce jour).
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Cantrelle Studio",
+  legalName: "Sébastien Cantrelle (Cantrelle Studio)",
+  url: new URL(withBase("/"), Astro.site).toString(),
+  email: "sebastien.cantrelle@hotmail.fr",
+  telephone: "+33629464593",
+  taxID: "130 239 379 00014",
+  identifier: { "@type": "PropertyValue", propertyID: "SIREN", value: "130239379" },
+  founder: { "@type": "Person", name: "Sébastien Cantrelle" },
+  areaServed: ["Amiens", "Hauts-de-France", "France"],
+};
+
 // --- D. Réalisations : sélection depuis la Content Collection ------------
 // Tri featured d'abord puis order, sans muter la collection source
 // (spread avant sort). Les 3 entrées actuelles sont toutes `featured: true`
@@ -140,6 +157,7 @@ const capabilityGroups = [
   description="Cantrelle Studio conçoit des applications métier, SaaS, sites professionnels et développements sur mesure adaptés à votre activité."
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(websiteSchema)} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(organizationSchema)} />
   <!-- A. HERO -->
   <section class="home-section home-hero">
     <Container class="home-hero__grid">

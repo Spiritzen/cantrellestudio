@@ -19,9 +19,10 @@
 // garantir : aucune vente, aucun partage commercial/publicitaire, aucune
 // diffusion de donnée projet confidentielle.
 //
-// INDEXATION (prompt §18) : reste noindex,follow tant que l'adresse
-// professionnelle et le statut d'immatriculation ne sont pas finalisés —
-// mécanisme déjà posé en CS-S12A, non modifié ici.
+// INDEXATION : reste noindex,follow (choix SEO conservé : page utilitaire
+// qu'il n'y a pas de raison de pousser dans les résultats de recherche) et
+// exclue du sitemap. L'adresse officielle n'est pas répétée ici : elle est
+// publiée dans les mentions légales.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/paths";
 import "../styles/legal.css";
@@ -74,8 +75,11 @@ const STUDIO_EMAIL = "sebastien.cantrelle@hotmail.fr";
           <dt>Email d'exercice des droits</dt>
           <dd><a href={`mailto:${STUDIO_EMAIL}`}>{STUDIO_EMAIL}</a></dd>
 
-          <dt>Adresse professionnelle</dt>
-          <dd class="legal-page__todo">À compléter après immatriculation / domiciliation</dd>
+          <dt>Identification</dt>
+          <dd>
+            Entrepreneur individuel — SIREN 130 239 379. Adresse et informations d'identification complètes&nbsp;:
+            <a href={withBase("/mentions-legales/")}>mentions légales</a>.
+          </dd>
         </dl>
       </section>
 
@@ -197,7 +201,6 @@ const STUDIO_EMAIL = "sebastien.cantrelle@hotmail.fr";
           relation contractuelle est engagée, pendant les durées nécessaires à son suivi et au respect des
           obligations légales applicables.
         </p>
-        <p class="legal-page__todo">Durée opérationnelle précise des demandes sans suite&nbsp;: à définir.</p>
       </section>
 
       <section class="legal-page__section" id="droits-des-personnes" aria-labelledby="droits-des-personnes-title">

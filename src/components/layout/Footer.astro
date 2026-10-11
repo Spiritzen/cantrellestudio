@@ -4,16 +4,10 @@
 // réseau social, aucune newsletter, aucun second gros CTA (la Home a déjà
 // son CTA final juste avant — voir prompt CS-S4 §20/§21).
 //
-// CS-S12C — sortie du placeholder (prompt §3) : la phrase générique
-// "Coordonnées professionnelles à compléter avant mise en ligne." est
-// retirée, remplacée par l'email/téléphone confirmés (CS-S11C), affichés
-// discrètement (même traitement typographique que l'ancienne note, pas un
-// second bloc voyant). "(nom de travail)" retiré du copyright : Cantrelle
-// Studio est le nom commercial réellement utilisé publiquement (voir
-// /mentions-legales/ pour le détail du statut, encore en cours
-// d'immatriculation — cette nuance appartient à la page dédiée, pas au
-// Footer). Aucun SIRET/adresse/pavé RGPD ajouté ici : ces détails
-// appartiennent aux pages légales dédiées (prompt §3).
+// Email/téléphone confirmés affichés discrètement (pas un second bloc
+// voyant). Copyright : micro-ligne légale « EI · SIREN » uniquement ; le
+// détail (SIRET, RCS, APE, adresse, TVA) appartient à /mentions-legales/.
+// Aucune adresse ni pavé RGPD ici.
 //
 // CS-S12D — maillage SEO local (prompt §10/§11) : un 5ᵉ lien "Développement
 // web à Amiens" ajouté à la colonne Studio (déjà 4 liens, un 5ᵉ discret ne
@@ -96,7 +90,7 @@ const STUDIO_PHONE_HREF = "tel:+33629464593";
     </div>
 
     <div class="site-footer__bottom">
-      <p>&copy; {year} Cantrelle Studio.</p>
+      <p>&copy; {year} Cantrelle Studio · EI · SIREN 130 239 379</p>
       <nav aria-label="Liens légaux">
         <ul class="site-footer__legal">
           <li><a href={withBase("/mentions-legales/")}>Mentions légales</a></li>

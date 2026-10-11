@@ -30,9 +30,7 @@
   margin: var(--space-sm) 0 var(--space-lg) 0;
 }
 
-/* Bandeau honnête "en cours d'immatriculation" — jamais alarmant, jamais
-   caché non plus (prompt : une phrase qui doit pouvoir être retirée
-   facilement après immatriculation). */
+/* Bandeau d'information discret (actuellement non utilisé par les pages). */
 .legal-page__notice {
   border: 1px solid var(--color-border-strong);
   border-left: 3px solid var(--color-accent-deep);

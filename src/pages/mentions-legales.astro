@@ -1,22 +1,12 @@
 ---
-// Mentions légales — CS-S12C. Remplace le placeholder CS-S0/CS-S12A par une
-// vraie page structurée, honnête sur l'état réel de Cantrelle Studio :
-// activité indépendante EN COURS D'IMMATRICULATION (régime micro-entreprise
-// visé), PAS une société (prompt §2 : interdiction stricte d'écrire
-// "société", SAS, SARL, capital social, siège social de société, équipe
-// constituée tant que ce n'est pas la réalité).
-//
-// RÈGLE ABSOLUE DU PROMPT : ne rien inventer. Chaque donnée administrative
-// non confirmée (SIREN, SIRET, RNE, adresse professionnelle, TVA) affiche
-// explicitement "À compléter après immatriculation" plutôt qu'une valeur
-// plausible mais fausse — voir rapport CS-S12C pour la liste exacte des
-// champs à compléter après immatriculation.
-//
-// INDEXATION (prompt §5) : tant qu'il reste au moins un "À compléter", la
-// page reste noindex,follow (jamais retiré du sitemap) — conforme au
-// mécanisme déjà posé en CS-S12A (`noindex`/`nofollow` sur BaseLayout,
-// filtre sitemap dans astro.config.mjs). NE PAS retirer ce noindex dans ce
-// sprint, même après cette réécriture éditoriale.
+// Mentions légales — identité officielle de l'entrepreneur individuel
+// (micro-entreprise). Les identifiants ci-dessous proviennent des
+// informations officielles fournies par Sébastien Cantrelle ; ne rien
+// ajouter d'autre (aucune donnée de naissance, de sécurité sociale ni de
+// pièce administrative). L'adresse complète n'apparaît QUE sur cette page
+// (adresse officielle de l'EI) : elle ne doit être répétée ni dans le
+// footer, ni sur la page Contact, ni dans les données structurées.
+// Indexation : page complète, donc indexable (présente dans le sitemap).
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/paths";
 import "../styles/legal.css";
@@ -28,19 +18,12 @@ const STUDIO_PHONE_HREF = "tel:+33629464593";
 
 <BaseLayout
   title="Mentions légales — Cantrelle Studio"
-  description="Mentions légales de Cantrelle Studio, activité indépendante de Sébastien Cantrelle actuellement en cours d'immatriculation."
-  noindex={true}
-  nofollow={false}
+  description="Mentions légales de Cantrelle Studio, entreprise individuelle de Sébastien Cantrelle : identification, SIREN/SIRET, hébergement et contact."
 >
   <div class="container">
     <div class="legal-page">
       <span class="legal-page__eyebrow">Informations légales</span>
       <h1>Mentions légales</h1>
-
-      <p class="legal-page__notice">
-        Cantrelle Studio est actuellement en cours d'immatriculation. Les informations d'identification
-        administrative ci-dessous seront complétées dès leur attribution.
-      </p>
 
       <nav class="legal-page__toc" aria-label="Sommaire">
         <p class="legal-page__toc-title">Sommaire</p>
@@ -63,23 +46,26 @@ const STUDIO_PHONE_HREF = "tel:+33629464593";
           <dt>Responsable</dt>
           <dd>Sébastien Cantrelle</dd>
 
-          <dt>Statut</dt>
-          <dd>Activité indépendante en cours d'immatriculation — régime micro-entreprise prévu.</dd>
+          <dt>Forme juridique</dt>
+          <dd>Entrepreneur individuel — micro-entreprise</dd>
 
           <dt>SIREN</dt>
-          <dd class="legal-page__todo">À compléter après immatriculation</dd>
+          <dd>130 239 379</dd>
 
           <dt>SIRET</dt>
-          <dd class="legal-page__todo">À compléter après immatriculation</dd>
+          <dd>130 239 379 00014</dd>
 
-          <dt>Immatriculation RNE</dt>
-          <dd class="legal-page__todo">À compléter après immatriculation</dd>
+          <dt>Immatriculation</dt>
+          <dd>Immatriculé au RCS d'Amiens sous le n° 130 239 379</dd>
 
-          <dt>Adresse professionnelle</dt>
-          <dd class="legal-page__todo">À compléter après immatriculation / domiciliation</dd>
+          <dt>Code APE</dt>
+          <dd>6201Z</dd>
 
-          <dt>TVA intracommunautaire</dt>
-          <dd class="legal-page__todo">À compléter si applicable</dd>
+          <dt>Adresse</dt>
+          <dd>20 Rue Jules Barni, appartement 12, 80000 Amiens, France</dd>
+
+          <dt>TVA</dt>
+          <dd>TVA non applicable, art. 293 B du CGI</dd>
 
           <dt>Email</dt>
           <dd><a href={`mailto:${STUDIO_EMAIL}`}>{STUDIO_EMAIL}</a></dd>
