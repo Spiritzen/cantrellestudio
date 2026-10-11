@@ -16,6 +16,7 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 // Applications métier & SaaS et Sites professionnels) : ni le composant
 // ni son montage/directive ne sont modifiés, voir plus bas.
 import PageFilaments from "../components/hero/PageFilaments";
+import CustomCubeScene from "../components/hero/CustomCubeScene";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
 // Micro-sprint "Point de départ interactif + footer" (PROMPT_CLAUDE_CODE_
@@ -332,13 +333,21 @@ const principles = [
 
     <section class="service-page__section custom-hero-section">
       <Container>
-        <ServiceHero
-          eyebrow="Développement sur mesure"
-          title="Des solutions sur mesure quand le besoin ne rentre pas dans une case."
-          lead="API, automatisation, modernisation, intégration ou outil spécifique : le studio part de votre contexte technique au lieu d'imposer une stack."
-          secondaryHref="/methode/"
-          secondaryLabel="Découvrir la méthode"
-        />
+        <div class="custom-hero-layout">
+          <ServiceHero
+            eyebrow="Développement sur mesure"
+            title="Des solutions sur mesure quand le besoin ne rentre pas dans une case."
+            lead="API, automatisation, modernisation, intégration ou outil spécifique : le studio part de votre contexte technique au lieu d'imposer une stack."
+            secondaryHref="/methode/"
+            secondaryLabel="Découvrir la méthode"
+          />
+          <!-- Slot du cube modulaire 3D (CustomCubeScene) : Canvas transparent
+               confiné à ce bloc, hydraté uniquement dès 900px (aucun JS 3D
+               en dessous, slot masqué en CSS). Décoratif : aria-hidden. -->
+          <div class="custom-hero-layout__cube-slot" aria-hidden="true">
+            <CustomCubeScene client:media="(min-width: 900px)" />
+          </div>
+        </div>
       </Container>
     </section>
 

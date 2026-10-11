@@ -2947,6 +2947,28 @@ html .service-page--custom .section-heading__eyebrow {
   background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
 }
 
+/* Hero : colonne texte + slot du cube 3D (CustomCubeScene). Sous 900px le
+   slot est masqué (aucune hydratation 3D, mise en page inchangée). */
+.service-page--custom .custom-hero-layout__cube-slot {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .service-page--custom .custom-hero-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(20rem, 30vw, 30rem);
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+
+  .service-page--custom .custom-hero-layout__cube-slot {
+    display: block;
+    position: relative;
+    height: clamp(20rem, 28vw, 30rem);
+    pointer-events: none;
+  }
+}
+
 .service-page--custom .custom-usecases-section {
   background: radial-gradient(circle at 50% 20%, rgba(228, 95, 54, 0.12), rgba(228, 95, 54, 0) 65%);
 }
