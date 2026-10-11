@@ -35,15 +35,13 @@
 // aucun listener de scroll séparé à synchroniser avec Canvas — la lecture
 // directe dans useFrame est plus simple et se fige naturellement dès que
 // le frameloop passe en "demand", cf. HeroScene.tsx).
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Line } from "@react-three/drei";
+import { Environment, Lightformer, Line } from "@react-three/drei";
 import * as THREE from "three";
-// TEST RÉVERSIBLE — voir PROMPT_CLAUDE_CODE_TEST_ENV_MAP_PNG_HERO.txt et
-// HeroEnvironmentImage.tsx. Remplace temporairement le rig procédural
-// <Environment>/<Lightformer> (CS-S6C/D, commenté juste plus bas, jamais
-// supprimé) par `src/assets/hdr/hdr.png` comme environment map.
-import HeroEnvironmentImage from "./HeroEnvironmentImage";
+// HOME ORBITAL V2 — l'environnement photographique (HeroEnvironmentImage.tsx,
+// non modifié, simplement plus utilisé ici) est remplacé par un éclairage
+// de studio procédural (Environment + Lightformer, voir plus bas).
 // PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — les 3
 // sphères procédurales sont remplacées par 3 instances de BALL.glb
 // (mêmes geometry/material, scales distincts). Succède au test A/B à 1
@@ -75,6 +73,14 @@ interface HeroSpheresProps {
 const IVORY = "#F1EFE8";
 const EMBER = "#E45F36";
 const NEUTRAL_SECONDARY = "#A5A8AE";
+
+// HOME ORBITAL V2 — réaction globale très légère de la scène au pointeur
+// (yaw/pitch d'un groupe parent, jamais cumulée : cible proportionnelle à la
+// position du pointeur, retour exact à 0 hors fenêtre). Ce n'est pas un
+// drag : aucun clic, aucune capture.
+const POINTER_YAW_MAX = 0.055; // rad ≈ 3.2°
+const POINTER_PITCH_MAX = 0.035; // rad ≈ 2.0°
+const POINTER_REACTION_LAMBDA = 3;
 
 // --- Rig (translation globale droite -> centre au scroll, CS-S6B/C, INCHANGÉ) -
 // V2 ANCRAGE RESPONSIVE 3D ÉTAPE 2 — `RIGHT_FRACTION` (fraction arbitraire
@@ -181,7 +187,7 @@ function sunEllipseOffset(angle: number, out: THREE.Vector3) {
 // de 60% (×0.4) comme les deux autres orbites (valeur d'origine : 0.5 rad/s).
 const MEDIUM_ORBIT_RADIUS = 1.9;
 const MEDIUM_ORBIT_SPEED = 0.2; // rad/s
-const MEDIUM_PHASE = 0.6;
+const MEDIUM_PHASE = 4.2; // POLISH FINAL : départ en bas-gauche du Soleil (était 0.6, haut-droite, masqué par le header) — seule la phase de départ change
 const MEDIUM_TILT_AXIS = new THREE.Vector3(1, 0.15, 0).normalize();
 const MEDIUM_TILT_ANGLE = 0.45; // rad
 
@@ -200,7 +206,7 @@ const MEDIUM_TILT_ANGLE = 0.45; // rad
 // ci-dessus). Vitesse réduite de 60% (×0.4), valeur d'origine : 1.9 rad/s.
 const SMALL_ORBIT_RADIUS = 0.72;
 const SMALL_ORBIT_SPEED = 0.76; // rad/s — reste nettement plus vif que la moyenne
-const SMALL_PHASE = 2.2;
+const SMALL_PHASE = 5.6; // POLISH FINAL : Lune lisible près de la Terre au chargement (était 2.2) — phase de départ uniquement
 const SMALL_TILT_AXIS = new THREE.Vector3(0.15, 0.4, 1).normalize();
 const SMALL_TILT_ANGLE = 1.05; // rad (~60°)
 
@@ -233,6 +239,9 @@ function orbitOffset(radius: number, angle: number, tiltAxis: THREE.Vector3, til
 
 export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef, heroAnchor }: HeroSpheresProps) {
   const rigRef = useRef<THREE.Group>(null);
+  const pointerGroupRef = useRef<THREE.Group>(null);
+  const pointerYaw = useRef(0);
+  const pointerPitch = useRef(0);
   const filamentsRigRef = useRef<THREE.Group>(null);
   const largeMeshRef = useRef<THREE.Mesh>(null);
   const mediumMeshRef = useRef<THREE.Mesh>(null);
@@ -282,8 +291,23 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
   // Référence STABLE (deps `[]`) : voir HeroEnvironmentImage.tsx — une
   // closure recréée à chaque rendu relancerait son effet de chargement
   // (téléchargement + bake PMREM en double).
-  const handleEnvironmentReady = useCallback(() => {
-    envReady.current = true;
+  // HOME ORBITAL V2 — l'environnement procédural (Lightformer, bake unique)
+  // est calculé par drei sur les toutes premières frames : on ne signale
+  // « prêt » qu'après 3 frames d'animation, pour ne jamais révéler des
+  // sphères sans reflets.
+  useEffect(() => {
+    let frames = 0;
+    let raf = 0;
+    const tick = () => {
+      frames += 1;
+      if (frames >= 3) {
+        envReady.current = true;
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   // PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — geometry
@@ -294,7 +318,32 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
   // anciens rayons validés (LARGE/MEDIUM/SMALL_RADIUS, INCHANGÉS) en scale
   // par sphère, pour reproduire EXACTEMENT les proportions Soleil > Terre
   // > Lune d'avant le test GLB. Ne PAS appliquer le même scale aux 3.
-  const { geometry: ballGeometry, material: ballMaterial, rawRadius: ballRawRadius } = useHeroBallModel();
+  const { geometry: ballGeometry, rawRadius: ballRawRadius } = useHeroBallModel();
+
+  // HOME ORBITAL V2 — matières : métal graphite sombre, une famille de trois
+  // corps distincts par la matière et non par la couleur. Le matériau
+  // d'origine du GLB (metalness 0.94 / roughness 0, miroir parfait) renvoyait
+  // un paysage photographique ; il n'est plus utilisé ici.
+  const sphereMaterials = useMemo(() => {
+    const make = (color: string, metalness: number, roughness: number, envMapIntensity: number) =>
+      new THREE.MeshStandardMaterial({ color, metalness, roughness, envMapIntensity });
+    return {
+      // Soleil : masse principale, graphite légèrement chaud, reflets plus présents.
+      large: make("#4E525A", 0.92, 0.36, 3.3),
+      // Terre : graphite neutre équilibré.
+      medium: make("#515760", 0.9, 0.36, 3.2),
+      // Lune : plus froide, plus mate, un peu plus sombre.
+      small: make("#3A414A", 0.84, 0.5, 2.5),
+    };
+  }, []);
+  useEffect(
+    () => () => {
+      sphereMaterials.large.dispose();
+      sphereMaterials.medium.dispose();
+      sphereMaterials.small.dispose();
+    },
+    [sphereMaterials],
+  );
   const largeBallScale = LARGE_RADIUS / ballRawRadius;
   const mediumBallScale = MEDIUM_RADIUS / ballRawRadius;
   const smallBallScale = SMALL_RADIUS / ballRawRadius;
@@ -491,6 +540,28 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
     const pointerOffsetX = pointerRef.current.x * 0.18 * pointerInfluence;
     const pointerOffsetY = -pointerRef.current.y * 0.12 * pointerInfluence;
 
+    // HOME ORBITAL V2 — réaction globale douce (yaw/pitch ≤ 3.2°/2.0°) sur
+    // un groupe parent des sphères : jamais appliquée aux positions
+    // orbitales logiques, jamais cumulée (cible recalculée à chaque frame),
+    // nulle sous reduced-motion, hors pointeur fin et une fois la scène
+    // recentrée (pointerInfluence → 0).
+    const reactionInfluence = reducedMotion ? 0 : pointerInfluence;
+    pointerYaw.current = THREE.MathUtils.damp(
+      pointerYaw.current,
+      pointerRef.current.x * POINTER_YAW_MAX * reactionInfluence,
+      POINTER_REACTION_LAMBDA,
+      delta,
+    );
+    pointerPitch.current = THREE.MathUtils.damp(
+      pointerPitch.current,
+      pointerRef.current.y * POINTER_PITCH_MAX * reactionInfluence,
+      POINTER_REACTION_LAMBDA,
+      delta,
+    );
+    if (pointerGroupRef.current) {
+      pointerGroupRef.current.rotation.set(pointerPitch.current, pointerYaw.current, 0);
+    }
+
     const t = state.clock.elapsedTime;
 
     // --- CS-S6E — Sphère 1 (GROSSE / "soleil") : ellipse propre, inclinée
@@ -584,24 +655,26 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
           + 1 point Ember, pas de shadow map). La rim (2e directionalLight)
           est celle qui révèle le mieux les volumes en contre-jour : son
           intensité est celle qui a le plus augmenté. */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[3.5, 4, 5]} intensity={1.35} color={IVORY} />
-      <directionalLight position={[-4, -1.5, -2]} intensity={0.5} color={NEUTRAL_SECONDARY} />
-      <pointLight position={[1.4, 1.1, 2.2]} intensity={1.7} color={EMBER} distance={6} decay={2} />
+      {/* HOME ORBITAL V2 — lumière calme et sculptante : clé ivoire douce,
+          contre-jour neutre, point Ember subtil, remplissage faible pour
+          garder des noirs profonds. Les reflets larges viennent de
+          l'environnement procédural ci-dessous (softboxes), pas d'un
+          panorama. */}
+      <ambientLight intensity={0.22} />
+      <directionalLight position={[3.5, 4, 5]} intensity={0.7} color={IVORY} />
+      <directionalLight position={[-4, -1.5, -2]} intensity={0.45} color={NEUTRAL_SECONDARY} />
+      <pointLight position={[1.4, 1.1, 2.2]} intensity={0.3} color={EMBER} distance={6} decay={2} />
 
-      {/* Rig d'environnement PROCÉDURAL (CS-S6C/D) — DÉSACTIVÉ pour le test
-          RÉVERSIBLE PROMPT_CLAUDE_CODE_TEST_ENV_MAP_PNG_HERO.txt, remplacé
-          juste en dessous par <HeroEnvironmentImage />. Pour revenir en
-          arrière : supprimer <HeroEnvironmentImage /> et dé-commenter ce
-          bloc.
-      <Environment resolution={96} frames={1}>
-        <Lightformer form="rect" color={IVORY} intensity={3.4} position={[3, 3.2, 2.5]} scale={[3.4, 1.8, 1]} target={[0, 0, 0]} />
-        <Lightformer form="rect" color={NEUTRAL_SECONDARY} intensity={1.6} position={[-3.2, -1.4, 2.8]} scale={[2.6, 3.2, 1]} target={[0, 0, 0]} />
-        <Lightformer form="circle" color={EMBER} intensity={2.4} position={[1.6, -1.3, 3.2]} scale={1} target={[0, 0, 0]} />
-        <Lightformer form="rect" color={IVORY} intensity={0.9} position={[0, -3.4, -2]} scale={[4, 2, 1]} />
+      {/* Environnement de studio PROCÉDURAL (bake unique, jamais affiché en
+          fond : background={false}, canvas transparent inchangé). Grandes
+          sources rectangulaires : reflets larges, sans détail identifiable. */}
+      <Environment resolution={128} frames={1} background={false}>
+        <Lightformer form="rect" color={IVORY} intensity={6} position={[3, 3.4, 3]} scale={[6, 3.2, 1]} target={[0, 0, 0]} />
+        <Lightformer form="rect" color={NEUTRAL_SECONDARY} intensity={4.5} position={[-4, 0.5, 2.5]} scale={[3.5, 5.5, 1]} target={[0, 0, 0]} />
+        <Lightformer form="rect" color={EMBER} intensity={2.4} position={[3.6, -2.2, 2]} scale={[0.9, 3, 1]} target={[0, 0, 0]} />
+        <Lightformer form="rect" color={IVORY} intensity={2} position={[0, 0.5, -4]} scale={[7, 1.2, 1]} />
+        <Lightformer form="rect" color={NEUTRAL_SECONDARY} intensity={2} position={[0, -3.2, 3]} scale={[7, 1.8, 1]} target={[0, 0, 0]} />
       </Environment>
-      */}
-      <HeroEnvironmentImage onReady={handleEnvironmentReady} />
 
       {/* Filaments — géométrie générée ci-dessus (biais horizontal) ;
           rendu (couleur/opacité alternée, rig, mouvement) INCHANGÉ. */}
@@ -631,6 +704,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
           sphères ensemble, jamais séparément) tant que l'environnement HDR
           et l'ancrage DOM ne sont pas prêts. Les filaments (`filamentsRigRef`
           ci-dessus) restent NON concernés, toujours visibles. */}
+      <group ref={pointerGroupRef}>
       <group ref={rigRef} visible={revealed}>
         {/* PROMPT_CLAUDE_CODE_BALL_GLB_3_CORPS_TAILLES_ORIGINALES.txt — les
             3 sphères procédurales (<sphereGeometry> + sphereMaterial,
@@ -653,7 +727,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
           ref={largeMeshRef}
           position={largePos.current}
           geometry={ballGeometry}
-          material={ballMaterial}
+          material={sphereMaterials.large}
           scale={largeBallScale * HERO_SIZE_FACTOR}
         />
         {/*
@@ -665,7 +739,7 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
           ref={mediumMeshRef}
           position={mediumPos.current}
           geometry={ballGeometry}
-          material={ballMaterial}
+          material={sphereMaterials.medium}
           scale={mediumBallScale * HERO_SIZE_FACTOR}
         />
         {/*
@@ -677,9 +751,10 @@ export default function HeroSpheres({ reducedMotion, pointerEnabled, pointerRef,
           ref={smallMeshRef}
           position={smallPos.current}
           geometry={ballGeometry}
-          material={ballMaterial}
+          material={sphereMaterials.small}
           scale={smallBallScale * HERO_SIZE_FACTOR}
         />
+      </group>
       </group>
     </>
   );

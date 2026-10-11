@@ -158,8 +158,18 @@ export default function HeroScene() {
       pointerRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
       pointerRef.current.y = (event.clientY / window.innerHeight) * 2 - 1;
     };
+    // HOME ORBITAL V2 — retour à la pose neutre quand le pointeur quitte la
+    // fenêtre (sinon la dernière position resterait appliquée).
+    const onPointerLeave = () => {
+      pointerRef.current.x = 0;
+      pointerRef.current.y = 0;
+    };
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onPointerMove);
+    document.documentElement.addEventListener("pointerleave", onPointerLeave);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+    };
   }, [pointerEnabled]);
 
   const frameloop = tabVisible && !reducedMotion ? "always" : "demand";
