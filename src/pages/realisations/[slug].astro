@@ -28,6 +28,10 @@ import { projectMedia } from "../../data/projectMedia";
 import { caseStudyContent, nextProjectSlug } from "../../data/caseStudyContent";
 import { getServicesForProject } from "../../data/serviceCaseStudyMap";
 import { withBase } from "../../utils/paths";
+// Belkhir uniquement — section « Expérience mobile » : capture haute définition
+// déjà présente dans le dépôt (non utilisée ailleurs), servie via astro:assets.
+import { Picture } from "astro:assets";
+import belkhirMobileScreen from "../../assets/projects/belkhir-depannage/belkhir-mobile1.jpg";
 import "../../styles/case-study.css";
 
 export const getStaticPaths = (async () => {
@@ -183,14 +187,28 @@ const creativeWorkSchema = {
       </h2>
 
       {slug === "belkhir-depannage" ? (
-        <div class="case-study__editorial">
-          {media.gallery!.map((item, i) => (
-            <div class:list={["case-study__editorial-row", i % 2 === 1 && "case-study__editorial-row--reverse"]} data-motion="block">
-              <CaseStudyMedia image={item.image} alt={item.alt} index={i + 1} eager={i === 0} />
-              <div>
-                <h3>{belkhirRowTitles[i] ?? item.caption}</h3>
-                <p>{item.caption}</p>
-              </div>
+        <div class="bk-panels">
+          {/* 4 preuves desktop (la 5e capture, mobile, a sa propre section plus bas).
+              Wrapper data-motion = révélation générique ; le panneau intérieur
+              porte seul le hover (pas de conflit de transform). */}
+          {media.gallery!.slice(0, 4).map((item, i) => (
+            <div data-motion="block">
+              <article
+                class:list={["bk-panel", i % 2 === 1 && "bk-panel--reverse"]}
+                data-bk-panel
+                style={`--bk-ratio: ${item.image.width} / ${item.image.height}`}
+              >
+                <div class="bk-panel__media">
+                  <CaseStudyMedia image={item.image} alt={item.alt} eager={i === 0} />
+                </div>
+                <div class="bk-panel__body">
+                  <span class="bk-panel__num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="bk-panel__label">Décision</span>
+                  <h3>{belkhirRowTitles[i] ?? item.caption}</h3>
+                  <span class="bk-panel__label bk-panel__label--proof">À l'écran</span>
+                  <p>{item.caption}</p>
+                </div>
+              </article>
             </div>
           ))}
         </div>
@@ -204,6 +222,47 @@ const creativeWorkSchema = {
         </div>
       )}
     </CaseStudySection>
+
+    {slug === "belkhir-depannage" && (
+      <CaseStudySection class="bk-mobile" aria-labelledby="mobile-title">
+        <div class="bk-mobile__layout" data-bk-mobile>
+          <div class="bk-mobile__stage">
+            <div class="bk-phone-wrap">
+              <div class="bk-phone">
+                <span class="bk-phone__btn bk-phone__btn--left" aria-hidden="true"></span>
+                <span class="bk-phone__btn bk-phone__btn--right" aria-hidden="true"></span>
+                <div class="bk-phone__screen">
+                  <Picture
+                    src={belkhirMobileScreen}
+                    alt={media.gallery![4].alt}
+                    formats={["avif", "webp"]}
+                    widths={[300, 480, 640]}
+                    sizes="(min-width: 900px) 310px, 250px"
+                    loading="lazy"
+                    decoding="async"
+                    class="bk-phone__img"
+                  />
+                  <span class="bk-phone__island" aria-hidden="true"></span>
+                  <span class="bk-phone__glare" aria-hidden="true"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bk-mobile__text">
+            <span class="bk-mobile__label">Expérience mobile</span>
+            <h2 id="mobile-title">
+              Pensé pour l'urgence.<br />Pensé pour le <span class="bk-accent">mobile</span>.
+            </h2>
+            <p>La barre d'appel reste accessible en permanence, sur l'écran le plus utilisé en urgence.</p>
+            <ul class="bk-mobile__chips">
+              <li>Barre d'appel permanente</li>
+              <li>Navigation mobile accessible</li>
+              <li>Appel et devis toujours visibles</li>
+            </ul>
+          </div>
+        </div>
+      </CaseStudySection>
+    )}
 
     <CaseStudySection soft={slug === "sereno" || slug === "agencyos"} aria-labelledby="tech-title">
       <span class="case-study__eyebrow">Choix techniques</span>
@@ -256,6 +315,112 @@ const creativeWorkSchema = {
 
   <ServiceMotion />
 </BaseLayout>
+
+<script>
+  // Belkhir uniquement (no-op sur Sereno / AgencyOS : aucun de ces éléments n'existe).
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const desktop = window.matchMedia("(min-width: 900px)");
+
+  // 1) Section mobile : entrée du téléphone depuis la gauche, UNE SEULE FOIS.
+  const mobile = document.querySelector<HTMLElement>(".bk-mobile");
+  if (mobile && desktop.matches && !reduced.matches && "IntersectionObserver" in window) {
+    mobile.classList.add("bk-mobile--armed");
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          mobile.classList.add("bk-mobile--in");
+          io.disconnect();
+        }
+      },
+      { threshold: 0.33 },
+    );
+    io.observe(mobile);
+  }
+
+  // 2) Panneaux de preuve : langage de /realisations/ (halo --px/--py, tilt ≤ 1.5°,
+  // micro-scale du média), pointeur fin uniquement, jamais en reduced-motion.
+  if (finePointer.matches && !reduced.matches) {
+    const MAX_TILT_DEG = 1.5;
+    const PANEL_SCALE = 1.005;
+    const MEDIA_SCALE = 1.015;
+    const MEDIA_SHIFT_PX = 3;
+    const RETURN_EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+
+    document.querySelectorAll<HTMLElement>("[data-bk-panel]").forEach((panel) => {
+      const media = panel.querySelector<HTMLElement>(".case-study__media-img");
+      panel.addEventListener("pointermove", (e: PointerEvent) => {
+        if (!desktop.matches) return;
+        const r = panel.getBoundingClientRect();
+        const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+        const y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+        panel.style.transition = "transform 120ms linear";
+        panel.style.transform = `perspective(1400px) rotateX(${-y * MAX_TILT_DEG}deg) rotateY(${x * MAX_TILT_DEG}deg) scale(${PANEL_SCALE})`;
+        panel.style.setProperty("--px", `${((x + 1) / 2) * 100}%`);
+        panel.style.setProperty("--py", `${((y + 1) / 2) * 100}%`);
+        if (media) {
+          media.style.transition = "transform 260ms ease-out";
+          media.style.transform = `translate(${-x * MEDIA_SHIFT_PX}px, ${-y * MEDIA_SHIFT_PX}px) scale(${MEDIA_SCALE})`;
+        }
+      });
+      panel.addEventListener("pointerleave", () => {
+        panel.style.transition = `transform 550ms ${RETURN_EASE}`;
+        panel.style.transform = "";
+        panel.style.setProperty("--px", "50%");
+        panel.style.setProperty("--py", "50%");
+        if (media) {
+          media.style.transition = `transform 700ms ${RETURN_EASE}`;
+          media.style.transform = "";
+        }
+      });
+    });
+  }
+
+  // 3) Média du Hero Belkhir : « objet premium » (tilt + parallaxe interne +
+  // reflet + contour). Pointeur fin, ≥ 960 px, jamais en reduced-motion.
+  // Retour au repos doux au pointerleave. Aucune capture du pointeur.
+  const heroMedia = document.querySelector<HTMLElement>(".case-study--belkhir .case-study__hero-media");
+  const heroImg = heroMedia?.querySelector<HTMLElement>(".case-study__hero-img");
+  const heroWide = window.matchMedia("(min-width: 960px)");
+  if (heroMedia && heroImg && finePointer.matches && !reduced.matches) {
+    const REST_ROTATE_Y = -1.2; // inclinaison de repos du Hero (CSS)
+    const MAX_ROTATE_Y = 5;
+    const MAX_ROTATE_X = 3.5;
+    const SCALE = 1.012;
+    const IMG_SHIFT_X = 7; // px, sens opposé au tilt
+    const IMG_SHIFT_Y = 5;
+    const IMG_SCALE = 1.035; // marge pour que le parallaxe ne révèle jamais un bord
+    const RETURN_EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+
+    heroMedia.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!heroWide.matches) return;
+      const r = heroMedia.getBoundingClientRect();
+      const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+      const y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+      heroMedia.classList.add("is-active");
+      heroMedia.style.transition = "transform 120ms linear, box-shadow 450ms ease, border-color 450ms ease";
+      heroMedia.style.transform = `perspective(1800px) rotateX(${(-y * MAX_ROTATE_X).toFixed(2)}deg) rotateY(${(REST_ROTATE_Y + x * MAX_ROTATE_Y).toFixed(2)}deg) scale(${SCALE})`;
+      heroMedia.style.setProperty("--mx", `${((x + 1) / 2) * 100}%`);
+      heroMedia.style.setProperty("--my", `${((y + 1) / 2) * 100}%`);
+      heroMedia.style.setProperty("--gx", x.toFixed(3));
+      heroMedia.style.setProperty("--gy", y.toFixed(3));
+      heroImg.style.transition = "transform 260ms ease-out";
+      heroImg.style.transform = `translate(${(-x * IMG_SHIFT_X).toFixed(2)}px, ${(-y * IMG_SHIFT_Y).toFixed(2)}px) scale(${IMG_SCALE})`;
+    });
+
+    heroMedia.addEventListener("pointerleave", () => {
+      heroMedia.classList.remove("is-active");
+      heroMedia.style.transition = `transform 600ms ${RETURN_EASE}, box-shadow 600ms ease, border-color 600ms ease`;
+      heroMedia.style.transform = ""; // retombe sur l'état de repos CSS
+      heroMedia.style.setProperty("--mx", "50%");
+      heroMedia.style.setProperty("--my", "50%");
+      heroMedia.style.setProperty("--gx", "0");
+      heroMedia.style.setProperty("--gy", "0");
+      heroImg.style.transition = `transform 650ms ${RETURN_EASE}`;
+      heroImg.style.transform = "";
+    });
+  }
+</script>
 
 <style>
   .case-study__cta {

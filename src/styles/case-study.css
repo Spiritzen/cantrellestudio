@@ -616,3 +616,828 @@
   color: var(--color-text-secondary);
   margin: 0;
 }
+
+/* ==========================================================================
+   FIL D'ARIANE (ServiceBreadcrumb) — ses styles vivent dans services.css,
+   non importé par les études de cas : sans cette règle il s'affichait en
+   liste numérotée brute. Correction visuelle commune aux 3 études de cas,
+   tokens existants uniquement, balisage et accessibilité inchangés.
+   ========================================================================== */
+
+.case-study .service-breadcrumb {
+  padding-top: var(--space-md);
+}
+
+.case-study .service-breadcrumb__list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.case-study .service-breadcrumb__list li + li::before {
+  content: "/";
+  margin-right: 0.5em;
+  color: var(--color-border-strong);
+}
+
+.case-study .service-breadcrumb__list a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.case-study .service-breadcrumb__list a:hover {
+  color: var(--color-text);
+}
+
+.case-study .service-breadcrumb__list a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   BELKHIR — ÉTUDE DE CAS PREMIUM (tout est sous .case-study--belkhir ou
+   préfixé .bk- : aucun effet sur Sereno ni AgencyOS). Langage visuel repris
+   de /realisations/ (surfaces graphite, bordure fine, liseré Ember, halo
+   --px/--py), Ember uniquement en ponctuation.
+   ========================================================================== */
+
+/* --- Titres / labels --------------------------------------------------- */
+.case-study--belkhir .case-study__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.case-study--belkhir .case-study__section h2 {
+  font-size: clamp(1.875rem, 3.6vw, 2.75rem);
+  letter-spacing: -0.015em;
+}
+
+/* --- Hero SIGNATURE (Belkhir uniquement) ---------------------------------
+   Composition asymétrique ~40 / 60 : titre fort à gauche, capture héroïque
+   à droite (décalée vers le bas, très légère perspective), scène de fond en
+   CSS pur (halos Ember faibles, deux lignes fines), bas fondu vers la section
+   suivante. Aucun Canvas, SVG ni asset. */
+.case-study--belkhir > .case-study__section:first-of-type {
+  position: relative;
+  overflow: hidden;
+  padding-top: clamp(1.25rem, 3vw, 2.5rem);
+  padding-bottom: clamp(3.5rem, 6vw, 5.5rem);
+  background:
+    linear-gradient(to bottom, rgba(14, 16, 19, 0) calc(100% - 8rem), var(--color-bg-soft) 100%),
+    radial-gradient(ellipse 52% 80% at 18% 52%, rgba(228, 95, 54, 0.13), rgba(228, 95, 54, 0) 70%),
+    radial-gradient(ellipse 42% 62% at 80% 58%, rgba(228, 95, 54, 0.06), rgba(228, 95, 54, 0) 70%),
+    linear-gradient(180deg, #0c0d10 0, var(--color-bg) 70%);
+}
+
+.case-study--belkhir > .case-study__section:first-of-type > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ligne 1 : grande ellipse partielle, ivoire très faible, fondue. */
+.case-study--belkhir > .case-study__section:first-of-type::before {
+  content: "";
+  display: none;
+  position: absolute;
+  left: -6%;
+  top: 8%;
+  width: 78%;
+  height: 92%;
+  border: 1px solid rgba(241, 239, 232, 0.07);
+  border-radius: 50%;
+  -webkit-mask-image: linear-gradient(100deg, transparent 12%, #000 42%, #000 62%, transparent 88%);
+  mask-image: linear-gradient(100deg, transparent 12%, #000 42%, #000 62%, transparent 88%);
+  pointer-events: none;
+}
+
+/* Ligne 2 : arc fin qui relie la zone du titre à la capture, Ember encore plus faible. */
+.case-study--belkhir > .case-study__section:first-of-type::after {
+  content: "";
+  display: none;
+  position: absolute;
+  left: 22%;
+  right: -4%;
+  bottom: 18%;
+  height: 130px;
+  border-top: 1px solid rgba(228, 95, 54, 0.12);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 35%, #000 65%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 35%, #000 65%, transparent 100%);
+  pointer-events: none;
+}
+
+@media (min-width: 960px) {
+  .case-study--belkhir > .case-study__section:first-of-type::before,
+  .case-study--belkhir > .case-study__section:first-of-type::after {
+    display: block;
+  }
+
+  .case-study--belkhir .case-study__hero {
+    grid-template-columns: 40fr 60fr;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: center;
+  }
+}
+
+/* Titre : plus d'autorité, rythme « Belkhir / Dépannage » ; trait Ember sous le titre. */
+.case-study--belkhir .case-study__hero-copy h1 {
+  max-width: 9ch;
+  margin: 0 0 var(--space-md) 0;
+  font-size: clamp(2.75rem, 6.2vw, 5.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+}
+
+.case-study--belkhir .case-study__hero-copy h1::after {
+  content: "";
+  display: block;
+  width: 3.5rem;
+  height: 2px;
+  margin-top: var(--space-md);
+  background: linear-gradient(90deg, var(--color-accent), rgba(228, 95, 54, 0));
+}
+
+.case-study--belkhir .case-study__hero-summary {
+  max-width: 32rem;
+}
+
+/* Statut : surface premium plutôt que rectangle administratif. */
+.case-study--belkhir .case-study__status {
+  position: relative;
+  display: block;
+  max-width: 34rem;
+  padding: 0.8rem 1rem 0.8rem 1.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, rgba(228, 95, 54, 0.06), rgba(228, 95, 54, 0) 55%), rgba(10, 11, 13, 0.55);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.case-study--belkhir .case-study__status::before {
+  content: "";
+  position: absolute;
+  left: 0.8rem;
+  top: 1.2rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* Stack : séparée du statut par un filet fin, chips plus aérées. */
+.case-study--belkhir .case-study__stack-short {
+  gap: 0.6rem;
+  margin: 0;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  max-width: 34rem;
+}
+
+.case-study--belkhir .case-study__stack-short li {
+  padding: 0.3rem 0.75rem;
+  border-color: var(--color-border-strong);
+  transition: border-color 250ms ease, color 250ms ease;
+}
+
+.case-study--belkhir .case-study__stack-short li:hover {
+  border-color: rgba(228, 95, 54, 0.45);
+  color: var(--color-text);
+}
+
+/* Service associé : respire, séparé nettement du bloc précédent. */
+.case-study--belkhir .case-study__related-service {
+  margin-top: clamp(1.75rem, 3.5vw, 2.75rem);
+  padding-top: var(--space-md);
+  padding-bottom: 0;
+  border-bottom: none;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Capture héroïque : large, décalée vers le bas, très légère perspective. */
+.case-study--belkhir .case-study__hero-media {
+  position: relative;
+  border: 1px solid rgba(241, 239, 232, 0.12);
+  border-radius: var(--radius-xl);
+  background: #0a0b0d;
+  box-shadow:
+    0 40px 80px -40px rgba(0, 0, 0, 0.9),
+    0 18px 36px -24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(228, 95, 54, 0.1);
+}
+
+/* Reflet doux sur le haut de la capture (jamais un glow). */
+.case-study--belkhir .case-study__hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0, rgba(255, 255, 255, 0) 32%);
+  pointer-events: none;
+}
+
+@media (min-width: 960px) {
+  .case-study--belkhir .case-study__hero-media {
+    margin-top: clamp(1.5rem, 3.5vw, 3rem);
+    margin-right: clamp(-2rem, -2vw, 0rem);
+    transform: perspective(1800px) rotateY(-1.2deg);
+    transform-origin: 30% 50%;
+  }
+}
+
+/* Micro-motion d'ouverture : une seule fois, CSS pur (jamais en reduced-motion). */
+@keyframes bk-hero-media-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px) perspective(1800px) rotateY(-1.2deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1800px) rotateY(-1.2deg);
+  }
+}
+
+@keyframes bk-hero-media-in-stack {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bk-hero-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .case-study--belkhir .case-study__hero-media {
+    /* `backwards` (et non `both`) : une fois l'entrée terminée, l'animation ne
+       retient plus le transform, ce qui laisse l'interaction pointeur (style
+       inline) prendre la main. L'état final de l'entrée = l'état de repos CSS. */
+    animation: bk-hero-media-in-stack 800ms cubic-bezier(0.22, 1, 0.36, 1) 150ms backwards;
+  }
+
+  .case-study--belkhir .case-study__hero-copy > * {
+    animation: bk-hero-copy-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .case-study--belkhir .case-study__hero-copy > :nth-child(2) {
+    animation-delay: 80ms;
+  }
+
+  .case-study--belkhir .case-study__hero-copy > :nth-child(3) {
+    animation-delay: 160ms;
+  }
+
+  .case-study--belkhir .case-study__hero-copy > :nth-child(4) {
+    animation-delay: 240ms;
+  }
+
+  .case-study--belkhir .case-study__hero-copy > :nth-child(5) {
+    animation-delay: 320ms;
+  }
+}
+
+@media (min-width: 960px) and (prefers-reduced-motion: no-preference) {
+  .case-study--belkhir .case-study__hero-media {
+    animation-name: bk-hero-media-in;
+  }
+}
+
+/* Transition vers « Le problème » : le fondu est porté par le fond du Hero ;
+   on retire le filet de séparation de la section suivante. */
+.case-study--belkhir > .case-study__section:first-of-type + .case-study__section {
+  border-top-color: transparent;
+}
+
+/* --- Problème / réflexion : ouverture éditoriale asymétrique ------------- */
+.case-study--belkhir .case-study__problem-reflection {
+  gap: clamp(1.25rem, 3vw, 2rem);
+  align-items: stretch;
+}
+
+@media (min-width: 900px) {
+  .case-study--belkhir .case-study__problem-reflection {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+}
+
+.case-study--belkhir .case-study__problem,
+.case-study--belkhir .case-study__reflection {
+  max-width: none;
+  margin: 0;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+.case-study--belkhir .case-study__reflection {
+  border-left-width: 1px;
+  background: linear-gradient(180deg, rgba(228, 95, 54, 0.06), rgba(228, 95, 54, 0) 60%), var(--color-surface);
+}
+
+.case-study--belkhir .case-study__reflection::before {
+  content: "";
+  position: absolute;
+  top: clamp(1.5rem, 3vw, 2.5rem);
+  bottom: clamp(1.5rem, 3vw, 2.5rem);
+  left: 0;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(228, 95, 54, 0), var(--color-accent), rgba(228, 95, 54, 0));
+  opacity: 0.6;
+}
+
+.case-study--belkhir .case-study__reflection blockquote {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  line-height: 1.3;
+}
+
+/* --- 4 panneaux de preuve ------------------------------------------------ */
+.bk-panels {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 4.5rem);
+  margin-top: var(--space-lg);
+}
+
+.bk-panel {
+  --px: 50%;
+  --py: 50%;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow:
+    0 18px 40px -30px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--color-border);
+  transition: box-shadow 450ms ease;
+  will-change: transform;
+}
+
+.bk-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--px) var(--py), rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 60%);
+  opacity: 0;
+  transition: opacity 450ms ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.bk-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: clamp(1.5rem, 4vw, 3rem);
+  width: 22%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-accent), rgba(228, 95, 54, 0));
+  opacity: 0.35;
+  transition: opacity 450ms ease;
+  pointer-events: none;
+}
+
+.bk-panel:hover,
+.bk-panel:focus-within {
+  box-shadow:
+    0 22px 48px -28px rgba(228, 95, 54, 0.26),
+    0 0 0 1px rgba(228, 95, 54, 0.2);
+}
+
+.bk-panel:hover::before,
+.bk-panel:focus-within::before,
+.bk-panel:hover::after,
+.bk-panel:focus-within::after {
+  opacity: 1;
+}
+
+/* Frame média : ratio réel de la capture (aucune bande vide) ; l'index
+   générique du composant n'est pas utilisé ici. */
+.bk-panel .case-study__media-frame {
+  aspect-ratio: var(--bk-ratio, 16 / 10);
+  border-radius: var(--radius-lg);
+}
+
+.bk-panel .case-study__media-img {
+  will-change: transform;
+}
+
+.bk-panel__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-xs) clamp(0rem, 1vw, 0.75rem);
+}
+
+.bk-panel__num {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-border-strong);
+  margin-bottom: var(--space-xs);
+}
+
+.bk-panel__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.bk-panel__label--proof {
+  margin-top: var(--space-sm);
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+
+.bk-panel h3 {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+}
+
+.bk-panel p {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 900px) {
+  .bk-panel {
+    grid-template-columns: 55fr 45fr;
+    align-items: center;
+  }
+
+  .bk-panel--reverse {
+    grid-template-columns: 45fr 55fr;
+  }
+
+  .bk-panel--reverse .bk-panel__media {
+    order: 2;
+  }
+}
+
+/* --- Section mobile : moment signature ----------------------------------- */
+.bk-mobile {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse 55% 80% at 26% 50%, rgba(228, 95, 54, 0.11), rgba(228, 95, 54, 0) 70%), var(--color-bg);
+}
+
+.bk-mobile__layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 6vw, 3.5rem);
+  align-items: center;
+}
+
+.bk-mobile__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-md);
+}
+
+/* Ellipses très fines autour du téléphone (poésie CSS, aucun SVG). */
+.bk-mobile__stage::before,
+.bk-mobile__stage::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(241, 239, 232, 0.06);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.bk-mobile__stage::before {
+  width: min(120%, 26rem);
+  aspect-ratio: 1.1 / 1;
+}
+
+.bk-mobile__stage::after {
+  width: min(165%, 36rem);
+  aspect-ratio: 1.25 / 1;
+  border-color: rgba(228, 95, 54, 0.07);
+}
+
+.bk-phone-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.bk-phone {
+  --bk-phone-w: 240px;
+  position: relative;
+  width: var(--bk-phone-w);
+  aspect-ratio: 1 / 2.04;
+  padding: 9px;
+  border-radius: 40px;
+  background: linear-gradient(145deg, #2b2f36, #14161a 55%, #1e2127);
+  box-shadow:
+    0 0 0 1px rgba(241, 239, 232, 0.14),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.05),
+    0 40px 70px -30px rgba(0, 0, 0, 0.85),
+    0 0 90px -45px rgba(228, 95, 54, 0.3);
+}
+
+.bk-phone__screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 32px;
+  overflow: hidden;
+  background: #000;
+}
+
+.bk-phone__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.bk-phone__island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 28%;
+  height: 20px;
+  border-radius: 999px;
+  background: #050607;
+  transform: translateX(-50%);
+}
+
+/* Reflet de verre très léger. */
+.bk-phone__glare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0) 38%);
+  pointer-events: none;
+}
+
+.bk-phone__btn {
+  position: absolute;
+  width: 3px;
+  border-radius: 2px;
+  background: #1b1e23;
+  box-shadow: 0 0 0 1px rgba(241, 239, 232, 0.08);
+}
+
+.bk-phone__btn--left {
+  left: -3px;
+  top: 18%;
+  height: 11%;
+}
+
+.bk-phone__btn--right {
+  right: -3px;
+  top: 26%;
+  height: 16%;
+}
+
+.bk-mobile__text {
+  position: relative;
+}
+
+.bk-mobile__label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.bk-mobile__text h2 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.bk-accent {
+  color: var(--color-accent);
+}
+
+.bk-mobile__text p {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+}
+
+.bk-mobile__chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: var(--space-md) 0 0 0;
+  padding: 0;
+}
+
+.bk-mobile__chips li {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 900px) {
+  .bk-mobile__layout {
+    grid-template-columns: 5fr 6fr;
+    gap: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .bk-phone {
+    --bk-phone-w: 260px;
+  }
+
+  .bk-phone-wrap {
+    transform: rotate(-1.5deg);
+  }
+
+  /* Trait vertical Ember fin qui structure la composition desktop. */
+  .bk-mobile__text {
+    padding-left: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .bk-mobile__text::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -12%;
+    bottom: -12%;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(228, 95, 54, 0), rgba(228, 95, 54, 0.55), rgba(228, 95, 54, 0));
+  }
+}
+
+@media (min-width: 1200px) {
+  .bk-phone {
+    --bk-phone-w: 310px;
+  }
+}
+
+/* Entrée du téléphone (desktop uniquement, une seule fois) : l'état « armé »
+   n'est posé que par le script, jamais sans JS, jamais en reduced-motion. */
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .bk-mobile--armed .bk-phone-wrap {
+    opacity: 0;
+    transform: translateX(-72px) rotate(-6deg) scale(0.98);
+  }
+
+  .bk-mobile--armed .bk-mobile__text > * {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  .bk-mobile--in .bk-phone-wrap {
+    opacity: 1;
+    transform: translateX(0) rotate(-1.5deg);
+    transition:
+      opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .bk-mobile--in .bk-mobile__text > * {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 600ms ease-out,
+      transform 600ms ease-out;
+  }
+
+  /* Texte légèrement après le téléphone : label → titre → paragraphe → chips. */
+  .bk-mobile--in .bk-mobile__text > :nth-child(1) {
+    transition-delay: 250ms;
+  }
+
+  .bk-mobile--in .bk-mobile__text > :nth-child(2) {
+    transition-delay: 330ms;
+  }
+
+  .bk-mobile--in .bk-mobile__text > :nth-child(3) {
+    transition-delay: 410ms;
+  }
+
+  .bk-mobile--in .bk-mobile__text > :nth-child(4) {
+    transition-delay: 490ms;
+  }
+}
+
+/* --- Choix techniques / résultat / CTA : polish ---------------------------- */
+.case-study--belkhir .case-study__section[aria-labelledby="outcome-title"] {
+  background: radial-gradient(ellipse 60% 70% at 80% 20%, rgba(228, 95, 54, 0.07), rgba(228, 95, 54, 0) 70%);
+}
+
+.case-study--belkhir .case-study__section[aria-labelledby="cta-title"] {
+  background: radial-gradient(ellipse 60% 80% at 50% 25%, rgba(228, 95, 54, 0.11), rgba(228, 95, 54, 0) 70%), var(--color-bg-soft);
+}
+
+.case-study--belkhir .case-study__tech {
+  border-radius: var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-panel,
+  .bk-panel::before,
+  .bk-panel::after {
+    transition: none;
+  }
+
+  .bk-panel,
+  .bk-panel .case-study__media-img {
+    transform: none !important;
+  }
+}
+
+/* --- Hero Belkhir : média « objet premium » (interaction pointeur) --------
+   Piloté par le script de [slug].astro (pointeur fin, ≥ 960 px, hors
+   reduced-motion uniquement) via les variables --mx/--my (reflet, en %) et
+   --gx/--gy (côté du contour, -1..1). Sans interaction : état de repos
+   identique à avant (aucune règle ci-dessous n'a d'effet visible). */
+.case-study--belkhir .case-study__hero-media {
+  --mx: 50%;
+  --my: 50%;
+  --gx: 0;
+  --gy: 0;
+  will-change: transform;
+}
+
+/* Reflet de verre dynamique : lumière radiale ivoire, très légèrement Ember. */
+.case-study--belkhir .case-study__hero-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--mx) var(--my),
+    rgba(241, 239, 232, 0.11) 0,
+    rgba(228, 95, 54, 0.045) 34%,
+    rgba(228, 95, 54, 0) 62%
+  );
+  opacity: 0;
+  transition: opacity 450ms ease;
+  pointer-events: none;
+}
+
+.case-study--belkhir .case-study__hero-media .case-study__hero-img {
+  will-change: transform;
+}
+
+/* Contour : liseré un peu plus lumineux du côté du pointeur + rappel Ember. */
+.case-study--belkhir .case-study__hero-media.is-active {
+  border-color: rgba(241, 239, 232, 0.2);
+  box-shadow:
+    0 40px 80px -40px rgba(0, 0, 0, 0.9),
+    0 18px 36px -24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(228, 95, 54, 0.2),
+    inset calc(var(--gx) * -7px) calc(var(--gy) * -7px) 22px -12px rgba(241, 239, 232, 0.12);
+}
+
+.case-study--belkhir .case-study__hero-media.is-active::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--belkhir .case-study__hero-media::before {
+    display: none;
+  }
+}
