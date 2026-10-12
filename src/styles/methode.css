@@ -278,3 +278,754 @@
     padding-left: 0.85rem;
   }
 }
+
+/* ==========================================================================
+   TRANSPOSITION DE LA DA « APPLICATIONS MÉTIER » — tout est sous
+   .methode-page / .methode-*. Composants partagés NON modifiés : leurs
+   règles scopées (.service-page--apps) sont dupliquées ici localement.
+   Ember = ponctuation (eyebrows, liserés, numéros, quelques mots, dernier
+   maillon du flux, halos très faibles) ; titres ivoire.
+   ========================================================================== */
+
+/* --- Eyebrows Ember (le préfixe html bat les styles scopés des composants) --- */
+html .methode-page .section-heading__eyebrow,
+html .methode-page .service-hero__eyebrow,
+html .methode-page .service-cta__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* Accents dans les textes existants : gras ivoire (lead du Hero) / Ember (intro). */
+.methode-page .service-hero__lead strong {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.methode-page .methode-accent {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+/* --- Hero : graphite + chaleur Ember sombre ------------------------------------ */
+.methode-hero {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse 62% 95% at 30% 42%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 68%);
+}
+
+.methode-hero-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.75rem, 5vw, 3rem);
+  align-items: center;
+}
+
+/* Carte PROJET (composant existant) : plus petite et placée plus bas qu'Applications. */
+.methode-hero-visual {
+  width: min(60vw, 15rem);
+  margin-inline: auto;
+}
+
+@media (min-width: 900px) {
+  .methode-hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 16rem);
+    gap: clamp(2rem, 5vw, 4.5rem);
+  }
+
+  .methode-hero-visual {
+    width: 100%;
+    margin: clamp(1.5rem, 4vw, 3.5rem) 0 0 auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .methode-hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 18.5rem);
+  }
+}
+
+/* --- Stacking du champ de points (« Le point de départ » et « Suivi » ; règles
+   locales : les hôtes nommés de expertise-dot-wave.css ne couvrent pas cette
+   page, fichier non modifié) --- */
+.methode-page .methode-start,
+.methode-page .methode-contact {
+  position: relative;
+  isolation: isolate;
+}
+
+.methode-page .methode-start > .container,
+.methode-page .methode-contact > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* « Suivi » : présence plus faible que dans « Le point de départ ». */
+.methode-page .methode-contact .home-expertise__dot-wave {
+  opacity: 0.55;
+}
+
+/* --- Point de départ : 3 blocs structurés (pas de cards flottantes) ------------- */
+.methode-start .methode-principles {
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.methode-start .methode-principle {
+  position: relative;
+  border-top: 1px solid rgba(228, 95, 54, 0.4);
+  padding: 1.5rem 1.25rem 1.6rem;
+  background: linear-gradient(180deg, rgba(228, 95, 54, 0.06), rgba(228, 95, 54, 0) 55%);
+}
+
+/* Liseré Ember plus vif sur le début de la bordure haute. */
+.methode-start .methode-principle::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 3rem;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+.methode-start .methode-principle__index {
+  font-size: 0.8125rem;
+  color: var(--color-accent);
+  opacity: 0.9;
+}
+
+.methode-start .methode-principle__label {
+  color: var(--color-text-secondary);
+}
+
+.methode-start .methode-principle__title {
+  font-size: 1.25rem;
+}
+
+.methode-start .methode-principle__text {
+  color: var(--color-text-secondary);
+}
+
+/* --- Déroulé : mise en scène sans ligne ni timeline géante ----------------------- */
+.methode-process .methode-steps {
+  gap: clamp(2.75rem, 5vw, 4rem);
+}
+
+.methode-process .methode-step__node {
+  border-color: rgba(228, 95, 54, 0.5);
+  color: var(--color-text);
+}
+
+.methode-process .methode-step__content {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Petit trait Ember au-dessus de chaque titre d'étape. */
+.methode-process .methode-step__content h3::before {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 2px;
+  margin-bottom: 0.65rem;
+  background: var(--color-accent);
+  opacity: 0.75;
+}
+
+/* 03 Développer : surface premium + chaleur Ember très faible (moment chaud). */
+.methode-process .methode-step[data-step="03"] .methode-step__content,
+.methode-process .methode-step[data-step="05"] .methode-step__content {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(14, 16, 19, 0.72);
+}
+
+.methode-process .methode-step[data-step="03"] .methode-step__content::before {
+  content: "";
+  position: absolute;
+  inset: -2.5rem 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(228, 95, 54, 0.09), rgba(228, 95, 54, 0) 70%);
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .methode-process .methode-step[data-step="03"] .methode-step__content::before {
+    inset: -3rem -3.5rem;
+  }
+}
+
+/* 05 Livrer : surface sobre, sans halo, qui prépare la suite. */
+.methode-process .methode-step[data-step="05"] .methode-step__content {
+  border-color: rgba(228, 95, 54, 0.28);
+}
+
+/* --- Interlocuteur (Suivi) : aucun halo, champ de points discret en arrière-plan --- */
+.methode-contact .methode-reassurances li {
+  border-left: 1px solid rgba(228, 95, 54, 0.45);
+  padding-left: var(--space-md);
+  line-height: 1.6;
+}
+
+/* --- Stack : chaleur Ember légère + flux mis en valeur --------------------------- */
+.methode-stack {
+  background: radial-gradient(ellipse 62% 85% at 72% 40%, rgba(228, 95, 54, 0.11), rgba(228, 95, 54, 0) 70%);
+}
+
+.methode-stack .methode-flow__step {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.methode-stack .methode-flow__step:last-child {
+  border-color: rgba(228, 95, 54, 0.6);
+  background: rgba(228, 95, 54, 0.08);
+  color: var(--color-accent);
+}
+
+.methode-stack .methode-flow__arrow {
+  color: rgba(228, 95, 54, 0.5);
+}
+
+/* --- CTA final : surface premium semi-transparente + halo Ember ------------------- */
+.methode-final {
+  background: radial-gradient(ellipse 58% 90% at 50% 38%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 70%), var(--color-bg-soft);
+}
+
+.methode-final .service-cta {
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+  border: 1px solid rgba(241, 239, 232, 0.14);
+  border-radius: var(--radius-xl);
+}
+
+/* La colonne vertébrale (::before) se positionne par rapport à la liste des
+   étapes, y compris sous 900 px (sans cela elle s'étirait sur toute la page). */
+.methode-steps {
+  position: relative;
+}
+
+/* Footer remonté : le padding bas de la section CTA s'ajoutait à la marge haute
+   générique du Footer (global.css, 4 rem) — même défaut et même correction que
+   sur la Home et les pages services. Sélecteur propre à cette page
+   (.methode-final n'existe que sur /methode/), Footer global inchangé. */
+main:has(.methode-final) + footer {
+  margin-top: 0;
+}
+
+.methode-final {
+  padding-bottom: clamp(4.5rem, 8vw, 6.5rem);
+}
+
+/* ==========================================================================
+   « LE POINT DE DÉPART » — 3 blocs : apparition ordonnée + hover très léger.
+   Les blocs reposent AU-DESSUS de la vague de points (fond ~92 % opaque : la
+   vague reste devinée autour et derrière, jamais cachée). ExpertiseDotWave
+   n'est pas touché.
+   ========================================================================== */
+.methode-start .methode-principle {
+  border: 1px solid var(--color-border);
+  border-top-color: rgba(228, 95, 54, 0.4);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(228, 95, 54, 0.05), rgba(228, 95, 54, 0) 55%), rgba(14, 16, 19, 0.92);
+  transition: transform 300ms ease, border-color 300ms ease;
+}
+
+/* Liseré Ember supérieur : ~36 px au repos, ~68 px au hover. */
+.methode-start .methode-principle::before {
+  left: 1.25rem;
+  width: 2.25rem;
+  transition: width 320ms ease;
+}
+
+/* Apparition (une seule fois). L'état « armé » n'est posé que par le script,
+   donc jamais sans JS ni sous prefers-reduced-motion. */
+@keyframes methode-principle-in-y14 {
+  from { opacity: 0; filter: blur(2px); transform: translateY(14px); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
+@keyframes methode-principle-in-left {
+  from { opacity: 0; filter: blur(2px); transform: translateX(-28px); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
+@keyframes methode-principle-in-up {
+  from { opacity: 0; filter: blur(2px); transform: translateY(18px); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
+@keyframes methode-principle-in-right {
+  from { opacity: 0; filter: blur(2px); transform: translateX(28px); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
+.methode-principles--armed .methode-principle {
+  opacity: 0;
+}
+
+.methode-principles--in .methode-principle {
+  opacity: 1;
+  animation: methode-principle-in-y14 650ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.methode-principles--in .methode-principle:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.methode-principles--in .methode-principle:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+/* Dès 900 px : 01 depuis la gauche, 02 depuis le bas, 03 depuis la droite. */
+@media (min-width: 900px) {
+  .methode-principles--in .methode-principle:nth-child(1) {
+    animation-name: methode-principle-in-left;
+  }
+
+  .methode-principles--in .methode-principle:nth-child(2) {
+    animation-name: methode-principle-in-up;
+  }
+
+  .methode-principles--in .methode-principle:nth-child(3) {
+    animation-name: methode-principle-in-right;
+  }
+}
+
+/* Hover : pointeur fin, dès 900 px, hors reduced-motion. Micro-lift, bordure un
+   peu plus chaude, liseré Ember qui s'allonge. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .methode-start .methode-principle:hover {
+    transform: translateY(-3px) scale(1.005);
+    border-color: rgba(228, 95, 54, 0.28);
+    border-top-color: rgba(228, 95, 54, 0.7);
+  }
+
+  .methode-start .methode-principle:hover::before {
+    width: 4.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .methode-start .methode-principle,
+  .methode-start .methode-principle::before {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   « DÉROULÉ » — parcours éditorial premium (5 étapes réelles, alternance
+   gauche / droite conservée). Pas de ligne Ember continue : seulement de
+   petits segments locaux entre les stations, qui passent en Ember étape par
+   étape. 01 / 02 / 04 ouvertes ; 03 = surface premium (moment technique) ;
+   05 = surface plus sobre (conclusion).
+   ========================================================================== */
+
+/* Titre rendu localement (accent partiel « fil conducteur »). */
+.methode-heading__eyebrow {
+  display: block;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+/* Courbes de fond : elles viennent de PageFilaments (canvas fixe partagé, non
+   modifiable). Hiérarchie obtenue par des voiles graphite locaux : courbes très
+   faibles autour de 01 / 02, pleinement visibles autour de 03, légèrement
+   voilées vers 04 / 05. */
+.methode-process {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 11, 13, 0.6) 0%,
+    rgba(10, 11, 13, 0.6) 26%,
+    rgba(10, 11, 13, 0) 42%,
+    rgba(10, 11, 13, 0) 62%,
+    rgba(10, 11, 13, 0.42) 78%,
+    rgba(10, 11, 13, 0.42) 100%
+  );
+}
+
+.methode-process .methode-steps {
+  --steps-gap: clamp(3rem, 5.5vw, 4.5rem);
+  --node: 2.3rem;
+  --seg-left: calc(var(--node) / 2);
+  gap: var(--steps-gap);
+}
+
+/* La colonne grise d'origine laisse la place aux segments locaux. */
+.methode-process .methode-steps::before {
+  opacity: 0;
+}
+
+@media (min-width: 900px) {
+  .methode-process .methode-steps {
+    --seg-left: 50%;
+  }
+}
+
+/* Stations : cercle graphite, bordure fine, numéro ivoire. */
+.methode-process .methode-step__node {
+  width: var(--node);
+  height: var(--node);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  box-shadow: 0 0 0 4px var(--color-bg);
+}
+
+/* Segment local sous chaque station : graphite au repos, Ember quand l'étape est active. */
+.methode-process .methode-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: var(--seg-left);
+  top: var(--node);
+  width: 1px;
+  height: calc(100% - var(--node) + var(--steps-gap));
+  transform: translateX(-50%);
+  background-color: var(--color-border-strong);
+  background-image: linear-gradient(var(--color-accent), var(--color-accent));
+  background-repeat: no-repeat;
+  background-size: 100% 0;
+  pointer-events: none;
+}
+
+/* Étapes : contenu plus présent (>= 1200 px : ~424 px utiles), toujours alterné. */
+.methode-process .methode-step__content h3 {
+  font-size: clamp(1.4rem, 2.2vw, 1.875rem);
+}
+
+.methode-process .methode-step__content p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  max-width: 40ch;
+}
+
+@media (min-width: 900px) {
+  .methode-process .methode-step__content {
+    max-width: 22rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .methode-process .methode-step__content {
+    max-width: 26.5rem;
+  }
+}
+
+/* 03 Développer — surface premium (moment technique fort). */
+.methode-process .methode-step[data-step="03"] .methode-step__content {
+  padding: 1.6rem 1.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: rgba(14, 16, 19, 0.8);
+  box-shadow: inset 0 1px 0 rgba(228, 95, 54, 0.45);
+}
+
+.methode-process .methode-step[data-step="03"] .methode-step__content::before {
+  opacity: 0.7;
+  transition: opacity 300ms ease;
+}
+
+/* 05 Livrer — surface plus sobre, pas de halo, ne concurrence pas 03. */
+.methode-process .methode-step[data-step="05"] .methode-step__content {
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(241, 239, 232, 0.12);
+  border-radius: var(--radius-lg);
+  background: rgba(14, 16, 19, 0.7);
+  box-shadow: inset 0 1px 0 rgba(228, 95, 54, 0.22);
+}
+
+/* Entrée + replay (classes posées par le script ; jamais sous reduced-motion).
+   Étapes de gauche (01 / 03 / 05) : depuis la gauche ; de droite (02 / 04) :
+   depuis la droite ; numéro : scale 0.88 -> 1. Sous 900 px : montée de 14 px. */
+@media (prefers-reduced-motion: no-preference) {
+  .methode-steps--armed .methode-step__node {
+    opacity: 0;
+    transform: scale(0.88);
+    transition: opacity 650ms ease, transform 650ms cubic-bezier(0.22, 1, 0.36, 1), border-color 500ms ease;
+  }
+
+  .methode-steps--armed .methode-step__content {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 650ms ease-out,
+      transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 300ms ease,
+      scale 300ms ease,
+      border-color 300ms ease;
+    transition-delay: 90ms, 90ms, 0s, 0s, 0s;
+  }
+
+  .methode-steps--armed .methode-step.is-in .methode-step__node {
+    opacity: 1;
+    transform: none;
+    border-color: var(--color-accent);
+  }
+
+  .methode-steps--armed .methode-step.is-in .methode-step__content {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Segment Ember local : seulement sous la dernière étape active. */
+  .methode-steps--armed .methode-step:not(:last-child)::after {
+    transition: background-size 900ms cubic-bezier(0.22, 1, 0.36, 1) 150ms;
+  }
+
+  .methode-steps--armed .methode-step.is-current:not(:last-child)::after {
+    background-size: 100% 100%;
+  }
+}
+
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .methode-steps--armed .methode-step:nth-child(odd) .methode-step__content {
+    transform: translateX(-24px);
+  }
+
+  .methode-steps--armed .methode-step:nth-child(even) .methode-step__content {
+    transform: translateX(24px);
+  }
+
+  .methode-steps--armed .methode-step.is-in .methode-step__content {
+    transform: none;
+  }
+}
+
+/* Hover de 03 : pointeur fin, dès 900 px, hors reduced-motion. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .methode-process .methode-step[data-step="03"] .methode-step__content:hover {
+    translate: 0 -2px;
+    scale: 1.005;
+    border-color: rgba(228, 95, 54, 0.32);
+  }
+
+  .methode-process .methode-step[data-step="03"] .methode-step__content:hover::before {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   « SUIVI » — composition éditoriale : texte à gauche, 3 engagements empilés à
+   droite. La vague de points (ExpertiseDotWave, inchangée) reste en arrière-plan,
+   visible entre les blocs : le contenu passe au-dessus (stacking local existant).
+   ========================================================================== */
+.methode-contact-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 3rem);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .methode-contact-layout {
+    grid-template-columns: 11fr 9fr;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+}
+
+@media (min-width: 1200px) {
+  .methode-contact-layout {
+    grid-template-columns: 55fr 45fr;
+  }
+}
+
+/* Engagements : liste verticale, largeur homogène, rythme régulier. */
+.methode-contact .methode-reassurances {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: none;
+  margin: 0;
+}
+
+.methode-contact .methode-reassurances li.methode-engagement {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.3rem 1.5rem 1.3rem 1.75rem;
+  border: 1px solid var(--color-border);
+  border-left-width: 1px;
+  border-radius: var(--radius-md);
+  background: rgba(14, 16, 19, 0.88);
+  color: var(--color-text);
+  transition: border-color 300ms ease;
+}
+
+/* Liseré vertical Ember : hauteur partielle au repos, s'allonge au hover. */
+.methode-engagement::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 1.2rem;
+  width: 2px;
+  height: 2rem;
+  background: var(--color-accent);
+  transition: height 300ms ease;
+}
+
+.methode-engagement__num {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.methode-engagement__text {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* 03 : minuscule point Ember décoratif près du liseré. */
+.methode-engagement:nth-child(3)::after {
+  content: "";
+  position: absolute;
+  left: 0.6rem;
+  top: 3.5rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.7;
+}
+
+/* Entrée depuis la droite + replay (classes posées par le script ; jamais sous
+   reduced-motion). Sous 900 px : montée de 14 px, sans mouvement latéral. */
+@media (prefers-reduced-motion: no-preference) {
+  .methode-reassurances--armed .methode-engagement {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 650ms ease-out,
+      transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 300ms ease,
+      scale 300ms ease,
+      border-color 300ms ease;
+  }
+
+  .methode-reassurances--armed.methode-reassurances--in .methode-engagement {
+    opacity: 1;
+    transform: none;
+  }
+
+  .methode-reassurances--armed .methode-engagement:nth-child(1) {
+    transition-delay: 0ms, 0ms, 0s, 0s, 0s;
+  }
+
+  .methode-reassurances--armed .methode-engagement:nth-child(2) {
+    transition-delay: 90ms, 90ms, 0s, 0s, 0s;
+  }
+
+  .methode-reassurances--armed .methode-engagement:nth-child(3) {
+    transition-delay: 180ms, 180ms, 0s, 0s, 0s;
+  }
+}
+
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .methode-reassurances--armed .methode-engagement {
+    transform: translateX(26px);
+  }
+
+  .methode-reassurances--armed.methode-reassurances--in .methode-engagement {
+    transform: none;
+  }
+}
+
+/* Hover discret : pointeur fin, dès 900 px, hors reduced-motion. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .methode-contact .methode-engagement:hover {
+    translate: 0 -2px;
+    scale: 1.004;
+    border-color: rgba(228, 95, 54, 0.28);
+  }
+
+  .methode-contact .methode-engagement:hover::before {
+    height: 3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .methode-contact .methode-engagement,
+  .methode-engagement::before {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   « STACK » — flux BESOIN -> TECHNOLOGIES : au repos 4 blocs graphite
+   cohérents (plus d'orange fixe sur TECHNOLOGIES) ; la séquence Ember est
+   posée par le script (.is-active / .is-lit), puis tout retombe au repos.
+   ========================================================================== */
+.methode-stack .methode-flow__step,
+.methode-stack .methode-flow__step:last-child {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+  transition:
+    border-color 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    translate 300ms ease,
+    scale 300ms ease;
+}
+
+/* Micro-accent très faible sur TECHNOLOGIES (pas une card orange). */
+.methode-stack .methode-flow__step:last-child {
+  border-color: rgba(228, 95, 54, 0.22);
+}
+
+.methode-stack .methode-flow__arrow {
+  color: rgba(228, 95, 54, 0.28);
+  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Étape active : « prise en compte », pas « sélectionnée ». */
+.methode-stack .methode-flow__step.is-active,
+.methode-stack .methode-flow__step.is-active:last-child {
+  border-color: rgba(228, 95, 54, 0.7);
+  background: rgba(228, 95, 54, 0.07);
+  color: var(--color-accent);
+}
+
+.methode-stack .methode-flow__arrow.is-lit {
+  color: rgba(228, 95, 54, 0.95);
+}
+
+@media (min-width: 900px) {
+  .methode-stack .methode-flow__step.is-active {
+    translate: 0 -1px;
+  }
+}
+
+/* Hover indépendant de la séquence : pointeur fin, dès 900 px, hors reduced-motion. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .methode-stack .methode-flow__step:hover {
+    border-color: rgba(228, 95, 54, 0.4);
+    translate: 0 -1px;
+    scale: 1.003;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .methode-stack .methode-flow__step,
+  .methode-stack .methode-flow__arrow {
+    transition: none;
+  }
+}
+
+/* Les engagements du Suivi attendent 26 px à droite avant leur entrée : on évite
+   tout débordement horizontal de page pendant cet état d'attente. */
+.methode-contact {
+  overflow-x: clip;
+}

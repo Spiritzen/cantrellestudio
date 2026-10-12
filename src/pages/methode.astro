@@ -22,6 +22,12 @@ import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
 import ServiceMotion from "../components/services/ServiceMotion.astro";
+// DA « Applications métier » transposée : composants EXISTANTS réutilisés tels
+// quels (aucun modifié) — carte PROJET du Hero, champ de points (2 apparitions :
+// « Le point de départ » et « Stack ») et filaments d'arrière-plan (desktop).
+import ProjectHeroVisual from "../components/services/ProjectHeroVisual.astro";
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
+import PageFilaments from "../components/hero/PageFilaments";
 // HOTFIX CS-S11A — services.css porte les styles de ServiceBreadcrumb/
 // ServiceHero/ServiceCta (.service-hero/.service-cta/.service-breadcrumb) ;
 // cet import manquait, laissant ces 3 blocs sans styles (voir rapport
@@ -76,35 +82,47 @@ const stackFlow = ["Besoin", "Contraintes", "Architecture", "Technologies"];
   description="Découvrez la méthode Cantrelle Studio : comprendre le besoin, concevoir, développer, tester et livrer une solution numérique adaptée au projet."
 >
   <div class="methode-page">
+    <!-- Filaments d'arrière-plan : composant existant, monté UNE fois au niveau de
+         la page, desktop uniquement (aucune hydratation sous 900 px). -->
+    <PageFilaments client:media="(min-width: 900px)" />
+
     <Container>
       <ServiceBreadcrumb current="Méthode" />
     </Container>
 
-    <!-- A. HERO MÉTHODE -->
-    <section class="methode-page__section">
+    <!-- A. HERO MÉTHODE — texte à gauche, carte PROJET (existante) à droite -->
+    <section class="methode-page__section methode-hero">
       <Container>
-        <ServiceHero
-          eyebrow="Méthode"
-          title="Un projet clair, de la compréhension à la livraison."
-          lead="Avant de choisir une stack ou d'écrire du code, le studio clarifie le besoin, les utilisateurs, les contraintes et l'existant. Le projet avance ensuite par étapes courtes, avec des choix techniques adaptés à ce qu'il faut réellement construire."
-          secondaryHref="/realisations/"
-          secondaryLabel="Voir les réalisations"
-        />
+        <div class="methode-hero-layout">
+          <ServiceHero
+            eyebrow="Méthode"
+            title="Un projet clair, de la compréhension à la livraison."
+            leadHtml="Avant de choisir une stack ou d'écrire du code, le studio clarifie le <strong>besoin</strong>, les utilisateurs, les <strong>contraintes</strong> et l'<strong>existant</strong>. Le projet avance ensuite par étapes courtes, avec des choix techniques adaptés à ce qu'il faut réellement construire."
+            secondaryHref="/realisations/"
+            secondaryLabel="Voir les réalisations"
+          />
+          <div class="methode-hero-visual">
+            <ProjectHeroVisual />
+          </div>
+        </div>
       </Container>
     </section>
 
     <!-- B. AVANT DE CODER -->
-    <section class="methode-page__section methode-page__section--soft" aria-labelledby="methode-start-title">
+    <section class="methode-page__section methode-page__section--soft methode-start" aria-labelledby="methode-start-title">
+      <!-- Champ de points (1re des 2 apparitions autorisées) -->
+      <ExpertiseDotWave />
       <Container>
         <SectionHeading
           id="methode-start-title"
           eyebrow="Le point de départ"
           title="Comprendre avant de construire."
-          intro="Un besoin mal cadré reste un mauvais point de départ, quelle que soit la technologie choisie. La première étape consiste donc à rendre le problème, le contexte et les contraintes suffisamment clairs pour prendre de bonnes décisions."
-        />
+        >
+          <Fragment slot="intro">Un besoin <strong class="methode-accent">mal cadré</strong> reste un mauvais point de départ, quelle que soit la technologie choisie. La première étape consiste donc à rendre le problème, le contexte et les contraintes suffisamment clairs pour prendre de bonnes décisions.</Fragment>
+        </SectionHeading>
         <div class="methode-principles">
           {principles.map((item) => (
-            <div class="methode-principle" data-motion="block">
+            <div class="methode-principle">
               <span class="methode-principle__index" aria-hidden="true">{item.index}</span>
               <span class="methode-principle__label">{item.label}</span>
               <h3 class="methode-principle__title">{item.title}</h3>
@@ -116,16 +134,18 @@ const stackFlow = ["Besoin", "Contraintes", "Architecture", "Technologies"];
     </section>
 
     <!-- C. SECTION CENTRALE — LES 5 ÉTAPES (pièce maîtresse de la page) -->
-    <section class="methode-page__section" aria-labelledby="methode-steps-title">
+    <section class="methode-page__section methode-process" aria-labelledby="methode-steps-title">
       <Container>
-        <SectionHeading
-          id="methode-steps-title"
-          eyebrow="Déroulé"
-          title="Cinq étapes, un même fil conducteur."
-        />
+        <!-- Titre rendu localement : SectionHeading (composant partagé) ne permet
+             pas d'accent partiel dans le titre. Même niveau (h2), même id, même
+             typographie globale ; eyebrow et titre gardent leur reveal générique. -->
+        <div class="methode-heading">
+          <span class="methode-heading__eyebrow" data-motion="eyebrow">Déroulé</span>
+          <h2 id="methode-steps-title" data-motion="title">Cinq étapes, un même <span class="methode-accent">fil conducteur</span>.</h2>
+        </div>
         <ol class="methode-steps">
           {steps.map((step) => (
-            <li class="methode-step" data-motion="step">
+            <li class="methode-step" data-step={step.index}>
               <span class="methode-step__node" aria-hidden="true">{step.index}</span>
               <div class="methode-step__content">
                 <h3>{step.title}</h3>
@@ -138,28 +158,38 @@ const stackFlow = ["Besoin", "Contraintes", "Architecture", "Technologies"];
     </section>
 
     <!-- D. INTERLOCUTEUR RESPONSABLE -->
-    <section class="methode-page__section methode-page__section--soft" aria-labelledby="methode-contact-title">
+    <section class="methode-page__section methode-page__section--soft methode-contact" aria-labelledby="methode-contact-title">
+      <!-- Champ de points (2e et DERNIÈRE apparition, plus discret) -->
+      <ExpertiseDotWave />
       <Container>
-        <SectionHeading
-          id="methode-contact-title"
-          eyebrow="Suivi"
-          title="Un interlocuteur responsable du projet."
-        />
-        <p class="methode-lead" data-motion="block">
-          Le cadrage, les choix techniques et la réalisation ne doivent pas devenir une succession
-          d'intermédiaires. Cantrelle Studio privilégie une relation directe, avec un interlocuteur
-          responsable capable de relier le besoin métier aux décisions de conception et de développement.
-        </p>
-        <ul class="methode-reassurances" data-motion="block">
-          {reassurances.map((point) => (
-            <li>{point}</li>
-          ))}
-        </ul>
+        <!-- Composition 55 / 45 : texte à gauche, 3 engagements empilés à droite. -->
+        <div class="methode-contact-layout">
+          <div class="methode-contact-main">
+            <SectionHeading
+              id="methode-contact-title"
+              eyebrow="Suivi"
+              title="Un interlocuteur responsable du projet."
+            />
+            <p class="methode-lead" data-motion="block">
+              Le cadrage, les choix techniques et la réalisation ne doivent pas devenir une succession
+              d'intermédiaires. Cantrelle Studio privilégie une relation directe, avec un interlocuteur
+              responsable capable de relier le besoin métier aux décisions de conception et de développement.
+            </p>
+          </div>
+          <ul class="methode-reassurances">
+            {reassurances.map((point, i) => (
+              <li class="methode-engagement">
+                <span class="methode-engagement__num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                <span class="methode-engagement__text">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </Container>
     </section>
 
     <!-- E. LA STACK VIENT APRÈS -->
-    <section class="methode-page__section" aria-labelledby="methode-stack-title">
+    <section class="methode-page__section methode-stack" aria-labelledby="methode-stack-title">
       <Container>
         <SectionHeading
           id="methode-stack-title"
@@ -191,7 +221,7 @@ const stackFlow = ["Besoin", "Contraintes", "Architecture", "Technologies"];
     </section>
 
     <!-- F. CTA FINAL -->
-    <section class="methode-page__section methode-page__section--soft" aria-labelledby="methode-cta-title">
+    <section class="methode-page__section methode-page__section--soft methode-final" aria-labelledby="methode-cta-title">
       <Container>
         <ServiceCta
           headingId="methode-cta-title"
@@ -207,3 +237,118 @@ const stackFlow = ["Besoin", "Contraintes", "Architecture", "Technologies"];
 
   <ServiceMotion />
 </BaseLayout>
+
+<script>
+  // « Le point de départ » : les 3 blocs se mettent en ordre (Besoin -> Contexte ->
+  // Périmètre), UNE seule fois. Les animations sont en CSS ; ce script se contente
+  // de poser une classe d'état puis de se déconnecter. Jamais armé sous
+  // prefers-reduced-motion (blocs visibles immédiatement, sans mouvement).
+  const grid = document.querySelector<HTMLElement>(".methode-principles");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (grid && !reduced.matches && "IntersectionObserver" in window) {
+    grid.classList.add("methode-principles--armed");
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          grid.classList.add("methode-principles--in");
+          io.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    io.observe(grid);
+  }
+
+  // « Stack » : l'Ember voyage BESOIN -> CONTRAINTES -> ARCHITECTURE -> TECHNOLOGIES
+  // (~2 s), puis tout revient au repos graphite. Rejoué au retour : démarrage à 33 %
+  // visible, réarmement seulement sous 7 % (hystérésis). Minuteries annulées au reset ;
+  // aucun écouteur de scroll, aucune boucle ; non armé sous reduced-motion.
+  const flow = document.querySelector<HTMLElement>(".methode-flow");
+  if (flow && !reduced.matches && "IntersectionObserver" in window) {
+    const steps = Array.from(flow.querySelectorAll<HTMLElement>(".methode-flow__step"));
+    const arrows = Array.from(flow.querySelectorAll<HTMLElement>(".methode-flow__arrow"));
+    const STRIDE = 300; // décalage entre blocs
+    const HOLD = 450; // pause sur TECHNOLOGIES
+    let timers: number[] = [];
+    let playing = false;
+    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    const clear = () => {
+      timers.forEach((t) => window.clearTimeout(t));
+      timers = [];
+      steps.forEach((el) => el.classList.remove("is-active"));
+      arrows.forEach((el) => el.classList.remove("is-lit"));
+      playing = false;
+    };
+    const play = () => {
+      if (playing) return;
+      playing = true;
+      steps.forEach((el, i) => {
+        at(i * STRIDE, () => {
+          steps[i - 1]?.classList.remove("is-active");
+          arrows[i - 1]?.classList.remove("is-lit");
+          el.classList.add("is-active");
+        });
+        if (arrows[i]) at(i * STRIDE + 150, () => arrows[i].classList.add("is-lit"));
+      });
+      // Retour progressif au repos après la pause finale.
+      at((steps.length - 1) * STRIDE + HOLD, () => {
+        steps.forEach((el) => el.classList.remove("is-active"));
+        arrows.forEach((el) => el.classList.remove("is-lit"));
+      });
+    };
+    const flowIo = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.intersectionRatio >= 0.33) play();
+          else if (e.intersectionRatio < 0.07) clear();
+        });
+      },
+      { threshold: [0, 0.03, 0.07, 0.15, 0.25, 0.33, 0.5] },
+    );
+    flowIo.observe(flow);
+  }
+
+  // « Suivi » : les 3 engagements arrivent depuis la droite, replay au retour.
+  // Entrée dès 33 % de la section visible, réarmement seulement sous 7 %
+  // (hystérésis). Aucun écouteur de scroll ; non armé sous reduced-motion.
+  const engagements = document.querySelector<HTMLElement>(".methode-reassurances");
+  const suiviSection = document.querySelector<HTMLElement>(".methode-contact");
+  if (engagements && suiviSection && !reduced.matches && "IntersectionObserver" in window) {
+    engagements.classList.add("methode-reassurances--armed");
+    const suiviIo = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.intersectionRatio >= 0.33) engagements.classList.add("methode-reassurances--in");
+          else if (e.intersectionRatio < 0.07) engagements.classList.remove("methode-reassurances--in");
+        });
+      },
+      { threshold: [0, 0.03, 0.07, 0.15, 0.25, 0.33, 0.5] },
+    );
+    suiviIo.observe(suiviSection);
+  }
+
+  // « Déroulé » : chaque étape entre depuis son côté (replay au retour). Entrée dès
+  // 33 % visible, réarmement seulement sous 7 % (hystérésis : pas de clignotement).
+  // Aucun écouteur de scroll, aucune boucle ; non armé sous prefers-reduced-motion.
+  const stepsList = document.querySelector<HTMLElement>(".methode-steps");
+  if (stepsList && !reduced.matches && "IntersectionObserver" in window) {
+    stepsList.classList.add("methode-steps--armed");
+    const ENTER = 0.33;
+    const RESET = 0.07;
+    const stepsIo = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          const el = e.target as HTMLElement;
+          if (e.intersectionRatio >= ENTER) el.classList.add("is-in");
+          else if (e.intersectionRatio < RESET) el.classList.remove("is-in");
+        });
+        // Segment Ember LOCAL : uniquement sous la dernière étape active (jamais une longue ligne).
+        const active = Array.from(stepsList.querySelectorAll<HTMLElement>(".methode-step.is-in"));
+        stepsList.querySelectorAll(".methode-step").forEach((li) => li.classList.remove("is-current"));
+        active[active.length - 1]?.classList.add("is-current");
+      },
+      { threshold: [0, 0.03, 0.07, 0.15, 0.25, 0.33, 0.5] },
+    );
+    stepsList.querySelectorAll(".methode-step").forEach((li) => stepsIo.observe(li));
+  }
+</script>
