@@ -113,10 +113,17 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
     </Container>
 
     <!-- A. HERO — LE STUDIO -->
+    <!-- Ouverture du Hero : le marqueur est posé AVANT le premier rendu du Hero (aucun flash) et
+         seulement si le mouvement est permis ; sans JS ou en reduced-motion, le Hero reste à son
+         état final visible. Les animations (CSS, une seule fois) se terminent d'elles-mêmes. -->
+    <script is:inline>
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("about-intro");
+    </script>
+
     <section class="about-page__section about-hero">
       <Container>
         <div class="about-hero-layout">
-          <div data-reveal>
+          <div>
             <ServiceHero
               eyebrow="Le studio"
               title="Concevoir des solutions numériques qui partent du besoin réel."
@@ -127,7 +134,7 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
           </div>
           <!-- Décor abstrait (CSS pur) : trois cercles qui se recoupent = métier / technique /
                expérience reliés. Purement décoratif, aucun contenu essentiel. -->
-          <div class="about-venn" aria-hidden="true" data-reveal>
+          <div class="about-venn" aria-hidden="true">
             <span class="about-venn__circle about-venn__circle--a"></span>
             <span class="about-venn__circle about-venn__circle--b"></span>
             <span class="about-venn__circle about-venn__circle--c"></span>
@@ -197,6 +204,7 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
 
     <!-- D. STRUCTURE LÉGÈRE, RESPONSABILITÉ DIRECTE -->
     <section class="about-page__section about-page__section--soft about-relation" aria-labelledby="about-work-title">
+      <ExpertiseDotWave />
       <Container>
         <div data-reveal>
           <SectionHeading
@@ -220,9 +228,9 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
         <div data-reveal>
           <SectionHeading id="about-culture-title" eyebrow="Exigence" title="Faire juste avant de faire plus." />
         </div>
-        <div class="about-principles" data-reveal>
+        <div class="about-principles">
           {principles.map((principle) => (
-            <div class="about-principle">
+            <div class="about-principle" data-reveal>
               <span class="about-principle__word">{principle.word}</span>
               <p class="about-principle__text">{principle.text}</p>
             </div>
@@ -233,19 +241,19 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
 
     <!-- F. LES PREUVES SONT DANS LES PROJETS -->
     <section class="about-page__section about-page__section--soft about-proof" aria-labelledby="about-proof-title">
+      <ExpertiseDotWave />
       <Container>
-        <div data-reveal>
-          <SectionHeading
-            id="about-proof-title"
-            eyebrow="Réalisations"
-            title="Des contextes différents, une même exigence de cohérence."
-            intro="Applications métier, SaaS ou expérience web : les études de cas montrent plus concrètement comment les besoins, les contraintes et les choix techniques se traduisent dans les projets."
-          />
+        <!-- Titre rendu localement (accent partiel « cohérence » ; SectionHeading non modifié). -->
+        <div class="about-proof-heading" data-reveal>
+          <span class="about-eyebrow">Réalisations</span>
+          <h2 id="about-proof-title">Des contextes différents, une même exigence de <span class="about-accent">cohérence</span>.</h2>
+          <p class="about-lead">Applications métier, SaaS ou expérience web : les études de cas montrent plus concrètement comment les besoins, les contraintes et les choix techniques se traduisent dans les projets.</p>
         </div>
-        <ul class="about-proof-list" data-reveal>
-          {realisations.map((realisation) => (
-            <li>
+        <ul class="about-proof-list">
+          {realisations.map((realisation, i) => (
+            <li data-reveal>
               <a href={withBase(`/realisations/${realisation.data.slug}/`)}>
+                <span class="about-proof-list__index" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                 <span class="about-proof-list__category">{realisation.data.category}</span>
                 <span class="about-proof-list__title">{realisation.data.shortTitle ?? realisation.data.title}</span>
                 <span class="about-proof-list__arrow" aria-hidden="true">→</span>
@@ -304,5 +312,55 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
     );
 
     targets.forEach((el) => observer.observe(el));
+  }
+
+  // « Exigence » : effet HeliFan sobre sur les 4 cards (pointeur fin, >= 900 px, jamais en
+  // reduced-motion). Tilt <= 2.2°, translateY -2 px, scale 1.004, halo --px/--py ; retour
+  // au repos en 600 ms (transition CSS). Seules des variables CSS sont posées : aucun style
+  // inline de transform, aucune boucle, aucune capture du pointeur.
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+  if (fine.matches && !prefersReducedMotion) {
+    const MAX_X = 1.8;
+    const MAX_Y = 2.2;
+    const wide = window.matchMedia("(min-width: 900px)");
+    document.querySelectorAll<HTMLElement>(".about-exigence .about-principle").forEach((card) => {
+      card.addEventListener("pointermove", (e: PointerEvent) => {
+        if (!wide.matches) return;
+        const r = card.getBoundingClientRect();
+        const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+        const y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+        card.classList.add("is-tilting");
+        card.style.setProperty("--rx", `${(-y * MAX_X).toFixed(2)}deg`);
+        card.style.setProperty("--ry", `${(x * MAX_Y).toFixed(2)}deg`);
+        card.style.setProperty("--ty", "-2px");
+        card.style.setProperty("--sc", "1.004");
+        card.style.setProperty("--px", `${((x + 1) / 2) * 100}%`);
+        card.style.setProperty("--py", `${((y + 1) / 2) * 100}%`);
+      });
+      card.addEventListener("pointerleave", () => {
+        card.classList.remove("is-tilting");
+        ["--rx", "--ry", "--ty", "--sc"].forEach((p) => card.style.removeProperty(p));
+        card.style.setProperty("--px", "50%");
+        card.style.setProperty("--py", "50%");
+      });
+    });
+  }
+
+  // « Réalisations » : halo radial Ember très faible qui suit le pointeur sur chaque rail
+  // (variables --px / --py, pointeur fin, >= 900 px, jamais en reduced-motion). Pas de tilt.
+  if (fine.matches && !prefersReducedMotion) {
+    const wideRails = window.matchMedia("(min-width: 900px)");
+    document.querySelectorAll<HTMLElement>(".about-proof-list a").forEach((rail) => {
+      rail.addEventListener("pointermove", (e: PointerEvent) => {
+        if (!wideRails.matches) return;
+        const r = rail.getBoundingClientRect();
+        rail.style.setProperty("--px", `${((e.clientX - r.left) / r.width) * 100}%`);
+        rail.style.setProperty("--py", `${((e.clientY - r.top) / r.height) * 100}%`);
+      });
+      rail.addEventListener("pointerleave", () => {
+        rail.style.removeProperty("--px");
+        rail.style.removeProperty("--py");
+      });
+    });
   }
 </script>
