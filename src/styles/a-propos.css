@@ -296,3 +296,334 @@
     flex-wrap: wrap;
   }
 }
+
+/* ==========================================================================
+   REFONTE DA (sprint « À propos — implémentation DA ») — même famille visuelle
+   que /methode/ et /applications-metier-saas/ : graphite / ivoire / Ember,
+   halos intermittents, surfaces sobres. Tout est scopé .about-* : aucun
+   composant partagé ni feuille partagée modifié.
+   ========================================================================== */
+
+/* Eyebrows Ember (le gris muted d'origine disparaît) ; l'opacité reste retenue. */
+html .about-page .section-heading__eyebrow,
+html .about-page .service-hero__eyebrow,
+html .about-page .service-cta__eyebrow,
+html .about-page .about-founder__eyebrow,
+html .about-page .about-eyebrow {
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+.about-eyebrow {
+  display: block;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.about-lead {
+  max-width: 54ch;
+  margin: var(--space-sm) 0 0 0;
+  color: var(--color-text-secondary);
+  font-size: 1.0625rem;
+}
+
+.about-page .about-accent {
+  color: var(--color-accent);
+}
+
+/* --- Reveal (classes posées par le script ; jamais sous reduced-motion) ------ */
+.about-r {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 650ms ease-out, transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-r.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 900px) {
+  .about-axes .about-r {
+    transform: translateX(24px);
+  }
+
+  .about-axes .about-r.is-in {
+    transform: none;
+  }
+
+  .about-axes .about-axis:nth-child(2) {
+    transition-delay: 90ms;
+  }
+
+  .about-axes .about-axis:nth-child(3) {
+    transition-delay: 180ms;
+  }
+}
+
+/* --- A. Hero : graphite + chaleur Ember sombre, composition 2 colonnes -------- */
+.about-hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(3.5rem, 9vw, 7.5rem);
+  background: radial-gradient(ellipse 62% 95% at 30% 42%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 68%);
+}
+
+.about-hero-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .about-hero-layout {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: clamp(2rem, 5vw, 4.5rem);
+  }
+}
+
+@media (min-width: 1200px) {
+  .about-hero-layout {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+  }
+}
+
+/* Décor : trois cercles qui se recoupent (métier / technique / expérience). */
+.about-venn {
+  display: none;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .about-venn {
+    display: block;
+  }
+}
+
+.about-venn__circle {
+  position: absolute;
+  width: 62%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 1px solid rgba(241, 239, 232, 0.16);
+  background: rgba(241, 239, 232, 0.015);
+}
+
+.about-venn__circle--a {
+  left: 0;
+  top: 4%;
+}
+
+.about-venn__circle--b {
+  left: 38%;
+  top: 4%;
+}
+
+.about-venn__circle--c {
+  left: 19%;
+  top: 36%;
+  border-color: rgba(228, 95, 54, 0.4);
+}
+
+.about-venn__core {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 46%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(228, 95, 54, 0.16), rgba(228, 95, 54, 0) 68%);
+}
+
+.about-venn__core::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-accent);
+}
+
+.about-venn__label {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.about-venn__label--a {
+  left: 7%;
+  top: 24%;
+}
+
+.about-venn__label--b {
+  right: 5%;
+  top: 24%;
+}
+
+.about-venn__label--c {
+  left: 50%;
+  bottom: 4%;
+  transform: translateX(-50%);
+}
+
+/* --- B. Approche : 2 colonnes, axes ouverts, 03 en surface sobre ------------- */
+.about-approach {
+  position: relative;
+  isolation: isolate;
+  /* États d'attente des axes (translateX 24 px) : aucun débordement de page. */
+  overflow-x: clip;
+}
+
+.about-approach > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.about-approach-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 3rem);
+  align-items: center;
+}
+
+@media (min-width: 1100px) {
+  .about-approach-layout {
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+}
+
+.about-approach .about-axes {
+  margin-top: 0;
+  gap: 0;
+}
+
+.about-approach .about-axis__index {
+  color: rgba(228, 95, 54, 0.5);
+}
+
+.about-approach .about-axis__label {
+  opacity: 0.85;
+}
+
+.about-approach .about-axis__title {
+  font-size: 1.3125rem;
+}
+
+.about-approach .about-axis__text {
+  font-size: 1rem;
+}
+
+.about-approach .about-axis--final {
+  margin-top: var(--space-sm);
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(241, 239, 232, 0.12);
+  border-radius: var(--radius-lg);
+  background: rgba(14, 16, 19, 0.82);
+  box-shadow: inset 0 1px 0 rgba(228, 95, 54, 0.4);
+}
+
+.about-approach .about-axis--final .about-axis__index {
+  color: var(--color-accent);
+}
+
+/* --- C. Fondateur : section calme (voile graphite sur les filaments) ---------- */
+.about-founder-section {
+  background: rgba(10, 11, 13, 0.72);
+}
+
+.about-founder__mark {
+  color: rgba(241, 239, 232, 0.1);
+}
+
+/* --- D. Relation : retour de chaleur Ember contrôlée ------------------------- */
+.about-relation {
+  background: radial-gradient(ellipse 60% 90% at 78% 45%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 70%), var(--color-bg-soft);
+}
+
+.about-relation .about-work-points {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .about-relation .about-work-points {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.about-relation .about-work-points li {
+  max-width: none;
+  padding: 0.35rem 0 0.35rem 1.25rem;
+  border-left: 1px solid var(--color-border-strong);
+  font-size: 1.0625rem;
+  color: var(--color-text);
+}
+
+.about-relation .about-work-points li::before {
+  left: -1px;
+  top: 0.2rem;
+  width: 2px;
+  height: 1.6rem;
+}
+
+/* --- E. Exigence : noir profond (aucun filament), principes ouverts ----------- */
+.about-exigence {
+  background: var(--color-bg);
+}
+
+.about-exigence .about-principle__word {
+  position: relative;
+  padding-top: 0.9rem;
+}
+
+.about-exigence .about-principle__word::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.75rem;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+/* --- F. Réalisations : graphite calme, hover discret ------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .about-proof-list a {
+    transition: background-color 250ms ease;
+  }
+
+  .about-proof-list a:hover {
+    background: rgba(228, 95, 54, 0.04);
+  }
+}
+
+/* --- G. CTA : surface premium 80 % + halo Ember (recette du CTA de Méthode) --- */
+.about-final {
+  background: radial-gradient(ellipse 58% 90% at 50% 38%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 70%), var(--color-bg-soft);
+  padding-bottom: clamp(4.5rem, 8vw, 6.5rem);
+}
+
+.about-final .service-cta {
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+  border: 1px solid rgba(241, 239, 232, 0.14);
+  border-radius: var(--radius-xl);
+}
+
+/* Footer remonté : sélecteur propre à cette page, Footer global inchangé. */
+main:has(.about-final) + footer {
+  margin-top: 0;
+}

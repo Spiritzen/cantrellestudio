@@ -37,6 +37,8 @@
 // nouveau `aria-labelledby="about-cta-title"`, qui pointe maintenant vers
 // un élément réel (voir ServiceCta.astro pour le détail du hotfix).
 //
+// MAJ sprint « implémentation DA » : le reveal est désormais à classes (.about-r / .is-in) avec replay
+// et hystérésis 33 % / 7 % (voir script en bas de page) ; le paragraphe ci-dessous décrit la V1.
 // Motion (§9) : le prompt demande explicitement de NE PAS élargir
 // ServiceMotion.astro par facilité et d'évaluer d'abord un mécanisme local
 // CSS/IntersectionObserver léger. C'est le choix retenu ici : un unique
@@ -54,6 +56,8 @@ import ActionLink from "../components/ui/ActionLink.astro";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
 import ServiceCta from "../components/services/ServiceCta.astro";
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
+import PageFilaments from "../components/hero/PageFilaments";
 import { withBase } from "../utils/paths";
 import "../styles/services.css";
 import "../styles/a-propos.css";
@@ -100,51 +104,71 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
   description="Découvrez Cantrelle Studio, studio indépendant fondé par Sébastien Cantrelle : conception, développement et solutions numériques pensées à partir du besoin réel."
 >
   <div class="about-page">
+    <!-- Filaments d'arrière-plan : composant existant, monté une fois, desktop
+         uniquement (aucune hydratation sous 900 px). -->
+    <PageFilaments client:media="(min-width: 900px)" />
+
     <Container>
       <ServiceBreadcrumb current="À propos" />
     </Container>
 
     <!-- A. HERO — LE STUDIO -->
-    <section class="about-page__section" data-reveal>
+    <section class="about-page__section about-hero">
       <Container>
-        <ServiceHero
-          eyebrow="Le studio"
-          title="Concevoir des solutions numériques qui partent du besoin réel."
-          lead="Cantrelle Studio est un studio indépendant de conception et de développement, fondé par Sébastien Cantrelle. Applications métier, SaaS, sites professionnels ou besoins plus spécifiques : chaque projet commence par comprendre ce qu'il faut réellement résoudre avant de choisir comment le construire."
-          secondaryHref="/methode/"
-          secondaryLabel="Découvrir la méthode"
-        />
+        <div class="about-hero-layout">
+          <div data-reveal>
+            <ServiceHero
+              eyebrow="Le studio"
+              title="Concevoir des solutions numériques qui partent du besoin réel."
+              lead="Cantrelle Studio est un studio indépendant de conception et de développement, fondé par Sébastien Cantrelle. Applications métier, SaaS, sites professionnels ou besoins plus spécifiques : chaque projet commence par comprendre ce qu'il faut réellement résoudre avant de choisir comment le construire."
+              secondaryHref="/methode/"
+              secondaryLabel="Découvrir la méthode"
+            />
+          </div>
+          <!-- Décor abstrait (CSS pur) : trois cercles qui se recoupent = métier / technique /
+               expérience reliés. Purement décoratif, aucun contenu essentiel. -->
+          <div class="about-venn" aria-hidden="true" data-reveal>
+            <span class="about-venn__circle about-venn__circle--a"></span>
+            <span class="about-venn__circle about-venn__circle--b"></span>
+            <span class="about-venn__circle about-venn__circle--c"></span>
+            <span class="about-venn__core"></span>
+            <span class="about-venn__label about-venn__label--a">Métier</span>
+            <span class="about-venn__label about-venn__label--b">Technique</span>
+            <span class="about-venn__label about-venn__label--c">Expérience</span>
+          </div>
+        </div>
       </Container>
     </section>
 
     <!-- B. UNE FAÇON DE RELIER LES SUJETS -->
-    <section class="about-page__section about-page__section--soft" aria-labelledby="about-approach-title">
+    <section class="about-page__section about-page__section--soft about-approach" aria-labelledby="about-approach-title">
+      <!-- Champ de points : unique apparition sur cette page (le champ « relie » les 3 sujets). -->
+      <ExpertiseDotWave />
       <Container>
-        <div data-reveal>
-          <SectionHeading
-            id="about-approach-title"
-            eyebrow="Approche"
-            title="Métier, technique et expérience ne sont pas trois sujets séparés."
-            intro="Une interface réussie ne compense pas une logique métier mal comprise. Une architecture solide ne suffit pas si le produit reste difficile à utiliser. Le rôle du studio est de relier ces dimensions pour construire une solution cohérente dans son ensemble."
-          />
-        </div>
-        <div class="about-axes" data-reveal>
-          {axes.map((axis) => (
-            <div class="about-axis">
-              <span class="about-axis__index" aria-hidden="true">{axis.index}</span>
-              <div class="about-axis__body">
-                <span class="about-axis__label">{axis.label}</span>
-                <h3 class="about-axis__title">{axis.title}</h3>
-                <p class="about-axis__text">{axis.text}</p>
+        <div class="about-approach-layout">
+          <div class="about-approach-main" data-reveal>
+            <span class="about-eyebrow">Approche</span>
+            <h2 id="about-approach-title">Métier, technique et expérience ne sont pas <span class="about-accent">trois sujets séparés</span>.</h2>
+            <p class="about-lead">Une interface réussie ne compense pas une logique métier mal comprise. Une architecture solide ne suffit pas si le produit reste difficile à utiliser. Le rôle du studio est de relier ces dimensions pour construire une solution cohérente dans son ensemble.</p>
+          </div>
+          <div class="about-axes">
+            {axes.map((axis, i) => (
+              <div class={i === axes.length - 1 ? "about-axis about-axis--final" : "about-axis"} data-reveal>
+                <span class="about-axis__index" aria-hidden="true">{axis.index}</span>
+                <div class="about-axis__body">
+                  <span class="about-axis__label">{axis.label}</span>
+                  <h3 class="about-axis__title">{axis.title}</h3>
+                  <p class="about-axis__text">{axis.text}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </Container>
     </section>
 
     <!-- C. LE FONDATEUR -->
-    <section class="about-page__section" aria-labelledby="about-founder-title">
+    <section class="about-page__section about-founder-section" aria-labelledby="about-founder-title">
       <Container>
         <div class="about-founder">
           <div class="about-founder__mark" aria-hidden="true">SC</div>
@@ -172,7 +196,7 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
     </section>
 
     <!-- D. STRUCTURE LÉGÈRE, RESPONSABILITÉ DIRECTE -->
-    <section class="about-page__section about-page__section--soft" aria-labelledby="about-work-title">
+    <section class="about-page__section about-page__section--soft about-relation" aria-labelledby="about-work-title">
       <Container>
         <div data-reveal>
           <SectionHeading
@@ -191,7 +215,7 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
     </section>
 
     <!-- E. UNE CULTURE DE LA CONSTRUCTION -->
-    <section class="about-page__section" aria-labelledby="about-culture-title">
+    <section class="about-page__section about-exigence" aria-labelledby="about-culture-title">
       <Container>
         <div data-reveal>
           <SectionHeading id="about-culture-title" eyebrow="Exigence" title="Faire juste avant de faire plus." />
@@ -208,7 +232,7 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
     </section>
 
     <!-- F. LES PREUVES SONT DANS LES PROJETS -->
-    <section class="about-page__section about-page__section--soft" aria-labelledby="about-proof-title">
+    <section class="about-page__section about-page__section--soft about-proof" aria-labelledby="about-proof-title">
       <Container>
         <div data-reveal>
           <SectionHeading
@@ -236,7 +260,7 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
     </section>
 
     <!-- G. CTA FINAL -->
-    <section class="about-page__section about-page__section--soft" aria-labelledby="about-cta-title">
+    <section class="about-page__section about-final" aria-labelledby="about-cta-title">
       <Container>
         <div data-reveal>
           <ServiceCta
@@ -254,32 +278,29 @@ const realisations = (await getCollection("realisations")).sort((a, b) => a.data
 </BaseLayout>
 
 <script>
-  // Reveal local, propre à /a-propos/ — voir commentaire de frontmatter
-  // (§9 du prompt) pour le choix de ne PAS élargir ServiceMotion.astro.
-  // Granularité PAR BLOC (pas par élément individuel) : plus simple que le
-  // stagger multi-éléments des autres pages, reveal groupé et léger.
+  // Reveal local, propre à /a-propos/ (ServiceMotion non utilisé ni modifié). Les
+  // éléments [data-reveal] entrent (opacité + léger décalage) quand ils sont visibles à
+  // 33 % et se réarment seulement sous 7 % : rejoué au retour, sans clignotement
+  // (hystérésis). Aucun écouteur de scroll, aucune boucle. Non armé sous
+  // prefers-reduced-motion : tout reste visible. Sans JS : tout reste visible.
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (!prefersReducedMotion && "IntersectionObserver" in window) {
     const targets = document.querySelectorAll<HTMLElement>("[data-reveal]");
-
-    targets.forEach((el) => {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(16px)";
-    });
+    targets.forEach((el) => el.classList.add("about-r"));
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
           const el = entry.target as HTMLElement;
-          el.style.transition = "opacity 600ms ease, transform 600ms ease";
-          el.style.opacity = "1";
-          el.style.transform = "none";
-          observer.unobserve(el);
+          if (entry.intersectionRatio >= 0.33 || (entry.isIntersecting && entry.intersectionRatio > 0.15 && entry.boundingClientRect.height > window.innerHeight * 0.6)) {
+            el.classList.add("is-in");
+          } else if (entry.intersectionRatio < 0.07) {
+            el.classList.remove("is-in");
+          }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+      { threshold: [0, 0.03, 0.07, 0.15, 0.25, 0.33, 0.5] },
     );
 
     targets.forEach((el) => observer.observe(el));
