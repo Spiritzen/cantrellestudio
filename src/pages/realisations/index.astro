@@ -502,10 +502,25 @@ const panels = [
     border-color: var(--color-accent);
   }
 
+  /* Carte entièrement cliquable (stretched link) : le lien existant reste l'unique <a> ; son
+     pseudo-élément couvre toute la carte (.panel est position:relative). */
+  .panel__cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    cursor: pointer;
+  }
+
   .panel__cta:focus-visible {
+    outline: none;
+  }
+
+  /* Focus clavier : anneau Ember fin autour de toute la carte, sans décalage de layout. */
+  .panel:has(.panel__cta:focus-visible) {
     outline: 2px solid var(--color-accent);
-    outline-offset: 4px;
-    border-radius: var(--radius-sm);
+    outline-offset: 3px;
   }
 
   .visually-hidden {
