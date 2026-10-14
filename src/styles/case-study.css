@@ -1441,3 +1441,2221 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   SERENO — S1 FONDATIONS DA (scopé .case-study--sereno : AgencyOS et Belkhir
+   ne sont pas concernés). Eyebrows Ember, alternance de fonds, 3 halos très
+   faibles (Hero, Problème, Résultat), courbes fines CSS (Hero, Problème,
+   transition vers le workflow), UNE seule occurrence de points (Problème).
+   Décor purement CSS, statique, derrière le contenu. Le violet produit
+   Sereno (workflow, statut, réflexion) est conservé tel quel.
+   ========================================================================== */
+
+.case-study--sereno .case-study__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.case-study--sereno > .case-study__section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-top-color: rgba(241, 239, 232, 0.05);
+}
+
+.case-study--sereno > .case-study__section > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Alternance : profond / soft / profond / ivoire noirci / profond / soft / profond. */
+.case-study--sereno > .case-study__section:nth-of-type(odd) {
+  background: var(--color-bg);
+}
+
+.case-study--sereno > .case-study__section:nth-of-type(2),
+.case-study--sereno > .case-study__section:nth-of-type(6) {
+  background: var(--color-bg-soft);
+}
+
+.case-study--sereno > .case-study__section:nth-of-type(4) {
+  background: linear-gradient(rgba(241, 239, 232, 0.022), rgba(241, 239, 232, 0.022)), var(--color-bg);
+}
+
+/* --- Halos Ember (3) : alpha <= 0.10, rayons explicites, aucun bord net. ---- */
+.case-study--sereno > .case-study__section:nth-of-type(1)::after,
+.case-study--sereno > .case-study__section:nth-of-type(2)::after,
+.case-study--sereno > .case-study__section:nth-of-type(6)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.case-study--sereno > .case-study__section:nth-of-type(1)::after {
+  background: radial-gradient(ellipse 50% 55% at 22% 58%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 70%);
+}
+
+.case-study--sereno > .case-study__section:nth-of-type(2)::after {
+  background: radial-gradient(ellipse 45% 70% at 92% 100%, rgba(228, 95, 54, 0.07), rgba(228, 95, 54, 0) 70%);
+}
+
+.case-study--sereno > .case-study__section:nth-of-type(6)::after {
+  background: radial-gradient(ellipse 50% 70% at 8% 20%, rgba(228, 95, 54, 0.06), rgba(228, 95, 54, 0) 70%);
+}
+
+/* --- Courbes fines (>= 900 px) : arcs CSS, fondus par masque, derrière le texte. */
+.case-study--sereno > .case-study__section:nth-of-type(1)::before,
+.case-study--sereno > .case-study__section:nth-of-type(2)::before,
+.case-study--sereno > .case-study__section:nth-of-type(3)::before {
+  content: "";
+  display: none;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-top: 1px solid rgba(241, 239, 232, 0.12);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 65%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 65%, transparent 100%);
+}
+
+@media (min-width: 900px) {
+  .case-study--sereno > .case-study__section:nth-of-type(1)::before,
+  .case-study--sereno > .case-study__section:nth-of-type(2)::before,
+  .case-study--sereno > .case-study__section:nth-of-type(3)::before {
+    display: block;
+  }
+
+  .case-study--sereno > .case-study__section:nth-of-type(1)::before {
+    left: 38%;
+    right: -8%;
+    top: 62%;
+    height: 220px;
+  }
+
+  .case-study--sereno > .case-study__section:nth-of-type(2)::before {
+    left: -6%;
+    right: 40%;
+    top: 14%;
+    height: 200px;
+    border-top-color: rgba(228, 95, 54, 0.16);
+  }
+
+  .case-study--sereno > .case-study__section:nth-of-type(3)::before {
+    left: 20%;
+    right: 20%;
+    top: -1px;
+    height: 90px;
+  }
+}
+
+/* --- Points : UNE occurrence (Problème / Réflexion). Hôte = la section : le
+   conteneur repasse en static pour que le champ s'étende sur toute la largeur. */
+.case-study--sereno > .cs-sereno-problem > .container {
+  position: static;
+  z-index: auto;
+}
+
+.case-study--sereno .cs-sereno-problem .case-study__problem-reflection {
+  position: relative;
+  z-index: 1;
+}
+
+.case-study--sereno .cs-sereno-problem .home-expertise__dot-wave {
+  opacity: 0.85;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 40%, rgba(0, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.8) 100%);
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 40%, rgba(0, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+@media (max-width: 899px) {
+  .case-study--sereno .cs-sereno-problem .home-expertise__dot-wave {
+    opacity: 0.3;
+  }
+}
+
+/* ==========================================================================
+   SERENO — S1B : Hero (HeliFan sobre + filaments animés existants)
+   Aucune dimension modifiée : seuls fond de section, ombre, bordure fine et
+   reflet interne (pseudo-élément, pointer-events:none) changent.
+   ========================================================================== */
+
+/* Hero transparent : laisse voir les filaments fixes (PageFilaments, z-index:-1) ;
+   les sections suivantes sont opaques et les recouvrent. */
+.case-study--sereno > .case-study__section:nth-of-type(1) {
+  background: transparent;
+}
+
+.case-study--sereno .case-study__hero-media {
+  position: relative;
+  box-shadow:
+    0 22px 48px -30px rgba(228, 95, 54, 0.3),
+    0 0 0 1px rgba(228, 95, 54, 0.08);
+  will-change: transform;
+}
+
+/* Reflet interne piloté par --mx/--my, invisible au repos. */
+.case-study--sereno .case-study__hero-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(241, 239, 232, 0.07),
+    rgba(228, 95, 54, 0.05) 35%,
+    rgba(228, 95, 54, 0) 65%
+  );
+  opacity: 0;
+  transition: opacity 450ms ease;
+}
+
+.case-study--sereno .case-study__hero-media.is-active {
+  box-shadow:
+    0 26px 54px -28px rgba(228, 95, 54, 0.4),
+    0 0 0 1px rgba(228, 95, 54, 0.2);
+}
+
+.case-study--sereno .case-study__hero-media.is-active::before {
+  opacity: 1;
+}
+
+@media (max-width: 899px) {
+  .case-study--sereno .case-study__hero-media {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--sereno .case-study__hero-media {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .case-study--sereno .case-study__hero-media::before {
+    display: none;
+  }
+}
+
+/* S1B : les filaments animés remplacent l'arc CSS statique du Hero Sereno
+   (une seule couche de décor lisible). Arcs Problème et Workflow conservés. */
+.case-study--sereno > .case-study__section:nth-of-type(1)::before {
+  display: none;
+}
+
+/* ==========================================================================
+   SERENO — S2 : Problème / Réflexion en split éditorial ouvert
+   Textes inchangés ; 01 / 02 décoratifs (aria-hidden), séparateur Ember
+   (remplace le violet UNIQUEMENT ici), question renforcée, respiration.
+   Reveal : ServiceMotion existant (DOM order : Problème -> trait -> Réflexion).
+   ========================================================================== */
+
+.case-study--sereno > .cs-sereno-problem {
+  padding-block: clamp(4rem, 9vw, 7.5rem);
+}
+
+.case-study--sereno .cs-sereno-problem .case-study__problem,
+.case-study--sereno .cs-sereno-problem .case-study__reflection {
+  position: relative;
+}
+
+/* Grands index : perçus, pas lus (~4,5 % d'ivoire), derrière le contenu. */
+.case-study--sereno .cs-sereno-index {
+  position: absolute;
+  top: -3.25rem;
+  left: -0.25rem;
+  z-index: -1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 5rem;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: rgba(241, 239, 232, 0.04);
+  pointer-events: none;
+  user-select: none;
+}
+
+.case-study--sereno .cs-sereno-divider {
+  display: none;
+}
+
+/* Question de réflexion : lue comme une pensée directrice, sans card ni citation décorative. */
+.case-study--sereno .cs-sereno-problem .case-study__reflection {
+  margin-top: var(--space-md);
+  padding: var(--space-md) 0 0 0;
+  border-left: 0;
+  max-width: 34rem;
+}
+
+.case-study--sereno .cs-sereno-problem .case-study__reflection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.5rem;
+  height: 1px;
+  background: rgba(228, 95, 54, 0.45);
+}
+
+.case-study--sereno .cs-sereno-problem .case-study__reflection blockquote {
+  margin: 0 0 var(--space-sm) 0;
+  max-width: 22ch;
+  font-size: clamp(1.5rem, 5.4vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+}
+
+.case-study--sereno .cs-sereno-problem .case-study__reflection p {
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 900px) {
+  .case-study--sereno .cs-sereno-index {
+    top: -5.5rem;
+    font-size: clamp(8rem, 11vw, 11rem);
+    color: rgba(241, 239, 232, 0.045);
+  }
+
+  .case-study--sereno .cs-sereno-problem .case-study__problem-reflection {
+    grid-template-columns: 1.1fr 1px 0.9fr;
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: stretch;
+  }
+
+  .case-study--sereno .cs-sereno-divider {
+    display: block;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(228, 95, 54, 0), rgba(228, 95, 54, 0.4) 30%, rgba(228, 95, 54, 0.4) 70%, rgba(228, 95, 54, 0));
+    transform-origin: top;
+  }
+
+  .case-study--sereno .cs-sereno-problem .case-study__reflection {
+    margin-top: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .case-study--sereno .cs-sereno-problem .case-study__reflection::before {
+    display: none;
+  }
+
+  .case-study--sereno .cs-sereno-problem .case-study__reflection blockquote {
+    font-size: clamp(1.5rem, 2vw, 1.875rem);
+    max-width: 20ch;
+  }
+
+  /* Points un peu plus présents côté Réflexion et dans les marges, plus faibles derrière les textes. */
+  .case-study--sereno .cs-sereno-problem .home-expertise__dot-wave {
+    -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.16) 28%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.35) 72%, rgba(0, 0, 0, 0.85) 100%);
+    mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.16) 28%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.35) 72%, rgba(0, 0, 0, 0.85) 100%);
+  }
+
+  /* Arc existant : étendu pour passer derrière les deux colonnes. */
+  .case-study--sereno > .case-study__section:nth-of-type(2)::before {
+    left: 8%;
+    right: -4%;
+    top: 20%;
+    height: 240px;
+  }
+}
+
+/* ==========================================================================
+   SERENO — S3 : fond de « La solution » (3e section) uniquement
+   Fond graphite + relief Ember diffus latéral/bas ; 2 courbes fines qui
+   traversent la largeur et se croisent légèrement (pseudo-éléments, masque
+   fondu). Statique, décoratif, derrière le contenu ; structure, textes et
+   traits violets inchangés.
+   ========================================================================== */
+
+.case-study--sereno > .case-study__section:nth-of-type(3) {
+  background:
+    radial-gradient(ellipse 45% 70% at 100% 85%, rgba(228, 95, 54, 0.1), rgba(228, 95, 54, 0) 70%),
+    radial-gradient(ellipse 40% 60% at 0% 20%, rgba(241, 239, 232, 0.035), rgba(241, 239, 232, 0) 70%),
+    var(--color-bg);
+}
+
+/* Courbe 1 : arc haut qui traverse la section (remplace le petit arc de transition). */
+.case-study--sereno > .case-study__section:nth-of-type(3)::before {
+  display: block;
+  left: -6%;
+  right: -6%;
+  top: 14%;
+  height: 200px;
+  border-top: 1px solid rgba(241, 239, 232, 0.17);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 25%, #000 75%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 25%, #000 75%, transparent 100%);
+}
+
+/* Courbe 2 : arc bas, inversé, qui croise légèrement la première (Ember très désaturé). */
+.case-study--sereno > .case-study__section:nth-of-type(3)::after {
+  content: "";
+  display: none;
+  position: absolute;
+  z-index: 0;
+  left: -6%;
+  right: -6%;
+  bottom: 8%;
+  height: 220px;
+  border-bottom: 1px solid rgba(228, 95, 54, 0.22);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 20%, #000 70%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 20%, #000 70%, transparent 100%);
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .case-study--sereno > .case-study__section:nth-of-type(3)::after {
+    display: block;
+  }
+}
+
+/* Mobile : une seule courbe, plus discrète, courte. */
+@media (max-width: 899px) {
+  .case-study--sereno > .case-study__section:nth-of-type(3)::before {
+    top: 6%;
+    height: 90px;
+    border-top-color: rgba(241, 239, 232, 0.07);
+  }
+}
+
+/* ==========================================================================
+   SERENO — S3B : « La solution » en rail éditorial 01 → 05
+   Fil 1 px (graphite/ivoire faible) + segments Ember qui « voyagent » 01 → 05
+   à l'entrée (is-armed / is-in posées par le script, hystérésis 33 % / 7 %),
+   puis état statique. Plus de traits violets épais : le rail Ember prend le
+   relais (priorité Cantrelle Studio). Textes et DOM métier inchangés.
+   >= 1100 px : 5 colonnes ; < 1100 px : rail vertical (lisibilité > fidélité).
+   ========================================================================== */
+
+.case-study--sereno .cs-sereno-solution {
+  --rail-gap: clamp(1.5rem, 2.4vw, 2.5rem);
+}
+
+.case-study--sereno .case-study__workflow {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+.case-study--sereno .case-study__workflow-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border-top: 0;
+  padding: 0 0 0 1.5rem;
+}
+
+.case-study--sereno .case-study__workflow-step::before,
+.case-study--sereno .case-study__workflow-step::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: calc(100% + var(--space-md));
+  pointer-events: none;
+}
+
+.case-study--sereno .case-study__workflow-step::before {
+  background: rgba(241, 239, 232, 0.12);
+}
+
+.case-study--sereno .case-study__workflow-step:last-child::before {
+  height: 100%;
+  background: linear-gradient(180deg, rgba(241, 239, 232, 0.12), rgba(241, 239, 232, 0));
+}
+
+.case-study--sereno .case-study__workflow-step::after {
+  background: var(--color-accent);
+  opacity: 0.28;
+  transform-origin: center top;
+}
+
+.case-study--sereno .case-study__workflow-step:last-child::after {
+  display: none;
+}
+
+.case-study--sereno .cs-step-num {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.case-study--sereno .case-study__workflow-step h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.25;
+}
+
+.case-study--sereno .case-study__workflow-step p {
+  max-width: 34ch;
+}
+
+@media (min-width: 1100px) {
+  .case-study--sereno .case-study__workflow {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    column-gap: var(--rail-gap);
+    row-gap: 0;
+  }
+
+  .case-study--sereno .case-study__workflow-step {
+    padding: 1.25rem 0 0 0;
+  }
+
+  .case-study--sereno .case-study__workflow-step::before,
+  .case-study--sereno .case-study__workflow-step::after {
+    width: calc(100% + var(--rail-gap));
+    height: 1px;
+  }
+
+  /* Le fil s'arrête près de 05 : court retour avec fondu, il ne traverse pas la marge. */
+  .case-study--sereno .case-study__workflow-step:last-child::before {
+    width: 3.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(241, 239, 232, 0.12), rgba(241, 239, 232, 0));
+  }
+
+  .case-study--sereno .case-study__workflow-step::after {
+    transform-origin: left center;
+  }
+}
+
+/* Séquence (≈ 2,3 s, puis statique) : étape i à i x 480 ms, segment i de t+180 à t+480 ms. */
+.case-study--sereno .cs-sereno-solution.is-armed .case-study__workflow-step {
+  opacity: 0;
+}
+
+.case-study--sereno .cs-sereno-solution.is-armed .case-study__workflow-step::after {
+  opacity: 0;
+}
+
+.case-study--sereno .cs-sereno-solution.is-armed.is-in .case-study__workflow-step {
+  opacity: 1;
+  animation: cs-step-in 350ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.case-study--sereno .cs-sereno-solution.is-armed.is-in .case-study__workflow-step::after {
+  opacity: 0.28;
+  animation: cs-step-thread-x 300ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(2) { animation-delay: 480ms; }
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(3) { animation-delay: 960ms; }
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(4) { animation-delay: 1440ms; }
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(5) { animation-delay: 1920ms; }
+
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(1)::after { animation-delay: 180ms; }
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(2)::after { animation-delay: 660ms; }
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(3)::after { animation-delay: 1140ms; }
+.case-study--sereno .cs-sereno-solution.is-in .case-study__workflow-step:nth-child(4)::after { animation-delay: 1620ms; }
+
+@keyframes cs-step-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+@keyframes cs-step-thread-x {
+  from {
+    opacity: 0.85;
+    transform: scaleY(0);
+  }
+  60% {
+    opacity: 0.85;
+  }
+}
+
+@media (min-width: 1100px) {
+  .case-study--sereno .cs-sereno-solution.is-armed.is-in .case-study__workflow-step::after {
+    animation-name: cs-step-thread-h;
+  }
+}
+
+@keyframes cs-step-thread-h {
+  from {
+    opacity: 0.85;
+    transform: scaleX(0);
+  }
+  60% {
+    opacity: 0.85;
+  }
+}
+
+/* ==========================================================================
+   SERENO — S4 : « Démonstration visuelle » au fond de la section « Expertises »
+   de la landing : fond --color-bg-soft, filet haut 1 px var(--color-border),
+   filet bas équivalent (la landing le porte via le border-top de la section
+   suivante), et le MÊME champ de points ExpertiseDotWave, sans réglage
+   d'opacité ni de masque. Images, textes, grille inchangés.
+   ========================================================================== */
+
+.case-study--sereno > .case-study__section.cs-sereno-demo {
+  background: var(--color-bg-soft);
+  border-top-color: var(--color-border);
+}
+
+/* Hôte du champ de points : le conteneur passe en static pour que le champ
+   (position:absolute, inset:0) couvre toute la section, contenu au-dessus. */
+.case-study--sereno > .cs-sereno-demo > .container {
+  position: static;
+  z-index: auto;
+}
+
+.case-study--sereno .cs-sereno-demo .container > :not(.home-expertise__dot-wave) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Filet bas : même ton que le filet haut. */
+.case-study--sereno > .case-study__section.cs-sereno-demo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 1px;
+  background: var(--color-border);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   SERENO — Lightbox galerie : bouton transparent superposé à la capture
+   (aucun changement de taille, grille, ordre ni légende). Le cadre du média
+   garde son ratio 16/10 ; le bouton épouse exactement cette zone.
+   ========================================================================== */
+
+.case-study--sereno .cs-sereno-zoomable {
+  position: relative;
+}
+
+.case-study--sereno .cs-sereno-zoom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: zoom-in;
+}
+
+.case-study--sereno .cs-sereno-zoom:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   SERENO — S5 : « Choix techniques » en 4 rails éditoriaux ouverts
+   Fond transparent (le décor global fixe reste visible derrière), numéros
+   01 → 04 en compteur CSS, séparateurs 1 px, micro-liseré Ember, lien GitHub
+   en sortie technique discrète. Textes, href et sémantique <dl> inchangés.
+   Reveal : ServiceMotion existant (une ligne = un bloc, replay natif).
+   ========================================================================== */
+
+.case-study--sereno > .case-study__section:nth-of-type(5) {
+  background: transparent;
+}
+
+.case-study--sereno .cs-sereno-tech {
+  counter-reset: tech;
+  max-width: 64rem;
+  margin: var(--space-xl) 0 0 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.case-study--sereno .cs-sereno-tech .case-study__tech-row {
+  counter-increment: tech;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0.375rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--sereno .cs-sereno-tech .case-study__tech-row:first-child {
+  border-top: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--sereno .cs-sereno-tech .case-study__tech-row:last-child {
+  border-bottom: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+/* Numéro 01 → 04 : décoratif, muted. */
+.case-study--sereno .cs-sereno-tech .case-study__tech-row::before {
+  content: counter(tech, decimal-leading-zero);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-text-muted);
+  transition: color 250ms ease;
+}
+
+/* Micro-liseré Ember : court, 1 px, faible au repos. */
+.case-study--sereno .cs-sereno-tech .case-study__tech-row::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 2.5rem;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.4;
+  pointer-events: none;
+  transition: width 300ms ease, opacity 300ms ease;
+}
+
+.case-study--sereno .cs-sereno-tech .case-study__tech-row dt {
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.case-study--sereno .cs-sereno-tech .case-study__tech-row dd {
+  margin: 0;
+  padding: 0;
+  max-width: 52ch;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 900px) {
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row {
+    grid-template-columns: 3rem minmax(11rem, 0.8fr) minmax(0, 1.6fr);
+    column-gap: var(--space-md);
+    align-items: baseline;
+    padding: 1.75rem 0;
+  }
+}
+
+/* Hover (pointeur fin) : séparateur/liseré plus chauds, contenu décalé de 3 px max. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row dt,
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row dd {
+    transition: transform 300ms ease;
+  }
+
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row:hover::after {
+    width: 4rem;
+    opacity: 0.85;
+  }
+
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row:hover::before {
+    color: var(--color-accent);
+  }
+
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row:hover dt,
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row:hover dd {
+    transform: translateX(3px);
+  }
+}
+
+/* Lien dépôt : sortie technique discrète, sans bouton ni card. */
+.case-study--sereno .cs-sereno-github {
+  margin: var(--space-lg) 0 0 0;
+}
+
+.case-study--sereno .cs-sereno-github .case-study__github {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  margin-top: 0;
+  padding-bottom: 0.2rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(228, 95, 54, 0.45);
+  transition: color 250ms ease, border-color 250ms ease;
+}
+
+.case-study--sereno .cs-sereno-github .case-study__github span {
+  display: inline-block;
+  transition: transform 250ms ease;
+}
+
+.case-study--sereno .cs-sereno-github .case-study__github:hover,
+.case-study--sereno .cs-sereno-github .case-study__github:focus-visible {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.case-study--sereno .cs-sereno-github .case-study__github:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .case-study--sereno .cs-sereno-github .case-study__github:hover span {
+    transform: translate(2px, -2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--sereno .cs-sereno-tech .case-study__tech-row::after,
+  .case-study--sereno .cs-sereno-github .case-study__github,
+  .case-study--sereno .cs-sereno-github .case-study__github span {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   SERENO — S6 : « Résultat réel » reprend le fond de « Démonstration
+   visuelle » en réutilisant la classe .cs-sereno-demo (fond --color-bg-soft,
+   filet haut/bas, champ de points ExpertiseDotWave, contenu au-dessus).
+   Le halo Ember de S1 sur cette section est remplacé par ce fond (le filet bas
+   est le pseudo-élément ::after) : on ancre ce filet en bas.
+   ========================================================================== */
+
+.case-study--sereno > .case-study__section.cs-sereno-demo::after {
+  top: auto;
+}
+
+/* ==========================================================================
+   SERENO — S6B : « Résultat réel » en composition éditoriale (intérieur
+   uniquement ; fond S6 gelé). Gauche dominante (preuves en rails 01 → 06),
+   droite calme (à finaliser, puces en anneau), séparateur Ember 1 px,
+   conclusion « Ce que ce projet démontre » en pills très légères. Textes
+   inchangés ; listes ul sémantiques conservées. Reveal : ServiceMotion.
+   ========================================================================== */
+
+.case-study--sereno .cs-sereno-outcome {
+  margin-top: var(--space-xl);
+}
+
+.case-study--sereno .cs-sereno-outcome__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-xl);
+}
+
+@media (min-width: 900px) {
+  .case-study--sereno .cs-sereno-outcome__grid {
+    grid-template-columns: minmax(0, 60fr) 1px minmax(0, 40fr);
+    column-gap: clamp(2rem, 4vw, 4rem);
+    align-items: stretch;
+  }
+}
+
+/* --- Gauche : preuves validées (dominante) -------------------------------- */
+.case-study--sereno .cs-sereno-outcome__done h3 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.375rem;
+  color: var(--color-text);
+}
+
+.case-study--sereno .cs-proof-rails {
+  counter-reset: proof;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.case-study--sereno .cs-proof-rails li {
+  counter-increment: proof;
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  align-items: baseline;
+  padding: 0.9rem 0;
+  border-top: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--sereno .cs-proof-rails li:last-child {
+  border-bottom: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--sereno .cs-proof-rails li::before {
+  content: counter(proof, decimal-leading-zero);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-text-muted);
+  transition: color 250ms ease;
+}
+
+.case-study--sereno .cs-proof-rails li::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.4;
+  pointer-events: none;
+  transition: width 300ms ease, opacity 300ms ease;
+}
+
+.case-study--sereno .cs-proof-text {
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+/* --- Séparateur Ember --------------------------------------------------- */
+.case-study--sereno .cs-sereno-outcome__divider {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .case-study--sereno .cs-sereno-outcome__divider {
+    display: block;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(228, 95, 54, 0), rgba(228, 95, 54, 0.35) 30%, rgba(228, 95, 54, 0.35) 70%, rgba(228, 95, 54, 0));
+  }
+}
+
+/* --- Droite : à finaliser (calme) --------------------------------------- */
+.case-study--sereno .cs-sereno-outcome__next h3 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.case-study--sereno .cs-todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.case-study--sereno .cs-todo-list li {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.case-study--sereno .cs-todo-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--color-text-muted);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+/* Mobile : petit trait horizontal à la place du séparateur, rythme compact. */
+@media (max-width: 899px) {
+  .case-study--sereno .cs-sereno-outcome__grid {
+    gap: var(--space-lg);
+  }
+
+  .case-study--sereno .cs-sereno-outcome__next {
+    position: relative;
+    padding-top: var(--space-md);
+  }
+
+  .case-study--sereno .cs-sereno-outcome__next::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2.5rem;
+    height: 1px;
+    background: rgba(228, 95, 54, 0.45);
+  }
+
+  .case-study--sereno .cs-proof-text {
+    font-size: 1rem;
+  }
+}
+
+/* --- Conclusion : ce que le projet démontre ------------------------------ */
+.case-study--sereno .cs-sereno-outcome__proves {
+  margin-top: var(--space-xl);
+}
+
+.case-study--sereno .cs-sereno-outcome__label {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.case-study--sereno .cs-proves-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.case-study--sereno .cs-proves-list li {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid rgba(241, 239, 232, 0.14);
+  border-radius: var(--radius-sm);
+  transition: border-color 250ms ease, color 250ms ease;
+}
+
+/* Hover (pointeur fin) : liseré/bordure plus chauds, translateX 2 px max sur le texte. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .case-study--sereno .cs-proof-text {
+    display: inline-block;
+    transition: transform 300ms ease;
+  }
+
+  .case-study--sereno .cs-proof-rails li:hover::after {
+    width: 3rem;
+    opacity: 0.85;
+  }
+
+  .case-study--sereno .cs-proof-rails li:hover::before {
+    color: var(--color-accent);
+  }
+
+  .case-study--sereno .cs-proof-rails li:hover .cs-proof-text {
+    transform: translateX(2px);
+  }
+
+  .case-study--sereno .cs-proves-list li:hover {
+    border-color: rgba(228, 95, 54, 0.5);
+    color: var(--color-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--sereno .cs-proof-rails li::after,
+  .case-study--sereno .cs-proof-rails li::before,
+  .case-study--sereno .cs-proves-list li {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   SERENO — CTA final : fin de page premium. Référence principale :
+   /applications-metier-saas/ (ServiceCta dans .apps-final-cta-section) :
+   section avec halo Ember radial (circle at 50% 30%, .14 -> 0 à 60 %),
+   carte centrale max 46 rem, fond --color-surface-elevated à 80 % (color-mix,
+   jamais d'opacity sur le conteneur), bordure --color-border-strong, rayon lg,
+   texte centré ; les filaments (PageFilaments, déjà montés sur Sereno)
+   restent visibles à travers la section transparente. Textes, liens et
+   structure inchangés ; ServiceCta (partagé) non utilisé car il impose un
+   paragraphe de texte absent du CTA Sereno.
+   ========================================================================== */
+
+.case-study--sereno > .case-study__section.cs-sereno-final {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+.case-study--sereno .cs-sereno-final .case-study__cta {
+  position: relative;
+  max-width: 46rem;
+  margin: 0 auto var(--space-lg) auto;
+  padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.case-study--sereno .cs-sereno-final .case-study__cta h2 {
+  margin: 0 auto;
+  max-width: 24ch;
+}
+
+.case-study--sereno .cs-sereno-final .case-study__cta-actions {
+  margin-top: var(--space-lg);
+}
+
+/* Projet suivant : secondaire, éditorial, surface presque transparente. */
+.case-study--sereno .cs-sereno-final .case-study__next-wrapper {
+  max-width: 46rem;
+  margin: 0 auto var(--space-md) auto;
+}
+
+.case-study--sereno .cs-sereno-final .case-study__next {
+  padding: var(--space-md) clamp(1.25rem, 3vw, 2rem);
+  background: rgba(241, 239, 232, 0.015);
+  border: 1px solid rgba(241, 239, 232, 0.1);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.case-study--sereno .cs-sereno-final .case-study__next:hover,
+.case-study--sereno .cs-sereno-final .case-study__next:focus-visible {
+  background: rgba(241, 239, 232, 0.03);
+  border-color: rgba(228, 95, 54, 0.45);
+}
+
+.case-study--sereno .cs-sereno-final .case-study__next:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.case-study--sereno .cs-sereno-final .case-study__next-title {
+  font-size: 1.25rem;
+}
+
+/* Lien « Toutes les réalisations » : discret, centré, liseré Ember au hover. */
+.case-study--sereno .cs-sereno-final .container > p {
+  margin: 0;
+  text-align: center;
+}
+
+.case-study--sereno .cs-sereno-final .container > p a {
+  display: inline-block;
+  padding-bottom: 0.2rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(241, 239, 232, 0.2);
+  transition: color 250ms ease, border-color 250ms ease;
+}
+
+.case-study--sereno .cs-sereno-final .container > p a:hover,
+.case-study--sereno .cs-sereno-final .container > p a:focus-visible {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.case-study--sereno .cs-sereno-final .container > p a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Transition vers le footer : même correction que Home/Applications (la marge
+   générique du footer s'ajoutait au padding de la section CTA). Clé unique :
+   .cs-sereno-final n'existe que sur Sereno ; le Footer lui-même n'est pas touché. */
+main:has(.cs-sereno-final) + footer {
+  margin-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--sereno .cs-sereno-final .case-study__next,
+  .case-study--sereno .cs-sereno-final .container > p a {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   AGENCYOS — SPRINT A : fondations DA + Hero + Problème / Réflexion
+   « Même système, identité AgencyOS » : vocabulaire Sereno (eyebrows Ember,
+   alternance de fonds, halos, filets, HeliFan, split éditorial) en un cran
+   plus sobre. Ember = accent studio dominant ; le violet AgencyOS reste un
+   micro-accent produit (statut, captures). Tout est scopé .case-study--agencyos.
+   Aucun champ de points, aucun filament, aucun nouveau composant ; textes,
+   statut et structure des autres sections inchangés.
+   ========================================================================== */
+
+.case-study--agencyos .case-study__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.case-study--agencyos > .case-study__section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-top-color: rgba(241, 239, 232, 0.06);
+}
+
+.case-study--agencyos > .case-study__section > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Alternance : profond / soft / profond + lueur froide / ivoire noirci / soft / profond / soft. */
+.case-study--agencyos > .case-study__section:nth-of-type(1),
+.case-study--agencyos > .case-study__section:nth-of-type(3),
+.case-study--agencyos > .case-study__section:nth-of-type(6) {
+  background-color: var(--color-bg);
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(3) {
+  background-image: radial-gradient(ellipse 45% 70% at 100% 10%, rgba(241, 239, 232, 0.03), rgba(241, 239, 232, 0) 70%);
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(4) {
+  background: linear-gradient(rgba(241, 239, 232, 0.022), rgba(241, 239, 232, 0.022)), var(--color-bg);
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(6) {
+  background-image: radial-gradient(ellipse 45% 70% at 0% 90%, rgba(241, 239, 232, 0.025), rgba(241, 239, 232, 0) 70%);
+}
+
+/* --- HERO : halo Ember (1/2) + une courbe fine (>= 900 px) ------------------- */
+.case-study--agencyos > .case-study__section:nth-of-type(1)::after,
+.case-study--agencyos > .case-study__section:nth-of-type(2)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(1)::after {
+  background: radial-gradient(ellipse 50% 55% at 22% 58%, rgba(228, 95, 54, 0.09), rgba(228, 95, 54, 0) 70%);
+}
+
+/* Halo (2/2) : transition Problème / Réflexion, centré sur le séparateur. */
+.case-study--agencyos > .case-study__section:nth-of-type(2)::after {
+  background: radial-gradient(ellipse 40% 75% at 52% 55%, rgba(228, 95, 54, 0.06), rgba(228, 95, 54, 0) 70%);
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(1)::before,
+.case-study--agencyos > .case-study__section:nth-of-type(2)::before {
+  content: "";
+  display: none;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-top: 1px solid rgba(241, 239, 232, 0.11);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 65%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 65%, transparent 100%);
+}
+
+@media (min-width: 900px) {
+  .case-study--agencyos > .case-study__section:nth-of-type(1)::before {
+    display: block;
+    left: 40%;
+    right: -6%;
+    top: 60%;
+    height: 200px;
+  }
+
+  .case-study--agencyos > .case-study__section:nth-of-type(2)::before {
+    display: block;
+    left: 6%;
+    right: -4%;
+    top: 20%;
+    height: 220px;
+  }
+}
+
+/* --- HERO : statut (wording inchangé) — surface plus propre, micro-accent violet produit. */
+.case-study--agencyos .case-study__status {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.35);
+}
+
+/* --- HERO : média, profondeur locale + reflet piloté par le pointeur (dimensions inchangées). */
+.case-study--agencyos .case-study__hero-media {
+  position: relative;
+  box-shadow:
+    0 22px 48px -30px rgba(228, 95, 54, 0.22),
+    0 0 0 1px rgba(228, 95, 54, 0.06);
+  will-change: transform;
+}
+
+.case-study--agencyos .case-study__hero-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(241, 239, 232, 0.06),
+    rgba(228, 95, 54, 0.04) 35%,
+    rgba(228, 95, 54, 0) 65%
+  );
+  opacity: 0;
+  transition: opacity 450ms ease;
+}
+
+.case-study--agencyos .case-study__hero-media.is-active {
+  box-shadow:
+    0 26px 54px -28px rgba(228, 95, 54, 0.3),
+    0 0 0 1px rgba(228, 95, 54, 0.16);
+}
+
+.case-study--agencyos .case-study__hero-media.is-active::before {
+  opacity: 1;
+}
+
+@media (max-width: 899px) {
+  .case-study--agencyos .case-study__hero-media {
+    transform: none !important;
+  }
+}
+
+/* --- PROBLÈME / RÉFLEXION : split éditorial ouvert --------------------------- */
+.case-study--agencyos > .cs-aos-problem {
+  padding-block: clamp(4rem, 9vw, 7.5rem);
+}
+
+.case-study--agencyos .cs-aos-problem .case-study__problem-reflection {
+  position: relative;
+  z-index: 1;
+}
+
+.case-study--agencyos .cs-aos-problem .case-study__problem,
+.case-study--agencyos .cs-aos-problem .case-study__reflection {
+  position: relative;
+}
+
+.case-study--agencyos .cs-aos-index {
+  position: absolute;
+  top: -3.25rem;
+  left: -0.25rem;
+  z-index: -1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 5rem;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: rgba(241, 239, 232, 0.04);
+  pointer-events: none;
+  user-select: none;
+}
+
+.case-study--agencyos .cs-aos-divider {
+  display: none;
+}
+
+/* Question de réflexion : pensée directrice (bordure violette remplacée par un trait Ember court). */
+.case-study--agencyos .cs-aos-problem .case-study__reflection {
+  margin-top: var(--space-md);
+  padding: var(--space-md) 0 0 0;
+  border-left: 0;
+  max-width: 34rem;
+}
+
+.case-study--agencyos .cs-aos-problem .case-study__reflection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.5rem;
+  height: 1px;
+  background: rgba(228, 95, 54, 0.45);
+}
+
+.case-study--agencyos .cs-aos-problem .case-study__reflection blockquote {
+  margin: 0 0 var(--space-sm) 0;
+  max-width: 22ch;
+  font-size: clamp(1.5rem, 5.4vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+}
+
+.case-study--agencyos .cs-aos-problem .case-study__reflection p {
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 900px) {
+  .case-study--agencyos .cs-aos-index {
+    top: -5.5rem;
+    font-size: clamp(8rem, 11vw, 11rem);
+    color: rgba(241, 239, 232, 0.045);
+  }
+
+  .case-study--agencyos .cs-aos-problem .case-study__problem-reflection {
+    grid-template-columns: 1.1fr 1px 0.9fr;
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: stretch;
+  }
+
+  .case-study--agencyos .cs-aos-divider {
+    display: block;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(228, 95, 54, 0), rgba(228, 95, 54, 0.4) 30%, rgba(228, 95, 54, 0.4) 70%, rgba(228, 95, 54, 0));
+  }
+
+  .case-study--agencyos .cs-aos-problem .case-study__reflection {
+    margin-top: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .case-study--agencyos .cs-aos-problem .case-study__reflection::before {
+    display: none;
+  }
+
+  .case-study--agencyos .cs-aos-problem .case-study__reflection blockquote {
+    font-size: clamp(1.5rem, 2vw, 1.875rem);
+    max-width: 20ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--agencyos .case-study__hero-media {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .case-study--agencyos .case-study__hero-media::before {
+    display: none;
+  }
+}
+
+/* AGENCYOS — Hero : fond vivant aligné sur Sereno. Hero transparent pour laisser voir
+   les filaments fixes (PageFilaments, z-index:-1, desktop) ; l'arc CSS statique du Hero
+   est retiré (une seule couche de décor) ; sections suivantes opaques, inchangées. */
+.case-study--agencyos > .case-study__section:nth-of-type(1) {
+  background: transparent;
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(1)::before {
+  display: none !important;
+}
+
+/* AGENCYOS — section 01 / 02 : champ de points discret (ExpertiseDotWave existant, comme Sereno,
+   en un cran plus faible). Hôte = la section ; derrière le contenu ; aucun changement de layout. */
+.case-study--agencyos > .cs-aos-problem > .container {
+  position: static;
+  z-index: auto;
+}
+
+.case-study--agencyos .cs-aos-problem .home-expertise__dot-wave {
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.16) 28%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.35) 72%, rgba(0, 0, 0, 0.85) 100%);
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.16) 28%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.35) 72%, rgba(0, 0, 0, 0.85) 100%);
+}
+
+@media (max-width: 899px) {
+  .case-study--agencyos .cs-aos-problem .home-expertise__dot-wave {
+    opacity: 0.25;
+  }
+}
+
+/* AGENCYOS — « La solution » (3e section) : fond transposé de Sereno S3.
+   Graphite + relief Ember diffus bas-droite + lueur ivoire haut-gauche ; 2 courbes fines
+   qui traversent la largeur (arc haut ivoire, arc bas Ember désaturé), statiques, derrière
+   le contenu. Contenu et modules AgencyOS inchangés. */
+.case-study--agencyos > .case-study__section:nth-of-type(3) {
+  background:
+    radial-gradient(ellipse 45% 70% at 100% 85%, rgba(228, 95, 54, 0.09), rgba(228, 95, 54, 0) 70%),
+    radial-gradient(ellipse 40% 60% at 0% 20%, rgba(241, 239, 232, 0.035), rgba(241, 239, 232, 0) 70%),
+    var(--color-bg);
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(3)::before,
+.case-study--agencyos > .case-study__section:nth-of-type(3)::after {
+  content: "";
+  display: block;
+  position: absolute;
+  z-index: 0;
+  left: -6%;
+  right: -6%;
+  pointer-events: none;
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(3)::before {
+  top: 14%;
+  height: 200px;
+  border-top: 1px solid rgba(241, 239, 232, 0.17);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 25%, #000 75%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 25%, #000 75%, transparent 100%);
+}
+
+.case-study--agencyos > .case-study__section:nth-of-type(3)::after {
+  display: none;
+  bottom: 8%;
+  height: 220px;
+  border-bottom: 1px solid rgba(228, 95, 54, 0.22);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 20%, #000 70%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 20%, #000 70%, transparent 100%);
+}
+
+@media (min-width: 900px) {
+  .case-study--agencyos > .case-study__section:nth-of-type(3)::after {
+    display: block;
+  }
+}
+
+@media (max-width: 899px) {
+  .case-study--agencyos > .case-study__section:nth-of-type(3)::before {
+    top: 6%;
+    height: 90px;
+    border-top-color: rgba(241, 239, 232, 0.07);
+  }
+}
+
+/* AGENCYOS — « La solution » : 6 modules en 3 x 2 (>= 900 px) au lieu de 5 + 1 orphelin. */
+@media (min-width: 900px) {
+  .case-study--agencyos .case-study__modules {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ==========================================================================
+   AGENCYOS — « La solution » : motion des 6 domaines (parallèles, non séquentiels)
+   Reveal en 2 vagues (animation CSS, pas de transform persistant -> hover libre),
+   micro-tracer Ember 1 px, repères 01-06 décoratifs, hover léger (pointeur fin),
+   respiration lente des courbes de fond. État final statique.
+   ========================================================================== */
+.case-study--agencyos .case-study__module {
+  position: relative;
+}
+
+.case-study--agencyos .cs-aos-num {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.95rem;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--color-accent);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.case-study--agencyos .case-study__module::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 1.1rem;
+  width: 2.75rem;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.case-study--agencyos .case-study__module h3 {
+  transition: color 200ms ease;
+}
+
+@keyframes cs-aos-reveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cs-aos-trace {
+  0% { transform: scaleX(0); opacity: 0.9; }
+  60% { transform: scaleX(1); opacity: 0.9; }
+  100% { transform: scaleX(1); opacity: 0.3; }
+}
+
+.case-study--agencyos .case-study__modules.is-armed .case-study__module {
+  opacity: 0;
+}
+
+.case-study--agencyos .case-study__modules.is-armed.is-in .case-study__module {
+  opacity: 1;
+  animation: cs-aos-reveal 580ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 85ms + var(--wave, 0ms));
+}
+
+.case-study--agencyos .case-study__modules.is-armed.is-in .case-study__module::before {
+  transform-origin: left center;
+  animation: cs-aos-trace 700ms ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 85ms + var(--wave, 0ms) + 220ms);
+}
+
+/* Vagues : 1 = domaines 1-3, 2 = domaines 4-6 (+150 ms). Index local par ligne. */
+.case-study--agencyos .case-study__module:nth-child(1) { --i: 0; --wave: 0ms; }
+.case-study--agencyos .case-study__module:nth-child(2) { --i: 1; --wave: 0ms; }
+.case-study--agencyos .case-study__module:nth-child(3) { --i: 2; --wave: 0ms; }
+.case-study--agencyos .case-study__module:nth-child(4) { --i: 0; --wave: 320ms; }
+.case-study--agencyos .case-study__module:nth-child(5) { --i: 1; --wave: 320ms; }
+.case-study--agencyos .case-study__module:nth-child(6) { --i: 2; --wave: 320ms; }
+
+@media (hover: hover) and (pointer: fine) {
+  .case-study--agencyos .case-study__module {
+    transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease;
+  }
+
+  .case-study--agencyos .case-study__module:hover {
+    transform: translateY(-2px);
+    border-color: rgba(228, 95, 54, 0.28);
+  }
+
+  .case-study--agencyos .case-study__module:hover::before {
+    opacity: 0.6;
+  }
+
+  .case-study--agencyos .case-study__module:hover h3 {
+    color: #fff;
+  }
+}
+
+/* Respiration très lente des 2 courbes de fond (déplacement <= 6 px). */
+@keyframes cs-aos-breathe-a {
+  from { transform: translateY(0); }
+  to { transform: translateY(6px); }
+}
+
+@keyframes cs-aos-breathe-b {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+
+.case-study--agencyos > .cs-aos-solution::before {
+  animation: cs-aos-breathe-a 13s ease-in-out infinite alternate;
+}
+
+.case-study--agencyos > .cs-aos-solution::after {
+  animation: cs-aos-breathe-b 11s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--agencyos .case-study__module,
+  .case-study--agencyos .case-study__module::before,
+  .case-study--agencyos .case-study__module h3 {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .case-study--agencyos .case-study__module {
+    opacity: 1 !important;
+  }
+
+  .case-study--agencyos > .cs-aos-solution::before,
+  .case-study--agencyos > .cs-aos-solution::after {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   AGENCYOS — « Démonstration visuelle » : transposition du pattern Sereno S4
+   (fond --color-bg-soft, filets haut/bas 1 px, même champ de points
+   ExpertiseDotWave sans réglage) + lightbox galerie (bouton transparent
+   superposé à la capture, ImageLightbox générique, 5 images).
+   ========================================================================== */
+.case-study--agencyos > .case-study__section.cs-aos-demo {
+  background: var(--color-bg-soft);
+  border-top-color: var(--color-border);
+}
+
+.case-study--agencyos > .cs-aos-demo > .container {
+  position: static;
+  z-index: auto;
+}
+
+.case-study--agencyos .cs-aos-demo .container > :not(.home-expertise__dot-wave) {
+  position: relative;
+  z-index: 1;
+}
+
+.case-study--agencyos > .case-study__section.cs-aos-demo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 1px;
+  background: var(--color-border);
+  pointer-events: none;
+}
+
+.case-study--agencyos .cs-sereno-zoomable {
+  position: relative;
+}
+
+.case-study--agencyos .cs-sereno-zoom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: zoom-in;
+}
+
+.case-study--agencyos .cs-sereno-zoom:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   AGENCYOS — « Choix techniques » : architecture en 5 couches (rails ouverts)
+   Fond transparent (décor fixe visible), plus de cadre global, colonne
+   vertébrale 1 px + 5 points, numéros 01-05 et micro-labels Ember en pseudo
+   (décoratifs), micro-liseré horizontal. dl / dt / dd conservés. Reveal court
+   par is-armed / is-in ; état final statique. Aucun point random.
+   ========================================================================== */
+.case-study--agencyos > .case-study__section:nth-of-type(5) {
+  background: transparent;
+}
+
+.case-study--agencyos .cs-aos-tech {
+  --aos-pad: 1.5rem;
+  counter-reset: aostech;
+  position: relative;
+  max-width: 64rem;
+  margin: var(--space-xl) 0 0 0;
+  padding-left: 1.75rem;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* Colonne vertébrale : 1 px, ivoire très faible. */
+.case-study--agencyos .cs-aos-tech::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.25rem;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(241, 239, 232, 0), rgba(241, 239, 232, 0.14) 8%, rgba(241, 239, 232, 0.14) 92%, rgba(241, 239, 232, 0));
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.case-study--agencyos .cs-aos-tech .case-study__tech-row {
+  counter-increment: aostech;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0.375rem;
+  padding: var(--aos-pad) 0;
+  border-top: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:first-child {
+  border-top: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:last-child {
+  border-bottom: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+/* Numéro + micro-label de couche : décoratifs, Ember discret. */
+.case-study--agencyos .cs-aos-tech .case-study__tech-row::before {
+  content: counter(aostech, decimal-leading-zero) "\00a0\00a0" attr(data-layer);
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--color-accent);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* Micro-liseré horizontal : du point de la colonne vers le contenu. */
+.case-study--agencyos .cs-aos-tech .case-study__tech-row::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--aos-pad) + 0.35rem);
+  left: -1.5rem;
+  width: 1.25rem;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.3;
+  transform-origin: left center;
+  pointer-events: none;
+  transition: width 220ms ease, opacity 220ms ease;
+}
+
+/* Point de repère sur la colonne. */
+.case-study--agencyos .cs-aos-tech .case-study__tech-row dt::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--aos-pad) + 0.35rem - 2px);
+  left: -1.5rem;
+  width: 5px;
+  height: 5px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.case-study--agencyos .cs-aos-tech .case-study__tech-row dt {
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.case-study--agencyos .cs-aos-tech .case-study__tech-row dd {
+  margin: 0;
+  padding: 0;
+  max-width: 52ch;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 900px) {
+  .case-study--agencyos .cs-aos-tech {
+    --aos-pad: 1.75rem;
+    padding-left: 2.5rem;
+  }
+
+  .case-study--agencyos .cs-aos-tech::before {
+    left: 0.5rem;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row {
+    grid-template-columns: 10.5rem minmax(11rem, 0.8fr) minmax(0, 1.6fr);
+    column-gap: var(--space-md);
+    align-items: baseline;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row::after {
+    left: -2rem;
+    width: 1.5rem;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row dt::before {
+    left: -2rem;
+  }
+}
+
+@keyframes cs-aos-spine {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes cs-aos-tick {
+  0% { transform: scaleX(0); opacity: 0.8; }
+  60% { transform: scaleX(1); opacity: 0.8; }
+  100% { transform: scaleX(1); opacity: 0.3; }
+}
+
+@keyframes cs-aos-dotwarm {
+  from { opacity: 0.95; }
+  to { opacity: 0.4; }
+}
+
+.case-study--agencyos .cs-aos-tech.is-armed .case-study__tech-row {
+  opacity: 0;
+}
+
+.case-study--agencyos .cs-aos-tech.is-armed.is-in::before {
+  animation: cs-aos-spine 650ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.case-study--agencyos .cs-aos-tech.is-armed.is-in .case-study__tech-row {
+  opacity: 1;
+  animation: cs-aos-reveal 580ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+
+.case-study--agencyos .cs-aos-tech.is-armed.is-in .case-study__tech-row::after {
+  animation: cs-aos-tick 700ms ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 300ms);
+}
+
+.case-study--agencyos .cs-aos-tech.is-armed.is-in .case-study__tech-row dt::before {
+  animation: cs-aos-dotwarm 1100ms ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 250ms);
+}
+
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:nth-child(1) { --i: 0; }
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:nth-child(2) { --i: 1; }
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:nth-child(3) { --i: 2; }
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:nth-child(4) { --i: 3; }
+.case-study--agencyos .cs-aos-tech .case-study__tech-row:nth-child(5) { --i: 4; }
+
+@media (hover: hover) and (pointer: fine) {
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row dt,
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row dd {
+    transition: transform 220ms ease, color 220ms ease;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row:hover {
+    border-top-color: rgba(228, 95, 54, 0.22);
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row:hover::after {
+    width: 1.875rem;
+    opacity: 0.7;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row:hover dt::before {
+    opacity: 0.9;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row:hover dt {
+    transform: translateX(2px);
+    color: #fff;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row:hover dd {
+    transform: translateX(2px);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row:hover::after {
+    width: 2.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--agencyos .cs-aos-tech::before,
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row,
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row::after,
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row dt::before,
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row dt,
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row dd {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .case-study--agencyos .cs-aos-tech .case-study__tech-row {
+    opacity: 1 !important;
+  }
+}
+
+/* AGENCYOS — Résultat réel : preuves éditoriales (transposition du pattern Sereno S6B, textes AgencyOS). Fond/points : classe cs-aos-demo. Numéros en Ember discret. */
+.case-study--agencyos .cs-sereno-outcome {
+  margin-top: var(--space-xl);
+}
+
+.case-study--agencyos .cs-sereno-outcome__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-xl);
+}
+
+@media (min-width: 900px) {
+  .case-study--agencyos .cs-sereno-outcome__grid {
+    grid-template-columns: minmax(0, 60fr) 1px minmax(0, 40fr);
+    column-gap: clamp(2rem, 4vw, 4rem);
+    align-items: stretch;
+  }
+}
+
+/* --- Gauche : preuves validées (dominante) -------------------------------- */
+.case-study--agencyos .cs-sereno-outcome__done h3 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.375rem;
+  color: var(--color-text);
+}
+
+.case-study--agencyos .cs-proof-rails {
+  counter-reset: proof;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.case-study--agencyos .cs-proof-rails li {
+  counter-increment: proof;
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  align-items: baseline;
+  padding: 0.9rem 0;
+  border-top: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--agencyos .cs-proof-rails li:last-child {
+  border-bottom: 1px solid rgba(241, 239, 232, 0.08);
+}
+
+.case-study--agencyos .cs-proof-rails li::before {
+  content: counter(proof, decimal-leading-zero);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-text-muted);
+  transition: color 250ms ease;
+}
+
+.case-study--agencyos .cs-proof-rails li::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.4;
+  pointer-events: none;
+  transition: width 300ms ease, opacity 300ms ease;
+}
+
+.case-study--agencyos .cs-proof-text {
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+/* --- Séparateur Ember --------------------------------------------------- */
+.case-study--agencyos .cs-sereno-outcome__divider {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .case-study--agencyos .cs-sereno-outcome__divider {
+    display: block;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(228, 95, 54, 0), rgba(228, 95, 54, 0.35) 30%, rgba(228, 95, 54, 0.35) 70%, rgba(228, 95, 54, 0));
+  }
+}
+
+/* --- Droite : à finaliser (calme) --------------------------------------- */
+.case-study--agencyos .cs-sereno-outcome__next h3 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.case-study--agencyos .cs-todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.case-study--agencyos .cs-todo-list li {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.case-study--agencyos .cs-todo-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--color-text-muted);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+/* Mobile : petit trait horizontal à la place du séparateur, rythme compact. */
+@media (max-width: 899px) {
+  .case-study--agencyos .cs-sereno-outcome__grid {
+    gap: var(--space-lg);
+  }
+
+  .case-study--agencyos .cs-sereno-outcome__next {
+    position: relative;
+    padding-top: var(--space-md);
+  }
+
+  .case-study--agencyos .cs-sereno-outcome__next::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2.5rem;
+    height: 1px;
+    background: rgba(228, 95, 54, 0.45);
+  }
+
+  .case-study--agencyos .cs-proof-text {
+    font-size: 1rem;
+  }
+}
+
+/* --- Conclusion : ce que le projet démontre ------------------------------ */
+.case-study--agencyos .cs-sereno-outcome__proves {
+  margin-top: var(--space-xl);
+}
+
+.case-study--agencyos .cs-sereno-outcome__label {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.case-study--agencyos .cs-proves-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.case-study--agencyos .cs-proves-list li {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid rgba(241, 239, 232, 0.14);
+  border-radius: var(--radius-sm);
+  transition: border-color 250ms ease, color 250ms ease;
+}
+
+/* Hover (pointeur fin) : liseré/bordure plus chauds, translateX 2 px max sur le texte. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .case-study--agencyos .cs-proof-text {
+    display: inline-block;
+    transition: transform 300ms ease;
+  }
+
+  .case-study--agencyos .cs-proof-rails li:hover::after {
+    width: 3rem;
+    opacity: 0.85;
+  }
+
+  .case-study--agencyos .cs-proof-rails li:hover::before {
+    color: var(--color-accent);
+  }
+
+  .case-study--agencyos .cs-proof-rails li:hover .cs-proof-text {
+    transform: translateX(2px);
+  }
+
+  .case-study--agencyos .cs-proves-list li:hover {
+    border-color: rgba(228, 95, 54, 0.5);
+    color: var(--color-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--agencyos .cs-proof-rails li::after,
+  .case-study--agencyos .cs-proof-rails li::before,
+  .case-study--agencyos .cs-proves-list li {
+    transition: none;
+  }
+}
+
+.case-study--agencyos .cs-proof-rails li::before {
+  color: var(--color-accent);
+  opacity: 0.75;
+}
+
+/* AGENCYOS — CTA final : transposition du CTA final Sereno (halo Ember, carte centrale, projet suivant secondaire, lien retour discret) ; footer remonté comme sur Sereno. Textes et liens inchangés. */
+.case-study--agencyos > .case-study__section.cs-aos-final {
+  background: radial-gradient(circle at 50% 30%, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 60%);
+}
+
+.case-study--agencyos .cs-aos-final .case-study__cta {
+  position: relative;
+  max-width: 46rem;
+  margin: 0 auto var(--space-lg) auto;
+  padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.case-study--agencyos .cs-aos-final .case-study__cta h2 {
+  margin: 0 auto;
+  max-width: 24ch;
+}
+
+.case-study--agencyos .cs-aos-final .case-study__cta-actions {
+  margin-top: var(--space-lg);
+}
+
+/* Projet suivant : secondaire, éditorial, surface presque transparente. */
+.case-study--agencyos .cs-aos-final .case-study__next-wrapper {
+  max-width: 46rem;
+  margin: 0 auto var(--space-md) auto;
+}
+
+.case-study--agencyos .cs-aos-final .case-study__next {
+  padding: var(--space-md) clamp(1.25rem, 3vw, 2rem);
+  background: rgba(241, 239, 232, 0.015);
+  border: 1px solid rgba(241, 239, 232, 0.1);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.case-study--agencyos .cs-aos-final .case-study__next:hover,
+.case-study--agencyos .cs-aos-final .case-study__next:focus-visible {
+  background: rgba(241, 239, 232, 0.03);
+  border-color: rgba(228, 95, 54, 0.45);
+}
+
+.case-study--agencyos .cs-aos-final .case-study__next:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.case-study--agencyos .cs-aos-final .case-study__next-title {
+  font-size: 1.25rem;
+}
+
+/* Lien « Toutes les réalisations » : discret, centré, liseré Ember au hover. */
+.case-study--agencyos .cs-aos-final .container > p {
+  margin: 0;
+  text-align: center;
+}
+
+.case-study--agencyos .cs-aos-final .container > p a {
+  display: inline-block;
+  padding-bottom: 0.2rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(241, 239, 232, 0.2);
+  transition: color 250ms ease, border-color 250ms ease;
+}
+
+.case-study--agencyos .cs-aos-final .container > p a:hover,
+.case-study--agencyos .cs-aos-final .container > p a:focus-visible {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.case-study--agencyos .cs-aos-final .container > p a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Transition vers le footer : même correction que Home/Applications (la marge
+   générique du footer s'ajoutait au padding de la section CTA). Clé unique :
+   .cs-aos-final n'existe que sur Sereno ; le Footer lui-même n'est pas touché. */
+main:has(.cs-aos-final) + footer {
+  margin-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study--agencyos .cs-aos-final .case-study__next,
+  .case-study--agencyos .cs-aos-final .container > p a {
+    transition: none;
+  }
+}

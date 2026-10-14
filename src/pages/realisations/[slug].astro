@@ -30,8 +30,16 @@ import { getServicesForProject } from "../../data/serviceCaseStudyMap";
 import { withBase } from "../../utils/paths";
 // Belkhir uniquement — section « Expérience mobile » : capture haute définition
 // déjà présente dans le dépôt (non utilisée ailleurs), servie via astro:assets.
-import { Picture } from "astro:assets";
+import { Picture, getImage } from "astro:assets";
+import ImageLightbox from "../../components/ui/ImageLightbox.astro";
 import belkhirMobileScreen from "../../assets/projects/belkhir-depannage/belkhir-mobile1.jpg";
+// Sereno uniquement (S1 fondations DA) : UNE occurrence du champ de points, dans
+// « Problème / Réflexion », composant existant réutilisé tel quel.
+import ExpertiseDotWave from "../../components/motion/ExpertiseDotWave.astro";
+// Sereno uniquement (S1B) : filaments animés existants (Three.js, fixed z-index:-1,
+// hydratés >= 900 px), montés TELS QUELS ; seul le Hero est transparent (CSS Sereno),
+// les sections suivantes sont opaques et les recouvrent.
+import PageFilaments from "../../components/hero/PageFilaments";
 import "../../styles/case-study.css";
 
 export const getStaticPaths = (async () => {
@@ -83,6 +91,23 @@ const moduleGroups = [
 // galerie (accueil → qualification → métier → zone → mobile).
 const belkhirRowTitles = ["Accueil", "Qualifier l'urgence", "Une page par métier", "Vérifier sa zone", "Pensé mobile"];
 
+// AgencyOS : micro-labels de couche, dans l ordre de content.tech (backend, interface, données, sécurité, infra).
+// Rendus en CSS (data-layer) : le dl garde exactement ses dt / dd.
+const aosLayers = ["Backend", "Interface", "Données", "Sécurité", "Infrastructure"];
+
+// S-lightbox — Sereno et AgencyOS : source haute définition (largeur d origine, 1920 px)
+// pour chaque capture, générée au build ; chargée seulement à l ouverture de la modale.
+const serenoLightbox =
+  slug === "sereno" || slug === "agencyos"
+    ? await Promise.all(
+        media.gallery!.map(async (g) => ({
+          full: (await getImage({ src: g.image, width: 1920, format: "webp", quality: 85 })).src,
+          alt: g.alt,
+          caption: g.caption,
+        })),
+      )
+    : [];
+
 // CS-S12B — OG dédié (prompt §9) : source unique `projectMedia.ts`
 // (`ogImage`/`ogImageAlt`, déjà la source de vérité média du projet,
 // aucune deuxième source créée). Fallback vers le visuel global si absent
@@ -107,6 +132,7 @@ const creativeWorkSchema = {
 
 <BaseLayout title={seoTitle} description={seoDescription} image={ogImage} imageAlt={ogImageAlt}>
   <script type="application/ld+json" is:inline set:html={JSON.stringify(creativeWorkSchema)} />
+  {(slug === "sereno" || slug === "agencyos") && <PageFilaments client:media="(min-width: 900px)" />}
   <div class:list={["case-study", `case-study--${slug === "belkhir-depannage" ? "belkhir" : slug}`]}>
     <div class="container">
       <ServiceBreadcrumb current={title} />
@@ -133,16 +159,23 @@ const creativeWorkSchema = {
       )}
     </CaseStudySection>
 
-    <CaseStudySection soft aria-labelledby="problem-title">
+    <CaseStudySection soft aria-labelledby="problem-title" class={slug === "sereno" ? "cs-sereno-problem" : slug === "agencyos" ? "cs-aos-problem" : undefined}>
+      {(slug === "sereno" || slug === "agencyos") && <ExpertiseDotWave />}
       <div class="case-study__problem-reflection">
         <div class="case-study__problem" data-motion="block">
+          {slug === "sereno" && <span class="cs-sereno-index" aria-hidden="true">01</span>}
+          {slug === "agencyos" && <span class="cs-aos-index" aria-hidden="true">01</span>}
           <span class="case-study__eyebrow">Le problème</span>
           <h2 id="problem-title">{content.problemTitle}</h2>
           {content.problemBody.map((paragraph) => (
             <p>{paragraph}</p>
           ))}
         </div>
+        {slug === "sereno" && <div class="cs-sereno-divider" data-motion="block" aria-hidden="true"></div>}
+        {slug === "agencyos" && <div class="cs-aos-divider" data-motion="block" aria-hidden="true"></div>}
         <div class="case-study__reflection" data-motion="block">
+          {slug === "sereno" && <span class="cs-sereno-index" aria-hidden="true">02</span>}
+          {slug === "agencyos" && <span class="cs-aos-index" aria-hidden="true">02</span>}
           <span class="case-study__eyebrow">La réflexion</span>
           <blockquote>{content.reflectionQuote}</blockquote>
           {content.reflectionBody && <p>{content.reflectionBody}</p>}
@@ -151,12 +184,14 @@ const creativeWorkSchema = {
     </CaseStudySection>
 
     {slug === "sereno" && (
-      <CaseStudySection aria-labelledby="solution-title">
+      <CaseStudySection aria-labelledby="solution-title" class="cs-sereno-solution">
         <span class="case-study__eyebrow">La solution</span>
         <h2 id="solution-title">Le parcours d'une facture</h2>
-        <div class="case-study__workflow" data-motion="block">
-          {workflowSteps.map((step) => (
+        {/* S3B : pas de data-motion ici — la séquence 01 → 05 est pilotée par is-armed / is-in (script plus bas). */}
+        <div class="case-study__workflow">
+          {workflowSteps.map((step, i) => (
             <div class="case-study__workflow-step">
+              <span class="cs-step-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
               <h3>{step.title}</h3>
               <p>{step.text}</p>
             </div>
@@ -166,12 +201,14 @@ const creativeWorkSchema = {
     )}
 
     {slug === "agencyos" && (
-      <CaseStudySection aria-labelledby="solution-title">
+      <CaseStudySection aria-labelledby="solution-title" class="cs-aos-solution">
         <span class="case-study__eyebrow">La solution</span>
         <h2 id="solution-title">Un même produit, plusieurs domaines métier</h2>
-        <div class="case-study__modules" data-motion="block">
-          {moduleGroups.map((group) => (
+        {/* Reveal en 2 vagues piloté par is-armed / is-in (script plus bas) ; repères 01-06 purement éditoriaux. */}
+        <div class="case-study__modules">
+          {moduleGroups.map((group, i) => (
             <div class="case-study__module">
+              <span class="cs-aos-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
               <h3>{group.title}</h3>
               <p>{group.text}</p>
             </div>
@@ -180,7 +217,13 @@ const creativeWorkSchema = {
       </CaseStudySection>
     )}
 
-    <CaseStudySection soft={slug !== "sereno" && slug !== "agencyos"} aria-labelledby="demo-title">
+    <CaseStudySection
+      soft={slug !== "sereno" && slug !== "agencyos"}
+      aria-labelledby="demo-title"
+      class={slug === "sereno" ? "cs-sereno-demo" : slug === "agencyos" ? "cs-aos-demo" : undefined}
+    >
+      {/* S4 : même champ de points que « Expertises » de la landing (composant réutilisé tel quel). */}
+      {(slug === "sereno" || slug === "agencyos") && <ExpertiseDotWave />}
       <span class="case-study__eyebrow">Démonstration visuelle</span>
       <h2 id="demo-title">
         {slug === "belkhir-depannage" ? "De l'accueil à la prise de contact" : "Ce qui a été construit"}
@@ -215,8 +258,19 @@ const creativeWorkSchema = {
       ) : (
         <div class:list={["case-study__gallery", media.gallery!.length > 4 && "case-study__gallery--3col"]}>
           {media.gallery!.map((item, i) => (
-            <div data-motion="block">
+            <div data-motion="block" class={slug === "sereno" || slug === "agencyos" ? "cs-sereno-zoomable" : undefined}>
               <CaseStudyMedia image={item.image} alt={item.alt} caption={item.caption} index={i + 1} />
+              {(slug === "sereno" || slug === "agencyos") && (
+                <button
+                  type="button"
+                  class="cs-sereno-zoom"
+                  data-lightbox-trigger={`${slug}-gallery`}
+                  data-full={serenoLightbox[i].full}
+                  data-alt={serenoLightbox[i].alt}
+                  data-caption={serenoLightbox[i].caption}
+                  aria-label={`Agrandir la capture ${i + 1} sur ${media.gallery!.length}`}
+                ></button>
+              )}
             </div>
           ))}
         </div>
@@ -267,11 +321,31 @@ const creativeWorkSchema = {
     <CaseStudySection soft={slug === "sereno" || slug === "agencyos"} aria-labelledby="tech-title">
       <span class="case-study__eyebrow">Choix techniques</span>
       <h2 id="tech-title">La technologie, et pourquoi elle est là</h2>
-      <div data-motion="block">
-        <CaseStudyTech items={content.tech} />
-      </div>
+      {slug === "sereno" ? (
+        <dl class="case-study__tech cs-sereno-tech">
+          {content.tech.map((item) => (
+            <div class="case-study__tech-row" data-motion="block">
+              <dt>{item.name}</dt>
+              <dd>{item.role}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : slug === "agencyos" ? (
+        <dl class="case-study__tech cs-aos-tech">
+          {content.tech.map((item, i) => (
+            <div class="case-study__tech-row" data-layer={aosLayers[i]}>
+              <dt>{item.name}</dt>
+              <dd>{item.role}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <div data-motion="block">
+          <CaseStudyTech items={content.tech} />
+        </div>
+      )}
       {content.githubUrl && (
-        <p>
+        <p class={slug === "sereno" ? "cs-sereno-github" : undefined}>
           <a class="case-study__github" href={content.githubUrl} target="_blank" rel="noopener noreferrer">
             {content.githubLabel} <span aria-hidden="true">↗</span>
           </a>
@@ -279,15 +353,51 @@ const creativeWorkSchema = {
       )}
     </CaseStudySection>
 
-    <CaseStudySection aria-labelledby="outcome-title">
+    <CaseStudySection aria-labelledby="outcome-title" class={slug === "sereno" ? "cs-sereno-demo" : slug === "agencyos" ? "cs-aos-demo cs-aos-outcome-section" : undefined}>
+      {/* S6 : même fond que « Démonstration visuelle » (classe et champ de points réutilisés). */}
+      {(slug === "sereno" || slug === "agencyos") && <ExpertiseDotWave />}
       <span class="case-study__eyebrow">Résultat réel</span>
-      <h2 id="outcome-title">Ce qui a été construit</h2>
-      <div data-motion="block">
-        <CaseStudyOutcome achieved={content.outcomeAchieved} next={content.outcomeNext} proves={content.proves} />
-      </div>
+      <h2 id="outcome-title">{slug === "sereno" ? "Un socle fonctionnel, validé avant exploitation commerciale." : slug === "agencyos" ? "Un socle SaaS multi-tenant déjà opérationnel." : "Ce qui a été construit"}</h2>
+      {slug === "sereno" || slug === "agencyos" ? (
+        <div class="cs-sereno-outcome">
+          <div class="cs-sereno-outcome__grid">
+            <div class="cs-sereno-outcome__done">
+              <h3 data-motion="block">Construit et validé</h3>
+              <ul class="cs-proof-rails">
+                {content.outcomeAchieved.map((item) => (
+                  <li data-motion="block">
+                    <span class="cs-proof-text">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div class="cs-sereno-outcome__divider" data-motion="block" aria-hidden="true"></div>
+            <div class="cs-sereno-outcome__next" data-motion="block">
+              <h3>Avant une exploitation commerciale</h3>
+              <ul class="cs-todo-list">
+                {content.outcomeNext.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div class="cs-sereno-outcome__proves" data-motion="block">
+            <p class="cs-sereno-outcome__label">Ce que ce projet démontre</p>
+            <ul class="cs-proves-list">
+              {content.proves.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : (
+        <div data-motion="block">
+          <CaseStudyOutcome achieved={content.outcomeAchieved} next={content.outcomeNext} proves={content.proves} />
+        </div>
+      )}
     </CaseStudySection>
 
-    <CaseStudySection soft aria-labelledby="cta-title">
+    <CaseStudySection soft aria-labelledby="cta-title" class={slug === "sereno" ? "cs-sereno-final" : slug === "agencyos" ? "cs-aos-final" : undefined}>
       <div class="case-study__cta" data-motion="block">
         <span class="case-study__eyebrow">Vous avez un besoin similaire ?</span>
         <h2 id="cta-title">Parlons de votre projet.</h2>
@@ -312,6 +422,9 @@ const creativeWorkSchema = {
       <p><a href={withBase("/realisations/")}>← Toutes les réalisations</a></p>
     </CaseStudySection>
   </div>
+
+  {slug === "sereno" && <ImageLightbox id="sereno-gallery" mode="gallery" title={title} />}
+  {slug === "agencyos" && <ImageLightbox id="agencyos-gallery" mode="gallery" title={title} />}
 
   <ServiceMotion />
 </BaseLayout>
@@ -373,6 +486,111 @@ const creativeWorkSchema = {
           media.style.transform = "";
         }
       });
+    });
+  }
+
+  // 5) « La solution » Sereno : séquence 01 → 05 + progression Ember le long du rail.
+  // Même logique d'hystérésis que /contact/ (entrée à 33 % visible, réarmement sous 7 %) ;
+  // non armée sous reduced-motion (tout reste visible, état final).
+  const solution = document.querySelector<HTMLElement>(".cs-sereno-solution");
+  if (solution && !reduced.matches && "IntersectionObserver" in window) {
+    solution.classList.add("is-armed");
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.intersectionRatio >= 0.33) solution.classList.add("is-in");
+          else if (e.intersectionRatio < 0.07) solution.classList.remove("is-in");
+        });
+      },
+      { threshold: [0, 0.03, 0.07, 0.15, 0.25, 0.33, 0.5] },
+    ).observe(solution);
+  }
+
+  // 5b) « La solution » AgencyOS : reveal des 6 domaines en 2 vagues (mêmes seuils d'hystérésis ;
+  // non armé sous reduced-motion : tout reste visible). Les domaines sont parallèles, pas séquentiels.
+  const aosModules = document.querySelector<HTMLElement>(".case-study--agencyos .case-study__modules");
+  if (aosModules && !reduced.matches && "IntersectionObserver" in window) {
+    aosModules.classList.add("is-armed");
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.intersectionRatio >= 0.3) aosModules.classList.add("is-in");
+          else if (e.intersectionRatio < 0.05) aosModules.classList.remove("is-in");
+        });
+      },
+      { threshold: [0, 0.05, 0.15, 0.3, 0.5] },
+    ).observe(aosModules);
+  }
+
+  // 5c) « Choix techniques » AgencyOS : reveal des 5 couches (colonne, points, rails). Mêmes seuils
+  // d'hystérésis ; non armé sous reduced-motion. Briques d'architecture, pas des étapes.
+  const aosTech = document.querySelector<HTMLElement>(".case-study--agencyos .cs-aos-tech");
+  if (aosTech && !reduced.matches && "IntersectionObserver" in window) {
+    aosTech.classList.add("is-armed");
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.intersectionRatio >= 0.3) aosTech.classList.add("is-in");
+          else if (e.intersectionRatio < 0.05) aosTech.classList.remove("is-in");
+        });
+      },
+      { threshold: [0, 0.05, 0.15, 0.3, 0.5] },
+    ).observe(aosTech);
+  }
+
+  // 4b) Média du Hero AgencyOS : HeliFan un cran plus sobre que Sereno (rotateX <= 1,5°,
+  // rotateY <= 2°, translateY -1 px, scale 1.003, perspective 1700 px, retour 600 ms).
+  // Pointeur fin, >= 900 px, jamais en reduced-motion ; aucune dimension modifiée.
+  const aosMedia = document.querySelector<HTMLElement>(".case-study--agencyos .case-study__hero-media");
+  if (aosMedia && finePointer.matches && !reduced.matches) {
+    const A_EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+    aosMedia.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!desktop.matches) return;
+      const r = aosMedia.getBoundingClientRect();
+      const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+      const y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+      aosMedia.classList.add("is-active");
+      aosMedia.style.transition = "transform 120ms linear, box-shadow 450ms ease";
+      aosMedia.style.transform = `perspective(1700px) rotateX(${(-y * 1.5).toFixed(2)}deg) rotateY(${(x * 2).toFixed(2)}deg) translateY(-1px) scale(1.003)`;
+      aosMedia.style.setProperty("--mx", `${((x + 1) / 2) * 100}%`);
+      aosMedia.style.setProperty("--my", `${((y + 1) / 2) * 100}%`);
+    });
+    aosMedia.addEventListener("pointerleave", () => {
+      aosMedia.classList.remove("is-active");
+      aosMedia.style.transition = `transform 600ms ${A_EASE}, box-shadow 600ms ease`;
+      aosMedia.style.transform = "";
+      aosMedia.style.setProperty("--mx", "50%");
+      aosMedia.style.setProperty("--my", "50%");
+    });
+  }
+
+  // 4) Média du Hero Sereno : même langage que le Hero de /applications-metier-saas/
+  // (tilt piloté par le pointeur, halo --mx/--my, retour doux) mais très atténué :
+  // rotateX <= 2°, rotateY <= 2.5°, translateY -2 px, scale 1.005, perspective 1600 px.
+  // Pointeur fin, >= 900 px, jamais en reduced-motion. Aucune taille modifiée.
+  const serenoMedia = document.querySelector<HTMLElement>(".case-study--sereno .case-study__hero-media");
+  const serenoWide = window.matchMedia("(min-width: 900px)");
+  if (serenoMedia && finePointer.matches && !reduced.matches) {
+    const S_RETURN_EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+
+    serenoMedia.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!serenoWide.matches) return;
+      const r = serenoMedia.getBoundingClientRect();
+      const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+      const y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+      serenoMedia.classList.add("is-active");
+      serenoMedia.style.transition = "transform 120ms linear, box-shadow 450ms ease";
+      serenoMedia.style.transform = `perspective(1600px) rotateX(${(-y * 2).toFixed(2)}deg) rotateY(${(x * 2.5).toFixed(2)}deg) translateY(-2px) scale(1.005)`;
+      serenoMedia.style.setProperty("--mx", `${((x + 1) / 2) * 100}%`);
+      serenoMedia.style.setProperty("--my", `${((y + 1) / 2) * 100}%`);
+    });
+
+    serenoMedia.addEventListener("pointerleave", () => {
+      serenoMedia.classList.remove("is-active");
+      serenoMedia.style.transition = `transform 600ms ${S_RETURN_EASE}, box-shadow 600ms ease`;
+      serenoMedia.style.transform = "";
+      serenoMedia.style.setProperty("--mx", "50%");
+      serenoMedia.style.setProperty("--my", "50%");
     });
   }
 

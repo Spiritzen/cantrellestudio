@@ -1,0 +1,512 @@
+---
+// ImageLightbox — composant générique de modale d'image (une seule instance par
+// page). Extrait de la modale de la landing (RealisationsShowcase) en
+// reprenant sa DA validée : backdrop graphite + ambient Ember, écrin chaud,
+// ombre multi-couche, animation d'ouverture sous prefers-reduced-motion:
+// no-preference uniquement.
+//
+// API (props) : id = identifiant de l instance, que les déclencheurs ciblent ;
+//   mode = single (image + titre + fermer, landing) ou gallery (compteur 01 / 06,
+//   légende, précédent/suivant, flèches clavier, boucle cyclique) ;
+//   title = titre par défaut, surchargeable par chaque déclencheur.
+// Déclencheurs : tout bouton portant l attribut data-lightbox-trigger avec la valeur de l id,
+//   plus (optionnels) data-full (URL haute définition, sinon le plus grand candidat du
+//   srcset de l image contenue), data-alt, data-caption (mode gallery), data-title.
+//   L ordre de la galerie est l ordre du DOM des déclencheurs de même id.
+//
+// Aucune dépendance, aucun framework : un seul script vanilla par page.
+interface Props {
+  id: string;
+  mode?: "single" | "gallery";
+  title?: string;
+}
+
+const { id, mode = "single", title = "" } = Astro.props;
+const gallery = mode === "gallery";
+---
+
+<div class="image-lightbox__backdrop" data-image-lightbox={id} data-mode={mode} data-default-title={title} hidden>
+  <div
+    class="image-lightbox__dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby={`${id}-lightbox-title`}
+    aria-describedby={gallery ? `${id}-lightbox-caption` : undefined}
+    data-lb-dialog
+  >
+    <div class="image-lightbox__header">
+      <div class="image-lightbox__heading">
+        <h3 class="image-lightbox__title" id={`${id}-lightbox-title`} data-lb-title></h3>
+        {gallery && <span class="image-lightbox__counter" data-lb-counter></span>}
+      </div>
+      <button type="button" class="image-lightbox__close" data-lb-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="image-lightbox__media">
+      <img class="image-lightbox__img" data-lb-img alt="" />
+      {gallery && (
+        <button type="button" class="image-lightbox__nav image-lightbox__nav--prev" data-lb-prev aria-label="Image précédente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 5 8 12 15 19"></polyline>
+          </svg>
+        </button>
+      )}
+      {gallery && (
+        <button type="button" class="image-lightbox__nav image-lightbox__nav--next" data-lb-next aria-label="Image suivante">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 5 16 12 9 19"></polyline>
+          </svg>
+        </button>
+      )}
+    </div>
+    {gallery && <p class="image-lightbox__caption" id={`${id}-lightbox-caption`} data-lb-caption></p>}
+  </div>
+</div>
+
+<style is:global>
+  /* Fond : base graphite légèrement chaude + ambient Ember (voir sprints modale landing). */
+  .image-lightbox__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 42% 62%, rgba(228, 95, 54, 0.12) 0%, rgba(228, 95, 54, 0.07) 20%, rgba(228, 95, 54, 0.03) 42%, rgba(228, 95, 54, 0) 72%),
+      radial-gradient(ellipse 60% 70% at 92% 25%, rgba(228, 95, 54, 0.05), rgba(228, 95, 54, 0) 70%),
+      linear-gradient(180deg, rgba(8, 9, 12, 0.6), rgba(10, 10, 12, 0.62));
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    padding: max(var(--space-xl), env(safe-area-inset-top)) max(var(--space-xl), env(safe-area-inset-right))
+      max(var(--space-xl), env(safe-area-inset-bottom)) max(var(--space-xl), env(safe-area-inset-left));
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .image-lightbox__backdrop {
+      background: rgba(10, 10, 12, 0.82);
+    }
+  }
+
+  .image-lightbox__backdrop[hidden] {
+    display: none;
+  }
+
+  .image-lightbox__dialog {
+    position: relative;
+    width: min(92vw, 1600px);
+    height: min(88vh, 920px);
+    max-width: 94vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(ellipse 60% 55% at 0% 0%, rgba(228, 95, 54, 0.07), rgba(228, 95, 54, 0) 70%),
+      radial-gradient(ellipse 50% 50% at 100% 100%, rgba(228, 95, 54, 0.05), rgba(228, 95, 54, 0) 70%),
+      var(--color-surface-elevated);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    box-shadow:
+      0 30px 120px -20px rgba(228, 95, 54, 0.1),
+      0 28px 90px rgba(0, 0, 0, 0.28),
+      0 10px 30px rgba(0, 0, 0, 0.16),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  @supports (height: 1dvh) {
+    .image-lightbox__dialog {
+      height: min(88dvh, 920px);
+    }
+  }
+
+  .image-lightbox__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex: none;
+    margin-bottom: var(--space-sm);
+  }
+
+  .image-lightbox__heading {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .image-lightbox__title {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .image-lightbox__counter {
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+    opacity: 0.85;
+    white-space: nowrap;
+  }
+
+  .image-lightbox__media {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .image-lightbox__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .image-lightbox__caption {
+    flex: none;
+    margin: var(--space-sm) 0 0 0;
+    max-width: 80ch;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+  }
+
+  .image-lightbox__close,
+  .image-lightbox__nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent);
+    cursor: pointer;
+    transition: border-color 200ms ease, background-color 200ms ease;
+  }
+
+  .image-lightbox__close {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  .image-lightbox__close:hover,
+  .image-lightbox__close:focus-visible,
+  .image-lightbox__nav:hover,
+  .image-lightbox__nav:focus-visible {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    border-color: var(--color-accent);
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .image-lightbox__close svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Flèches fines, discrètes, sur les bords de la zone image. */
+  .image-lightbox__nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 1;
+    width: 40px;
+    height: 56px;
+    background: rgba(10, 10, 12, 0.55);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  .image-lightbox__nav--prev {
+    left: var(--space-xs);
+  }
+
+  .image-lightbox__nav--next {
+    right: var(--space-xs);
+  }
+
+  .image-lightbox__nav svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Mobile / tablette : presque plein écran, marges réduites. */
+  @media (max-width: 899px) {
+    .image-lightbox__backdrop {
+      padding: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right))
+        max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
+    }
+
+    .image-lightbox__dialog {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 94vh;
+      padding: var(--space-sm);
+    }
+
+    @supports (height: 1dvh) {
+      .image-lightbox__dialog {
+        max-height: 94dvh;
+      }
+    }
+
+    /* Mobile : le cadre épouse le ratio de la capture (pas de grand vide haut/bas). */
+    .image-lightbox__media {
+      flex: none;
+      min-height: 0;
+    }
+
+    .image-lightbox__img {
+      width: 100%;
+      height: auto;
+      max-height: 62vh;
+    }
+
+    .image-lightbox__title {
+      font-size: 1.0625rem;
+    }
+
+    .image-lightbox__caption {
+      font-size: 0.875rem;
+      max-height: 6.5rem;
+      overflow-y: auto;
+    }
+
+    .image-lightbox__nav {
+      width: 36px;
+      height: 48px;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .image-lightbox__backdrop:not([hidden]) {
+      animation: image-lightbox-fade-in 180ms ease;
+    }
+
+    .image-lightbox__dialog {
+      animation: image-lightbox-in 220ms ease;
+    }
+  }
+
+  @keyframes image-lightbox-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes image-lightbox-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>
+
+<script>
+  // Une seule exécution par page, gère chaque instance [data-image-lightbox]
+  // (en pratique une par page). Aucune dépendance.
+  function getBestSrc(img: HTMLImageElement): string {
+    const srcset = img.getAttribute("srcset") || "";
+    if (!srcset) return img.currentSrc || img.src;
+    let bestUrl = "";
+    let bestWidth = -1;
+    srcset.split(",").forEach((entry) => {
+      const parts = entry.trim().split(/\s+/);
+      const width = parts[1] && parts[1].endsWith("w") ? parseInt(parts[1], 10) : 0;
+      if (parts[0] && width > bestWidth) {
+        bestWidth = width;
+        bestUrl = parts[0];
+      }
+    });
+    return bestUrl || img.currentSrc || img.src;
+  }
+
+  interface Item {
+    trigger: HTMLElement;
+    full: string;
+    alt: string;
+    caption: string;
+    title: string;
+  }
+
+  function readItem(trigger: HTMLElement, defaultTitle: string): Item {
+    const img = trigger.querySelector("img");
+    return {
+      trigger,
+      full: trigger.dataset.full || (img ? getBestSrc(img) : ""),
+      alt: trigger.dataset.alt ?? (img ? img.alt : ""),
+      caption: trigger.dataset.caption || "",
+      title: trigger.dataset.title || defaultTitle,
+    };
+  }
+
+  function initLightbox(backdrop: HTMLElement) {
+    const id = backdrop.dataset.imageLightbox || "";
+    const gallery = backdrop.dataset.mode === "gallery";
+    const defaultTitle = backdrop.dataset.defaultTitle || "";
+    const dialog = backdrop.querySelector<HTMLElement>("[data-lb-dialog]");
+    const imgEl = backdrop.querySelector<HTMLImageElement>("[data-lb-img]");
+    const titleEl = backdrop.querySelector<HTMLElement>("[data-lb-title]");
+    const counterEl = backdrop.querySelector<HTMLElement>("[data-lb-counter]");
+    const captionEl = backdrop.querySelector<HTMLElement>("[data-lb-caption]");
+    const closeBtn = backdrop.querySelector<HTMLButtonElement>("[data-lb-close]");
+    const prevBtn = backdrop.querySelector<HTMLButtonElement>("[data-lb-prev]");
+    const nextBtn = backdrop.querySelector<HTMLButtonElement>("[data-lb-next]");
+    const triggers = Array.from(document.querySelectorAll<HTMLElement>(`[data-lightbox-trigger="${id}"]`));
+    if (!dialog || !imgEl || !titleEl || !closeBtn || triggers.length === 0) return;
+
+    // Couche top-level : en fin de <body>, hors de tout ancêtre animé.
+    document.body.appendChild(backdrop);
+
+    const items = triggers.map((t) => readItem(t, defaultTitle));
+    let current = 0;
+    let lastTrigger: HTMLElement | null = null;
+    let savedScrollY = 0;
+    let savedBodyStyle: string | null = null;
+    let inerted: HTMLElement[] = [];
+
+    function pad(n: number) {
+      return String(n).padStart(2, "0");
+    }
+
+    function show(index: number) {
+      const total = items.length;
+      current = ((index % total) + total) % total;
+      const item = items[current];
+      imgEl!.src = item.full;
+      imgEl!.alt = item.alt;
+      titleEl!.textContent = item.title;
+      if (gallery) {
+        if (counterEl) counterEl.textContent = `${pad(current + 1)} / ${pad(total)}`;
+        if (captionEl) captionEl.textContent = item.caption;
+        // Préchargement des voisines uniquement (jamais toute la galerie).
+        [current - 1, current + 1].forEach((i) => {
+          const n = items[((i % total) + total) % total];
+          if (n && n.full) new Image().src = n.full;
+        });
+      }
+    }
+
+    function lockScroll() {
+      savedScrollY = window.scrollY;
+      savedBodyStyle = document.body.getAttribute("style");
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${savedScrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+    }
+
+    function unlockScroll() {
+      if (savedBodyStyle) document.body.setAttribute("style", savedBodyStyle);
+      else document.body.removeAttribute("style");
+      window.scrollTo(0, savedScrollY);
+    }
+
+    function setInert() {
+      inerted = Array.from(document.body.children).filter(
+        (el): el is HTMLElement => el instanceof HTMLElement && el !== backdrop,
+      );
+      inerted.forEach((el) => {
+        el.setAttribute("inert", "");
+        el.setAttribute("aria-hidden", "true");
+      });
+    }
+
+    function removeInert() {
+      inerted.forEach((el) => {
+        el.removeAttribute("inert");
+        el.removeAttribute("aria-hidden");
+      });
+      inerted = [];
+    }
+
+    function focusables(): HTMLElement[] {
+      return [prevBtn, nextBtn, closeBtn].filter((b): b is HTMLButtonElement => !!b);
+    }
+
+    function onKeydown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        close();
+        return;
+      }
+      if (gallery && event.key === "ArrowLeft") {
+        event.preventDefault();
+        show(current - 1);
+        return;
+      }
+      if (gallery && event.key === "ArrowRight") {
+        event.preventDefault();
+        show(current + 1);
+        return;
+      }
+      if (event.key === "Tab") {
+        const list = focusables();
+        const active = document.activeElement as HTMLElement | null;
+        const idx = active ? list.indexOf(active) : -1;
+        event.preventDefault();
+        if (event.shiftKey) list[(idx <= 0 ? list.length : idx) - 1].focus();
+        else list[(idx + 1) % list.length].focus();
+      }
+    }
+
+    function open(index: number, trigger: HTMLElement) {
+      show(index);
+      lastTrigger = trigger;
+      lockScroll();
+      setInert();
+      backdrop.hidden = false;
+      document.addEventListener("keydown", onKeydown);
+      closeBtn!.focus();
+    }
+
+    function close() {
+      if (backdrop.hidden) return;
+      backdrop.hidden = true;
+      document.removeEventListener("keydown", onKeydown);
+      removeInert();
+      unlockScroll();
+      imgEl!.src = "";
+      if (lastTrigger && lastTrigger.isConnected) lastTrigger.focus();
+      lastTrigger = null;
+    }
+
+    closeBtn.addEventListener("click", close);
+    if (prevBtn) prevBtn.addEventListener("click", () => show(current - 1));
+    if (nextBtn) nextBtn.addEventListener("click", () => show(current + 1));
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) close();
+    });
+    dialog.addEventListener("click", (event) => event.stopPropagation());
+
+    triggers.forEach((trigger, i) => {
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        open(i, trigger);
+      });
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-image-lightbox]").forEach(initLightbox);
+</script>
