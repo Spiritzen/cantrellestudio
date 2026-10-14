@@ -69,6 +69,16 @@ const panels = [
         </p>
         <p class="realisations-hero__meta">03 études de cas · SaaS · applications métier · sites professionnels</p>
       </div>
+      <!-- Contrepoids éditorial (>= 1200 px uniquement) : purement décoratif, l'information
+           équivalente est déjà portée par la meta ci-dessus. -->
+      <div class="realisations-hero__mark" aria-hidden="true">
+        <span class="realisations-hero__num">03</span>
+        <span class="realisations-hero__caption">
+          <span class="realisations-hero__rule"></span>
+          <span class="realisations-hero__caption-title">Études de cas</span>
+          <span class="realisations-hero__caption-sub">3 projets · 3 contextes · 3 réponses</span>
+        </span>
+      </div>
     </div>
   </section>
 
@@ -217,6 +227,81 @@ const panels = [
 
   .realisations-hero__inner {
     max-width: 54rem;
+  }
+
+  /* Grand « 03 » éditorial : masqué < 1200 px, ancré à droite de la grille,
+     centré verticalement sur le bloc texte, ~5 % d'ivoire, aucun glow. */
+  .realisations-hero__mark {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .realisations-hero__mark {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      position: absolute;
+      right: clamp(1rem, 4vw, 4rem);
+      top: 50%;
+      translate: 0 -50%;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .realisations-hero__num {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(11rem, 16vw, 16rem);
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      color: rgba(241, 239, 232, 0.05);
+      animation: hero-mark-in 800ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    .realisations-hero__caption {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      padding-left: 0.5rem;
+      animation: hero-mark-in 600ms cubic-bezier(0.22, 1, 0.36, 1) 130ms backwards;
+    }
+
+    .realisations-hero__rule {
+      display: block;
+      width: 3rem;
+      height: 1px;
+      margin-bottom: 0.25rem;
+      background: var(--color-accent);
+      opacity: 0.5;
+      transform-origin: left center;
+      animation: hero-rule-in 700ms ease-out 250ms backwards;
+    }
+
+    .realisations-hero__caption-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(241, 239, 232, 0.72);
+    }
+
+    .realisations-hero__caption-sub {
+      font-size: 0.8125rem;
+      color: rgba(241, 239, 232, 0.5);
+    }
+  }
+
+  @keyframes hero-mark-in {
+    from {
+      opacity: 0;
+      translate: 0 10px;
+    }
+  }
+
+  @keyframes hero-rule-in {
+    from {
+      transform: scaleX(0);
+    }
   }
 
   .realisations-hero__eyebrow {
@@ -483,6 +568,12 @@ const panels = [
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .realisations-hero__num,
+    .realisations-hero__caption,
+    .realisations-hero__rule {
+      animation: none;
+    }
+
     .panel,
     .panel::before,
     .panel::after,

@@ -329,40 +329,1023 @@
    jamais la colonne vertébrale de /methode/ (prompt §F).
    ========================================================================== */
 
+/* Séquence premium (micro-sprint 3) : 3 étapes ouvertes reliées par un fil fin ;
+   un segment Ember progresse 01 → 02 → 03 au reveal puis reste calme. */
+.contact-ensuite {
+  --next-gap: clamp(1.5rem, 4vw, 3rem);
+}
+
 .contact-next {
   list-style: none;
   margin: var(--space-xl) 0 0 0;
-  padding: 0 0 var(--space-md) 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--next-gap);
 }
 
 .contact-next__item {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 1.25rem;
+}
+
+/* Fil au repos : graphite / ivoire très faible. */
+.contact-next__item::before,
+.contact-next__item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  pointer-events: none;
+}
+
+.contact-next__item::before {
+  width: calc(100% + var(--next-gap));
+  background: rgba(241, 239, 232, 0.12);
+}
+
+/* Le fil s'arrête près de 03 (court retour de 3,5 rem) au lieu de traverser toute la colonne. */
+.contact-next__item:last-child::before {
+  width: 3.5rem;
+  background: linear-gradient(90deg, rgba(241, 239, 232, 0.12), rgba(241, 239, 232, 0));
+}
+
+/* Segment Ember : seulement entre 01→02 et 02→03, fin, sans glow. Reste à faible intensité. */
+.contact-next__item::after {
+  width: calc(100% + var(--next-gap));
+  background: var(--color-accent);
+  opacity: 0.4;
+  transform-origin: left center;
+}
+
+.contact-next__item:last-child::after {
+  display: none;
 }
 
 .contact-next__num {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.25rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
   color: var(--color-accent);
 }
 
 .contact-next__label {
-  font-size: 0.9375rem;
-  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.3;
+  color: var(--color-text);
+}
+
+/* Conclusion : surface horizontale légère, liseré Ember à gauche, lien intégré. */
+.contact-next__closing {
+  margin-top: var(--space-xl);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-lg);
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2.25rem);
+  /* Fondu dans la DA : graphite plus translucide + halo Ember diffus (alpha ≤ 0.06) bas-gauche. */
+  background:
+    radial-gradient(ellipse 60% 120% at 0% 100%, rgba(228, 95, 54, 0.06), transparent 70%),
+    rgba(30, 30, 33, 0.38);
+  border: 1px solid rgba(241, 239, 232, 0.06);
+  border-left: 2px solid rgba(228, 95, 54, 0.55);
+  border-radius: var(--radius-md);
 }
 
 .contact-next__text {
-  margin-top: var(--space-md);
+  margin: 0;
+  flex: 1 1 28rem;
   max-width: 58ch;
-  font-size: 0.9375rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text);
 }
 
 .contact-next__link {
-  margin-top: var(--space-sm);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.contact-next__link .action-link {
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(228, 95, 54, 0.45);
+}
+
+/* < 900 px : séquence verticale, fil à gauche, compacte. */
+@media (max-width: 899px) {
+  .contact-next {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-md);
+  }
+
+  .contact-next__item {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.875rem;
+    padding: 0 0 0 1.25rem;
+  }
+
+  .contact-next__item::before,
+  .contact-next__item::after {
+    top: 0;
+    width: 1px;
+    height: calc(100% + var(--space-md));
+  }
+
+  .contact-next__item:last-child::before {
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(241, 239, 232, 0.12), rgba(241, 239, 232, 0.03));
+  }
+
+  .contact-next__item::after {
+    width: 1px;
+    transform-origin: center top;
+  }
+
+  .contact-next__label {
+    font-size: 1.0625rem;
+  }
+}
+
+/* Reveal séquencé + progression Ember (classes posées par le script ; jamais en reduced-motion).
+   Total ≈ 1,6 s, puis état statique. Replay : is-in retiré sous 7 %, rejoué à 33 %. */
+.contact-ensuite.is-armed .contact-next__item,
+.contact-ensuite.is-armed .contact-next__closing {
+  opacity: 0;
+}
+
+.contact-ensuite.is-armed .contact-next__item::after {
+  opacity: 0;
+}
+
+.contact-ensuite.is-armed.is-in .contact-next__item,
+.contact-ensuite.is-armed.is-in .contact-next__closing {
+  opacity: 1;
+  animation: contact-next-in 500ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.contact-ensuite.is-armed.is-in .contact-next__item:nth-child(2) {
+  animation-delay: 550ms;
+}
+
+.contact-ensuite.is-armed.is-in .contact-next__item:nth-child(3) {
+  animation-delay: 1100ms;
+}
+
+.contact-ensuite.is-armed.is-in .contact-next__closing {
+  animation-delay: 1250ms;
+}
+
+.contact-ensuite.is-armed.is-in .contact-next__item::after {
+  opacity: 0.4;
+  animation: contact-next-thread 500ms ease-in-out 250ms backwards;
+}
+
+.contact-ensuite.is-armed.is-in .contact-next__item:nth-child(2)::after {
+  animation-delay: 800ms;
+}
+
+@keyframes contact-next-in {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+
+@keyframes contact-next-thread {
+  from {
+    opacity: 0.85;
+    transform: scaleX(0);
+  }
+  60% {
+    opacity: 0.85;
+  }
+}
+
+@media (max-width: 899px) {
+  .contact-ensuite.is-armed.is-in .contact-next__item::after {
+    animation-name: contact-next-thread-v;
+  }
+}
+
+@keyframes contact-next-thread-v {
+  from {
+    opacity: 0.85;
+    transform: scaleY(0);
+  }
+  60% {
+    opacity: 0.85;
+  }
+}
+
+/* ==========================================================================
+   SPRINT 1 — HERO CONVERSION + PANNEAU « CONTACT DIRECT »
+   Même famille visuelle que /a-propos/ et /methode/ : graphite / ivoire / Ember,
+   halo Ember sombre, filaments (PageFilaments, composant existant). Scopé .contact-*.
+   ========================================================================== */
+
+/* Eyebrows Ember sur le Hero et la zone de préparation du message. */
+html .contact-page .service-hero__eyebrow,
+html .contact-page .contact-panel__title,
+html .contact-page .contact-direct__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.contact-hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(3.5rem, 8vw, 6.5rem);
+}
+
+/* Halo Ember sombre, plutôt autour du panneau (pseudo-élément pour arriver en douceur). */
+.contact-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 52% 95% at 78% 48%, rgba(228, 95, 54, 0.12), rgba(228, 95, 54, 0) 68%);
+}
+
+.contact-hero-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 3rem);
+  align-items: center;
+}
+
+@media (min-width: 1100px) {
+  .contact-hero-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(3rem, 5vw, 5rem);
+  }
+}
+
+/* --- Panneau : graphite translucide, liseré Ember, halo pointeur ---------------- */
+.contact-panel {
+  --px: 50%;
+  --py: 50%;
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  justify-self: end;
+  padding: 1.75rem 1.75rem 1.5rem;
+  border: 1px solid rgba(241, 239, 232, 0.1);
+  border-radius: var(--radius-lg);
+  background: rgba(14, 16, 19, 0.86);
+  transform: perspective(1600px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0px)) scale(var(--sc, 1));
+}
+
+@media (max-width: 1099px) {
+  .contact-panel {
+    justify-self: start;
+    max-width: 34rem;
+  }
+}
+
+.contact-panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 1.75rem;
+  width: 2.25rem;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+.contact-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--px) var(--py), rgba(228, 95, 54, 0.09), rgba(228, 95, 54, 0) 60%);
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.contact-panel__title {
+  margin: 0 0 1.25rem 0;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.contact-panel__row {
+  padding-block: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.contact-panel__row:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.contact-panel__label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.contact-panel__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.contact-panel__value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 1.45vw, 1.25rem);
+  color: var(--color-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.contact-panel__value:hover,
+.contact-panel__value:focus-visible {
+  color: var(--color-accent);
+}
+
+.contact-panel__arrow {
+  color: rgba(241, 239, 232, 0.45);
+  transition: transform 300ms ease, color 300ms ease;
+  display: inline-block;
+}
+
+.contact-panel__value:hover .contact-panel__arrow {
+  color: var(--color-accent);
+  transform: translateX(4px);
+}
+
+.contact-panel__action {
+  min-height: 44px;
+  padding-inline: 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 250ms ease, color 250ms ease;
+}
+
+.contact-panel__action:hover {
+  border-color: rgba(228, 95, 54, 0.45);
+  color: var(--color-accent);
+}
+
+.contact-panel .contact-direct__status {
+  margin: 0.5rem 0 0 0;
+  min-height: 1.25rem;
+}
+
+.contact-panel__note {
+  margin: 0.5rem 0 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* Zone « Préparer votre message » : plus de bloc de coordonnées dupliqué. */
+.contact-prepare {
+  scroll-margin-top: 4.5rem;
+}
+
+.contact-prepare .contact-form {
+  margin-top: var(--space-md);
+}
+
+/* Cibles de focus visibles sur le panneau. */
+.contact-panel a:focus-visible,
+.contact-panel button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* --- Pointeur fin, >= 1100 px, hors reduced-motion : HeliFan sobre ---------------- */
+@media (min-width: 1100px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .contact-panel {
+    transition: transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .contact-panel.is-tilting {
+    transition: transform 120ms linear;
+  }
+
+  .contact-panel:hover::after {
+    opacity: 1;
+  }
+}
+
+/* --- Ouverture du Hero (~2,1 s, une seule fois). Keyframes « from » seul + fill backwards :
+   l'état d'arrivée est le style naturel, aucun résidu. Marqueur html.contact-intro. -------- */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes contact-in-halo {
+    from {
+      opacity: 0.45;
+    }
+  }
+
+  @keyframes contact-in-up {
+    from {
+      opacity: 0;
+      translate: 0 10px;
+    }
+  }
+
+  @keyframes contact-in-title {
+    from {
+      opacity: 0;
+      translate: 0 17px;
+      filter: blur(2px);
+    }
+  }
+
+  @keyframes contact-in-panel {
+    from {
+      opacity: 0;
+      translate: 22px 0;
+    }
+  }
+
+  @keyframes contact-in-row {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+  }
+
+  html.contact-intro .contact-hero::before {
+    animation: contact-in-halo 600ms ease-out backwards;
+  }
+
+  html.contact-intro .contact-hero .service-hero__eyebrow {
+    animation: contact-in-up 550ms cubic-bezier(0.22, 1, 0.36, 1) 200ms backwards;
+  }
+
+  html.contact-intro .contact-hero .service-hero__title {
+    animation: contact-in-title 700ms cubic-bezier(0.22, 1, 0.36, 1) 330ms backwards;
+  }
+
+  html.contact-intro .contact-hero .service-hero__lead {
+    animation: contact-in-up 600ms cubic-bezier(0.22, 1, 0.36, 1) 600ms backwards;
+  }
+
+  html.contact-intro .contact-hero .contact-panel {
+    animation: contact-in-panel 650ms cubic-bezier(0.22, 1, 0.36, 1) 750ms backwards;
+  }
+
+  html.contact-intro .contact-hero .contact-panel__row:nth-of-type(1) {
+    animation: contact-in-row 500ms cubic-bezier(0.22, 1, 0.36, 1) 1050ms backwards;
+  }
+
+  html.contact-intro .contact-hero .contact-panel__row:nth-of-type(2) {
+    animation: contact-in-row 500ms cubic-bezier(0.22, 1, 0.36, 1) 1140ms backwards;
+  }
+
+  html.contact-intro .contact-hero .contact-panel__note {
+    animation: contact-in-row 500ms cubic-bezier(0.22, 1, 0.36, 1) 1230ms backwards;
+  }
+
+  html.contact-intro .contact-hero .service-hero__actions > :first-child {
+    animation: contact-in-up 500ms cubic-bezier(0.22, 1, 0.36, 1) 1350ms backwards;
+  }
+
+  html.contact-intro .contact-hero .service-hero__actions > :nth-child(2) {
+    animation: contact-in-up 500ms cubic-bezier(0.22, 1, 0.36, 1) 1450ms backwards;
+  }
+}
+
+/* ==========================================================================
+   SPRINT 2 — eyebrows Ember (Premier échange / Besoins / Ensuite) + champs de points
+   (ExpertiseDotWave, composant existant réutilisé tel quel : le caractère aléatoire reste
+   celui du composant). Seuls le stacking, l'intensité et le masque sont réglés ici.
+   Aucun point dans « Ensuite ».
+   ========================================================================== */
+html .contact-page .contact-start .section-heading__eyebrow,
+html .contact-page .contact-besoins .section-heading__eyebrow,
+html .contact-page .contact-ensuite .section-heading__eyebrow {
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.contact-start,
+.contact-besoins {
+  position: relative;
+  isolation: isolate;
+}
+
+.contact-start > .container,
+.contact-besoins > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Premier échange : intensité moyenne, présence plutôt à droite, atténuée côté texte. */
+.contact-start .home-expertise__dot-wave {
+  opacity: 0.8;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.3) 45%, #000 100%);
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.3) 45%, #000 100%);
+}
+
+/* Besoins : plus faible, côté opposé (présence plutôt à gauche). */
+.contact-besoins .home-expertise__dot-wave {
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(270deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.25) 50%, #000 100%);
+  mask-image: linear-gradient(270deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.25) 50%, #000 100%);
+}
+
+/* Sous 900 px : intensité réduite derrière les textes. */
+@media (max-width: 899px) {
+  .contact-start .home-expertise__dot-wave {
+    opacity: 0.55;
+  }
+
+  .contact-besoins .home-expertise__dot-wave {
+    opacity: 0.35;
+  }
+}
+
+/* ==========================================================================
+   SPRINT 2B — « PREMIER ÉCHANGE » : mini-brief. 4 surfaces fines 2 x 2 (même hauteur par
+   ligne), puis bloc de conclusion. Pas de tilt, pas de halo pointeur. Champ de points
+   (ExpertiseDotWave existant) visible entre / derrière les surfaces.
+   ========================================================================== */
+.contact-start .contact-points {
+  align-items: stretch;
+  gap: 1rem;
+}
+
+@media (min-width: 700px) {
+  .contact-start .contact-points {
+    gap: 1.25rem;
+  }
+}
+
+.contact-start .contact-point {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 1.5rem 1.5rem 1.4rem;
+  border: 1px solid rgba(241, 239, 232, 0.1);
+  border-radius: var(--radius-lg);
+  background: rgba(14, 16, 19, 0.8);
+  transition: border-color 300ms ease, translate 300ms ease;
+}
+
+/* Numéro : texte Ember discret, plus de badge circulaire. */
+.contact-start .contact-point__index {
+  width: auto;
+  height: auto;
+  border: none;
+  border-radius: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  color: rgba(228, 95, 54, 0.8);
+}
+
+/* Liseré Ember supérieur : 32 px au repos. */
+.contact-start .contact-point::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 1.5rem;
+  width: 2rem;
+  height: 2px;
+  background: var(--color-accent);
+  transform-origin: left center;
+  transition: width 300ms ease;
+}
+
+.contact-start .contact-point__title {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.25rem;
+}
+
+.contact-start .contact-point__text {
+  max-width: 38ch;
+  color: var(--color-text-secondary);
+}
+
+/* Bloc de conclusion : bande calme, pas une 5e card. */
+.contact-brief {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  padding: 1.75rem 2rem;
+  border: 1px solid rgba(241, 239, 232, 0.08);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(ellipse 60% 140% at 0% 50%, rgba(228, 95, 54, 0.07), rgba(228, 95, 54, 0) 70%), rgba(10, 11, 13, 0.6);
+}
+
+.contact-brief__title {
+  margin: 0 0 0.4rem 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+}
+
+.contact-brief__lead {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 599px) {
+  .contact-brief {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+/* Reveal séquencé (classes posées par le script ; jamais sous reduced-motion). Animation à
+   propriété translate individuelle : aucun conflit avec le hover. */
+.contact-start.is-armed .contact-point,
+.contact-start.is-armed .contact-brief {
+  opacity: 0;
+}
+
+.contact-start.is-armed.is-in .contact-point,
+.contact-start.is-armed.is-in .contact-brief {
+  opacity: 1;
+  animation: contact-point-in 600ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.contact-start.is-armed.is-in .contact-point::before {
+  animation: contact-line-in 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.contact-start.is-armed.is-in .contact-point:nth-child(2),
+.contact-start.is-armed.is-in .contact-point:nth-child(2)::before {
+  animation-delay: 90ms;
+}
+
+.contact-start.is-armed.is-in .contact-point:nth-child(3),
+.contact-start.is-armed.is-in .contact-point:nth-child(3)::before {
+  animation-delay: 180ms;
+}
+
+.contact-start.is-armed.is-in .contact-point:nth-child(4),
+.contact-start.is-armed.is-in .contact-point:nth-child(4)::before {
+  animation-delay: 270ms;
+}
+
+.contact-start.is-armed.is-in .contact-brief {
+  animation-delay: 380ms;
+}
+
+@keyframes contact-point-in {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+@keyframes contact-line-in {
+  from {
+    scale: 0.35 1;
+  }
+}
+
+/* Hover : pointeur fin, dès 900 px, hors reduced-motion — très sobre (lift 2 px, bordure plus
+   chaude, liseré plus long). Aucun tilt, aucun halo. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .contact-start .contact-point:hover {
+    translate: 0 -2px;
+    border-color: rgba(228, 95, 54, 0.3);
+  }
+
+  .contact-start .contact-point:hover::before {
+    width: 3.25rem;
+  }
+}
+
+/* ==========================================================================
+   « MESSAGE » — moment d'action principal : carte recentrée, plus généreuse, dans un écrin
+   graphite + halo Ember doux + arcs fins (même langage que le CTA final de /a-propos/).
+   Le fond global n'est pas modifié ; la logique du formulaire non plus.
+   ========================================================================== */
+.contact-prepare {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(3.5rem, 8vw, 7rem);
+  background: radial-gradient(ellipse 55% 80% at 50% 45%, rgba(228, 95, 54, 0.09), rgba(228, 95, 54, 0) 70%);
+}
+
+.contact-prepare > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Arcs fins derrière la carte (CSS pur, fondus vers les bords, rognés par la section). */
+.contact-prepare::before,
+.contact-prepare::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 76%, transparent 100%);
+}
+
+.contact-prepare::before {
+  left: -16%;
+  width: 132%;
+  top: 8%;
+  height: 120%;
+  border-top-color: rgba(241, 239, 232, 0.09);
+}
+
+.contact-prepare::after {
+  left: 8%;
+  width: 84%;
+  top: 30%;
+  height: 110%;
+  border-top-color: rgba(228, 95, 54, 0.15);
+}
+
+@media (max-width: 899px) {
+  .contact-prepare::after {
+    display: none;
+  }
+
+  .contact-prepare::before {
+    border-top-color: rgba(241, 239, 232, 0.06);
+  }
+}
+
+/* Carte : centrée, plus large, plus respirante ; surface translucide, bord fin, ombre douce. */
+.contact-prepare .contact-direct {
+  position: relative;
+  max-width: 54rem;
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 5vw, 3.5rem);
+  background: rgba(20, 23, 29, 0.88);
+  border: 1px solid rgba(241, 239, 232, 0.12);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 28px 60px -34px rgba(0, 0, 0, 0.7);
+}
+
+/* Liseré Ember centré sur le bord supérieur. */
+.contact-prepare .contact-direct::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 3rem;
+  height: 2px;
+  transform: translateX(-50%);
+  background: var(--color-accent);
+}
+
+/* En-tête centré : eyebrow, titre, note, réassurance. */
+.contact-prepare .contact-direct__eyebrow,
+.contact-prepare .contact-direct__title,
+.contact-prepare .contact-direct__note,
+.contact-prepare .contact-prepare__hint {
+  text-align: center;
+}
+
+.contact-prepare .contact-direct__title {
+  margin-bottom: var(--space-sm);
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+}
+
+.contact-prepare .contact-direct__note {
+  margin-inline: auto;
+  max-width: 50ch;
+  color: var(--color-text-secondary);
+}
+
+.contact-prepare__hint {
+  margin: 1rem 0 0 0;
+  font-size: 0.9375rem;
+  color: var(--color-accent);
+  opacity: 0.9;
+}
+
+.contact-prepare .contact-form {
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  padding-top: clamp(1.5rem, 3vw, 2rem);
+}
+
+.contact-prepare .contact-form__disclaimer {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Champs : plus lisibles, textarea plus présent, focus Ember. */
+.contact-prepare .contact-form__row {
+  gap: 1rem 1.25rem;
+}
+
+.contact-prepare .contact-form__field {
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.contact-prepare .contact-form__field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.contact-prepare .contact-form__optional {
+  color: var(--color-text-muted);
+}
+
+.contact-prepare .contact-form__field input,
+.contact-prepare .contact-form__field select,
+.contact-prepare .contact-form__field textarea {
+  font-size: 1rem;
+  padding: 0.8rem 1rem;
+  background: rgba(10, 11, 13, 0.7);
+  border: 1px solid rgba(241, 239, 232, 0.14);
+  border-radius: var(--radius-md);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.contact-prepare .contact-form__field input:hover,
+.contact-prepare .contact-form__field select:hover,
+.contact-prepare .contact-form__field textarea:hover {
+  border-color: rgba(241, 239, 232, 0.26);
+}
+
+.contact-prepare .contact-form__field input:focus-visible,
+.contact-prepare .contact-form__field select:focus-visible,
+.contact-prepare .contact-form__field textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  background: rgba(10, 11, 13, 0.85);
+  box-shadow: 0 0 0 3px rgba(228, 95, 54, 0.18);
+}
+
+.contact-prepare .contact-form__field textarea {
+  min-height: 10rem;
+  line-height: 1.55;
+}
+
+/* CTA : bien visible, aligné à droite sur desktop, pleine largeur sur mobile. */
+.contact-prepare .contact-form form {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-prepare .contact-form__submit {
+  margin-top: 0.75rem;
+  min-height: 52px;
+  padding-inline: 2rem;
+  font-size: 1.0625rem;
+  width: 100%;
+}
+
+@media (min-width: 700px) {
+  .contact-prepare .contact-form__submit {
+    width: auto;
+    align-self: flex-end;
+  }
+}
+
+/* ==========================================================================
+   SPRINT 2C — « BESOINS » : réassurance d'abord, services en 3 rails légers (portes
+   possibles, pas des cases à choisir). Sobre : pas de tilt, pas de halo, pas de glow.
+   ========================================================================== */
+.contact-besoins .contact-needs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .contact-besoins .contact-needs {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+.contact-besoins .contact-needs li {
+  display: block;
+}
+
+.contact-besoins .contact-needs li::after {
+  content: none;
+}
+
+.contact-besoins .contact-needs a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 56px;
+  padding: 0.9rem 1.25rem 0.9rem 1.4rem;
+  border: 1px solid rgba(241, 239, 232, 0.1);
+  border-radius: var(--radius-md);
+  background: rgba(14, 16, 19, 0.6);
+  color: var(--color-text);
+  transition: border-color 300ms ease, translate 300ms ease;
+}
+
+.contact-besoins .contact-needs a:hover,
+.contact-besoins .contact-needs a:focus-visible {
+  color: var(--color-text);
+  border-bottom-color: rgba(228, 95, 54, 0.3);
+}
+
+/* Liseré Ember : 24 px au repos, plus long au hover. */
+.contact-besoins .contact-needs a::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 1.4rem;
+  width: 1.5rem;
+  height: 2px;
+  background: var(--color-accent);
+  transition: width 300ms ease;
+}
+
+.contact-besoins .contact-needs a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.contact-needs__name {
+  font-size: 1.0625rem;
+}
+
+.contact-needs__arrow {
+  display: inline-block;
+  color: rgba(241, 239, 232, 0.45);
+  font-size: 1.125rem;
+  transition: transform 300ms ease, color 300ms ease;
+}
+
+/* Reveal séquencé des rails (classes posées par le script ; jamais en reduced-motion). */
+.contact-besoins.is-armed .contact-needs li {
+  opacity: 0;
+}
+
+.contact-besoins.is-armed.is-in .contact-needs li {
+  opacity: 1;
+  animation: contact-rail-in 600ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.contact-besoins.is-armed.is-in .contact-needs li:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.contact-besoins.is-armed.is-in .contact-needs li:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+@keyframes contact-rail-in {
+  from {
+    opacity: 0;
+    translate: 0 11px;
+  }
+}
+
+/* Hover : pointeur fin, dès 900 px, hors reduced-motion. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .contact-besoins .contact-needs a:hover {
+    translate: 0 -2px;
+    border-color: rgba(228, 95, 54, 0.3);
+  }
+
+  .contact-besoins .contact-needs a:hover::before {
+    width: 3rem;
+  }
+
+  .contact-besoins .contact-needs a:hover .contact-needs__arrow {
+    transform: translateX(5px);
+    color: var(--color-accent);
+  }
 }

@@ -49,6 +49,8 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import ActionLink from "../components/ui/ActionLink.astro";
 import ServiceBreadcrumb from "../components/services/ServiceBreadcrumb.astro";
 import ServiceHero from "../components/services/ServiceHero.astro";
+import PageFilaments from "../components/hero/PageFilaments";
+import ExpertiseDotWave from "../components/motion/ExpertiseDotWave.astro";
 import { withBase } from "../utils/paths";
 import "../styles/services.css";
 import "../styles/contact.css";
@@ -95,27 +97,70 @@ const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider
   description="Contactez Cantrelle Studio pour échanger sur une application métier, un SaaS, un site professionnel ou un besoin de développement sur mesure."
 >
   <div class="contact-page">
+    <!-- Filaments d'arrière-plan : composant existant, monté une fois, desktop uniquement. -->
+    <PageFilaments client:media="(min-width: 900px)" />
+
     <Container>
       <ServiceBreadcrumb current="Contact" />
     </Container>
 
-    <!-- A. HERO CONTACT -->
-    <section class="contact-page__section">
+    <!-- Ouverture du Hero : marqueur posé AVANT le premier rendu du Hero et seulement si le
+         mouvement est permis ; sans JS ou en reduced-motion, tout reste visible à l'état final. -->
+    <script is:inline>
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("contact-intro");
+    </script>
+
+    <!-- A. HERO CONTACT : intention à gauche, panneau de contact direct à droite -->
+    <section class="contact-page__section contact-hero">
       <Container>
-        <ServiceHero
-          eyebrow="Contact"
-          title="Parlons de ce qu'il faut réellement construire."
-          lead="Vous avez un besoin identifié, une idée encore à cadrer ou un outil existant à faire évoluer ? Le premier échange sert à comprendre le contexte, l'objectif et les contraintes avant de parler solution technique."
-          primaryHref={STUDIO_MAILTO}
-          primaryLabel="Écrire à Cantrelle Studio"
-          secondaryHref="/methode/"
-          secondaryLabel="Voir la méthode"
-        />
+        <div class="contact-hero-layout">
+          <div class="contact-hero-main">
+            <ServiceHero
+              eyebrow="Contact"
+              title="Parlons de ce qu'il faut réellement construire."
+              lead="Vous avez un besoin identifié, une idée encore à cadrer ou un outil existant à faire évoluer ? Le premier échange sert à comprendre le contexte, l'objectif et les contraintes avant de parler solution technique."
+              primaryHref={STUDIO_MAILTO}
+              primaryLabel="Écrire à Cantrelle Studio"
+              secondaryHref="#preparer-message"
+              secondaryLabel="Préparer mon message"
+            />
+          </div>
+
+          <aside class="contact-panel" aria-labelledby="contact-panel-title">
+            <h2 id="contact-panel-title" class="contact-panel__title">Contact direct</h2>
+
+            <div class="contact-panel__row">
+              <span class="contact-panel__label">E-mail</span>
+              <div class="contact-panel__line">
+                <a class="contact-panel__value contact-panel__value--email" href={STUDIO_MAILTO}>{STUDIO_EMAIL}</a>
+                <button type="button" class="contact-panel__action" id="contact-copy-btn" data-email={STUDIO_EMAIL}>
+                  Copier
+                </button>
+              </div>
+              <p class="contact-direct__status" id="contact-copy-status" role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="contact-panel__row">
+              <span class="contact-panel__label">Téléphone</span>
+              <div class="contact-panel__line">
+                <a class="contact-panel__value" href={STUDIO_PHONE_HREF}>
+                  {STUDIO_PHONE_DISPLAY} <span class="contact-panel__arrow" aria-hidden="true">→</span>
+                </a>
+              </div>
+            </div>
+
+            <p class="contact-panel__note">
+              Basé à Amiens, le studio accompagne aussi bien des projets locaux dans les Hauts-de-France que des
+              missions à distance partout en France.
+            </p>
+          </aside>
+        </div>
       </Container>
     </section>
 
     <!-- B. PAS BESOIN D'UN CAHIER DES CHARGES PARFAIT -->
-    <section class="contact-page__section contact-page__section--soft" aria-labelledby="contact-start-title">
+    <section class="contact-page__section contact-page__section--soft contact-start" aria-labelledby="contact-start-title">
+      <ExpertiseDotWave />
       <Container>
         <div data-reveal>
           <SectionHeading
@@ -125,7 +170,7 @@ const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider
             intro="Vous n'avez pas besoin d'avoir déjà choisi une technologie ni formalisé tout le projet. Quelques éléments concrets permettent déjà de comprendre la situation et de préparer un échange utile."
           />
         </div>
-        <div class="contact-points" data-reveal>
+        <div class="contact-points">
           {startingPoints.map((point) => (
             <div class="contact-point">
               <span class="contact-point__index" aria-hidden="true">{point.index}</span>
@@ -136,40 +181,35 @@ const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider
             </div>
           ))}
         </div>
+
+        <!-- Conclusion du mini-brief : renvoie vers la zone de préparation du message (ancre native,
+             aucun nouveau mailto). -->
+        <div class="contact-brief">
+          <div class="contact-brief__text">
+            <h3 class="contact-brief__title">Vous avez déjà assez pour commencer.</h3>
+            <p class="contact-brief__lead">
+              Pas besoin d'un cahier des charges complet. Nous pouvons clarifier le reste pendant le premier échange.
+            </p>
+          </div>
+          <ActionLink href="#preparer-message" variant="primary">Préparer mon message</ActionLink>
+        </div>
       </Container>
     </section>
 
-    <!-- C. BLOC PRINCIPAL — CONTACT DIRECT (+ D. formulaire local optionnel) -->
-    <section class="contact-page__section" aria-labelledby="contact-direct-title">
+    <!-- C. PRÉPARER SON MESSAGE (les coordonnées sont désormais dans le Hero) -->
+    <section id="preparer-message" class="contact-page__section contact-prepare" aria-labelledby="contact-direct-title">
       <Container>
         <div class="contact-direct">
-          <span class="contact-direct__eyebrow">Contact direct</span>
-          <h2 id="contact-direct-title" class="contact-direct__title">Écrivez directement au studio.</h2>
-
-          <a class="contact-direct__email" href={STUDIO_MAILTO}>{STUDIO_EMAIL}</a>
-          <p class="contact-direct__phone">
-            Téléphone&nbsp;: <a href={STUDIO_PHONE_HREF}>{STUDIO_PHONE_DISPLAY}</a>
-          </p>
-
-          <div class="contact-direct__actions">
-            <ActionLink href={STUDIO_MAILTO} variant="primary">Écrire un e-mail</ActionLink>
-            <button type="button" class="contact-direct__copy" id="contact-copy-btn" data-email={STUDIO_EMAIL}>
-              Copier l'adresse
-            </button>
-          </div>
-          <p class="contact-direct__status" id="contact-copy-status" role="status" aria-live="polite"></p>
+          <span class="contact-direct__eyebrow">Message</span>
+          <h2 id="contact-direct-title" class="contact-direct__title">Préparez votre message.</h2>
 
           <p class="contact-direct__note">
             Si votre demande concerne une application métier, un SaaS, un site professionnel ou l'évolution d'un
             produit existant, décrivez simplement le contexte et l'objectif.
           </p>
-          <p class="contact-direct__note">
-            Basé à Amiens, le studio accompagne aussi bien des projets locaux dans les Hauts-de-France que des
-            missions à distance partout en France.
-          </p>
+          <p class="contact-prepare__hint">Un premier message suffit pour cadrer le besoin.</p>
 
           <div class="contact-form">
-            <h3 class="contact-form__title">Ou préparez votre message</h3>
             <p class="contact-form__disclaimer">Aucun message n'est envoyé automatiquement par ce site.</p>
 
             <form id="contact-form" novalidate>
@@ -210,31 +250,32 @@ const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider
     </section>
 
     <!-- E. CE QUE LE STUDIO PEUT PRENDRE EN CHARGE -->
-    <section class="contact-page__section contact-page__section--soft" aria-labelledby="contact-needs-title">
+    <section class="contact-page__section contact-page__section--soft contact-besoins" aria-labelledby="contact-needs-title">
+      <ExpertiseDotWave />
       <Container>
         <div data-reveal>
           <SectionHeading
             id="contact-needs-title"
             eyebrow="Besoins"
-            title="Selon le projet, le point de départ peut être très différent."
+            title="Votre projet n'a pas besoin d'entrer dans une case."
+            intro="Vous n'êtes pas certain de la catégorie ? Décrivez simplement votre besoin. Le bon cadrage fait partie du premier échange."
           />
         </div>
-        <ul class="contact-needs" data-reveal>
+        <ul class="contact-needs">
           {needs.map((need) => (
             <li>
-              <a href={withBase(need.href)}>{need.label}</a>
+              <a href={withBase(need.href)}>
+                <span class="contact-needs__name">{need.label}</span>
+                <span class="contact-needs__arrow" aria-hidden="true">→</span>
+              </a>
             </li>
           ))}
         </ul>
-        <p class="contact-needs__note" data-reveal>
-          Si votre besoin ne rentre pas proprement dans une catégorie, décrivez-le simplement&nbsp;: le cadrage sert
-          justement à déterminer la bonne approche.
-        </p>
       </Container>
     </section>
 
     <!-- F. CE QUI SE PASSE ENSUITE -->
-    <section class="contact-page__section" aria-labelledby="contact-next-title">
+    <section class="contact-page__section contact-ensuite" aria-labelledby="contact-next-title">
       <Container>
         <div data-reveal>
           <SectionHeading
@@ -243,21 +284,23 @@ const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider
             title="Le premier échange sert à cadrer, pas à forcer une solution."
           />
         </div>
-        <ol class="contact-next" data-reveal>
+        <ol class="contact-next">
           {nextSteps.map((step, i) => (
             <li class="contact-next__item">
-              <span class="contact-next__num" aria-hidden="true">{i + 1}</span>
+              <span class="contact-next__num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
               <span class="contact-next__label">{step}</span>
             </li>
           ))}
         </ol>
-        <p class="contact-next__text" data-reveal>
-          Si le projet correspond au champ d'intervention du studio, la suite peut ensuite être cadrée plus
-          précisément. Sinon, aucune technologie ni prestation n'a besoin d'être forcée.
-        </p>
-        <p class="contact-next__link" data-reveal>
-          <ActionLink href="/methode/" variant="text">Découvrir la méthode</ActionLink>
-        </p>
+        <div class="contact-next__closing">
+          <p class="contact-next__text">
+            Si le projet correspond au champ d'intervention du studio, la suite peut ensuite être cadrée plus
+            précisément. Sinon, aucune technologie ni prestation n'a besoin d'être forcée.
+          </p>
+          <p class="contact-next__link">
+            <ActionLink href="/methode/" variant="text">Découvrir la méthode</ActionLink>
+          </p>
+        </div>
       </Container>
     </section>
   </div>
@@ -354,4 +397,53 @@ const nextSteps = ["Comprendre le besoin", "Clarifier le périmètre", "Décider
     const mailto = `mailto:sebastien.cantrelle@hotmail.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
   });
+
+  // Panneau « Contact direct » du Hero : effet HeliFan sobre (pointeur fin, >= 1100 px, jamais en
+  // reduced-motion). rotateX <= 1.4°, rotateY <= 1.8°, translateY -2 px, scale 1.003, halo --px/--py.
+  // Seules des variables CSS sont posées ; retour au repos géré en CSS (600 ms).
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  const widePanel = window.matchMedia("(min-width: 1100px)");
+  const panel = document.querySelector<HTMLElement>(".contact-panel");
+
+  if (panel && finePointer.matches && !prefersReducedMotion) {
+    panel.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!widePanel.matches) return;
+      const r = panel.getBoundingClientRect();
+      const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+      const y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+      panel.classList.add("is-tilting");
+      panel.style.setProperty("--rx", `${(-y * 1.4).toFixed(2)}deg`);
+      panel.style.setProperty("--ry", `${(x * 1.8).toFixed(2)}deg`);
+      panel.style.setProperty("--ty", "-2px");
+      panel.style.setProperty("--sc", "1.003");
+      panel.style.setProperty("--px", `${((x + 1) / 2) * 100}%`);
+      panel.style.setProperty("--py", `${((y + 1) / 2) * 100}%`);
+    });
+    panel.addEventListener("pointerleave", () => {
+      panel.classList.remove("is-tilting");
+      ["--rx", "--ry", "--ty", "--sc"].forEach((p) => panel.style.removeProperty(p));
+      panel.style.setProperty("--px", "50%");
+      panel.style.setProperty("--py", "50%");
+    });
+  }
+
+  // « Premier échange » : les 4 surfaces puis le bloc de conclusion arrivent en séquence ; replay
+  // au retour (entrée à 33 % visible, réarmement sous 7 % : hystérésis). Un seul observer, aucune
+  // minuterie ; non armé sous reduced-motion (tout reste visible).
+  // Le même observer sert aussi « Besoins » (3 rails) et « Ensuite » (séquence + fil Ember).
+  const replaySections = document.querySelectorAll<HTMLElement>(".contact-start, .contact-besoins, .contact-ensuite");
+  if (replaySections.length && !prefersReducedMotion && "IntersectionObserver" in window) {
+    replaySections.forEach((sec) => sec.classList.add("is-armed"));
+    const startIo = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          const sec = e.target as HTMLElement;
+          if (e.intersectionRatio >= 0.33) sec.classList.add("is-in");
+          else if (e.intersectionRatio < 0.07) sec.classList.remove("is-in");
+        });
+      },
+      { threshold: [0, 0.03, 0.07, 0.15, 0.25, 0.33, 0.5] },
+    );
+    replaySections.forEach((sec) => startIo.observe(sec));
+  }
 </script>
