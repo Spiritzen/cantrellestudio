@@ -14,9 +14,10 @@ interface Props {
   stack: string[];
   image: ImageMetadata;
   imageAlt: string;
+  liveUrl?: string;
 }
 
-const { eyebrow, title, summary, statusLabel, stack, image, imageAlt } = Astro.props;
+const { eyebrow, title, summary, statusLabel, stack, image, imageAlt, liveUrl } = Astro.props;
 ---
 
 <div class="case-study__hero">
@@ -30,6 +31,13 @@ const { eyebrow, title, summary, statusLabel, stack, image, imageAlt } = Astro.p
         <li>{item}</li>
       ))}
     </ul>
+    {liveUrl && (
+      <p class="case-study__live">
+        <a class="case-study__live-link" href={liveUrl} target="_blank" rel="noopener noreferrer">
+          Voir le site en ligne <span aria-hidden="true">↗</span>
+        </a>
+      </p>
+    )}
   </div>
   <div class="case-study__hero-media">
     <Picture

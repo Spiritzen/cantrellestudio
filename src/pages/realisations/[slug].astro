@@ -93,6 +93,7 @@ const belkhirRowTitles = ["Accueil", "Qualifier l'urgence", "Une page par métie
 
 // AgencyOS : micro-labels de couche, dans l ordre de content.tech (backend, interface, données, sécurité, infra).
 // Rendus en CSS (data-layer) : le dl garde exactement ses dt / dd.
+const belkhirLayers = ["Structure", "Fiabilité", "Performance", "Direction visuelle"];
 const aosLayers = ["Backend", "Interface", "Données", "Sécurité", "Infrastructure"];
 
 // S-lightbox — Sereno et AgencyOS : source haute définition (largeur d origine, 1920 px)
@@ -132,7 +133,7 @@ const creativeWorkSchema = {
 
 <BaseLayout title={seoTitle} description={seoDescription} image={ogImage} imageAlt={ogImageAlt}>
   <script type="application/ld+json" is:inline set:html={JSON.stringify(creativeWorkSchema)} />
-  {(slug === "sereno" || slug === "agencyos") && <PageFilaments client:media="(min-width: 900px)" />}
+  {(slug === "sereno" || slug === "agencyos" || slug === "belkhir-depannage") && <PageFilaments client:media="(min-width: 900px)" />}
   <div class:list={["case-study", `case-study--${slug === "belkhir-depannage" ? "belkhir" : slug}`]}>
     <div class="container">
       <ServiceBreadcrumb current={title} />
@@ -147,6 +148,7 @@ const creativeWorkSchema = {
         stack={content.stackShort}
         image={media.gallery![0].image}
         imageAlt={media.gallery![0].alt}
+        liveUrl={slug === "belkhir-depannage" ? "https://spiritzen.github.io/belkhir-depannage/" : undefined}
       />
       <RelatedService
         role="principal"
@@ -159,12 +161,12 @@ const creativeWorkSchema = {
       )}
     </CaseStudySection>
 
-    <CaseStudySection soft aria-labelledby="problem-title" class={slug === "sereno" ? "cs-sereno-problem" : slug === "agencyos" ? "cs-aos-problem" : undefined}>
-      {(slug === "sereno" || slug === "agencyos") && <ExpertiseDotWave />}
+    <CaseStudySection soft aria-labelledby="problem-title" class={slug === "sereno" ? "cs-sereno-problem" : slug === "agencyos" || slug === "belkhir-depannage" ? "cs-aos-problem" : undefined}>
+      {(slug === "sereno" || slug === "agencyos" || slug === "belkhir-depannage") && <ExpertiseDotWave />}
       <div class="case-study__problem-reflection">
         <div class="case-study__problem" data-motion="block">
           {slug === "sereno" && <span class="cs-sereno-index" aria-hidden="true">01</span>}
-          {slug === "agencyos" && <span class="cs-aos-index" aria-hidden="true">01</span>}
+          {(slug === "agencyos" || slug === "belkhir-depannage") && <span class="cs-aos-index" aria-hidden="true">01</span>}
           <span class="case-study__eyebrow">Le problème</span>
           <h2 id="problem-title">{content.problemTitle}</h2>
           {content.problemBody.map((paragraph) => (
@@ -172,10 +174,10 @@ const creativeWorkSchema = {
           ))}
         </div>
         {slug === "sereno" && <div class="cs-sereno-divider" data-motion="block" aria-hidden="true"></div>}
-        {slug === "agencyos" && <div class="cs-aos-divider" data-motion="block" aria-hidden="true"></div>}
+        {(slug === "agencyos" || slug === "belkhir-depannage") && <div class="cs-aos-divider" data-motion="block" aria-hidden="true"></div>}
         <div class="case-study__reflection" data-motion="block">
           {slug === "sereno" && <span class="cs-sereno-index" aria-hidden="true">02</span>}
-          {slug === "agencyos" && <span class="cs-aos-index" aria-hidden="true">02</span>}
+          {(slug === "agencyos" || slug === "belkhir-depannage") && <span class="cs-aos-index" aria-hidden="true">02</span>}
           <span class="case-study__eyebrow">La réflexion</span>
           <blockquote>{content.reflectionQuote}</blockquote>
           {content.reflectionBody && <p>{content.reflectionBody}</p>}
@@ -318,7 +320,8 @@ const creativeWorkSchema = {
       </CaseStudySection>
     )}
 
-    <CaseStudySection soft={slug === "sereno" || slug === "agencyos"} aria-labelledby="tech-title">
+    <CaseStudySection soft={slug === "sereno" || slug === "agencyos" || slug === "belkhir-depannage"} aria-labelledby="tech-title" class={slug === "belkhir-depannage" ? "cs-bk-tech-section" : undefined}>
+      {slug === "belkhir-depannage" && <ExpertiseDotWave />}
       <span class="case-study__eyebrow">Choix techniques</span>
       <h2 id="tech-title">La technologie, et pourquoi elle est là</h2>
       {slug === "sereno" ? (
@@ -330,10 +333,10 @@ const creativeWorkSchema = {
             </div>
           ))}
         </dl>
-      ) : slug === "agencyos" ? (
+      ) : slug === "agencyos" || slug === "belkhir-depannage" ? (
         <dl class="case-study__tech cs-aos-tech">
           {content.tech.map((item, i) => (
-            <div class="case-study__tech-row" data-layer={aosLayers[i]}>
+            <div class="case-study__tech-row" data-layer={(slug === "agencyos" ? aosLayers : belkhirLayers)[i]}>
               <dt>{item.name}</dt>
               <dd>{item.role}</dd>
             </div>
@@ -345,7 +348,7 @@ const creativeWorkSchema = {
         </div>
       )}
       {content.githubUrl && (
-        <p class={slug === "sereno" ? "cs-sereno-github" : undefined}>
+        <p class={slug === "sereno" ? "cs-sereno-github" : slug === "belkhir-depannage" ? "cs-bk-github" : undefined}>
           <a class="case-study__github" href={content.githubUrl} target="_blank" rel="noopener noreferrer">
             {content.githubLabel} <span aria-hidden="true">↗</span>
           </a>
@@ -397,7 +400,7 @@ const creativeWorkSchema = {
       )}
     </CaseStudySection>
 
-    <CaseStudySection soft aria-labelledby="cta-title" class={slug === "sereno" ? "cs-sereno-final" : slug === "agencyos" ? "cs-aos-final" : undefined}>
+    <CaseStudySection soft aria-labelledby="cta-title" class={slug === "sereno" ? "cs-sereno-final" : slug === "agencyos" || slug === "belkhir-depannage" ? "cs-aos-final" : undefined}>
       <div class="case-study__cta" data-motion="block">
         <span class="case-study__eyebrow">Vous avez un besoin similaire ?</span>
         <h2 id="cta-title">Parlons de votre projet.</h2>
@@ -524,7 +527,7 @@ const creativeWorkSchema = {
 
   // 5c) « Choix techniques » AgencyOS : reveal des 5 couches (colonne, points, rails). Mêmes seuils
   // d'hystérésis ; non armé sous reduced-motion. Briques d'architecture, pas des étapes.
-  const aosTech = document.querySelector<HTMLElement>(".case-study--agencyos .cs-aos-tech");
+  const aosTech = document.querySelector<HTMLElement>(".case-study--agencyos .cs-aos-tech, .case-study--belkhir .cs-aos-tech");
   if (aosTech && !reduced.matches && "IntersectionObserver" in window) {
     aosTech.classList.add("is-armed");
     new IntersectionObserver(
