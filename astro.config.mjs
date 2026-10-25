@@ -5,24 +5,18 @@ import react from '@astrojs/react';
 
 import sitemap from '@astrojs/sitemap';
 
-// Micro-sprint pré-déploiement GitHub Pages — remplace le domaine placeholder
-// CS-S0 (.example, RFC 2606) par la cible réelle de déploiement GitHub Pages
-// du dépôt https://github.com/Spiritzen/cantrellestudio. `site` = origine du
-// Pages utilisateur ; `base` = sous-chemin du dépôt (obligatoire pour un
-// Pages de projet, pas un Pages utilisateur/organisation). Aucun domaine
-// personnalisé n'est inventé — voir rapport_predeploiement_github_pages_*.
+// Production Cantrelle Studio
+// Domaine principal hébergé chez LWS.
+// Le site est publié à la racine du domaine : aucun `base` n'est nécessaire.
 export default defineConfig({
-  site: 'https://spiritzen.github.io',
-  base: '/cantrellestudio',
+  site: 'https://cantrelle-studio.com',
+
   integrations: [
     react(),
+
     sitemap({
-      // CS-S2B : /design-lab/ est un outil interne (noindex, non lié depuis
-      // la navigation publique) et ne doit jamais apparaître dans le sitemap.
-      // /mentions-legales/ est complète et indexable (donc dans le sitemap).
-      // /politique-confidentialite/ reste noindex,follow (page utilitaire,
-      // choix SEO conservé) — exclue du sitemap en cohérence ; route
-      // normale, toujours liée depuis le Footer.
+      // /design-lab/ reste un outil interne.
+      // /politique-confidentialite/ reste exclue du sitemap selon le choix SEO actuel.
       filter: (page) =>
         !page.includes('/design-lab') &&
         !page.includes('/politique-confidentialite'),
