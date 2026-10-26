@@ -28,10 +28,10 @@
 //   projet, cf. projectMedia.ts, qui utilise déjà exclusivement du JPG).
 import type { ImageMetadata } from "astro";
 
-import inkRedPlumesHome from "../assets/projects/external/ink-red-plumes-home.jpg";
-import mydashservSessions from "../assets/projects/external/mydashserv-sessions.jpg";
-import beatstudioShot from "../assets/projects/external/beatstudio.jpg";
-import veloceanHero from "../assets/projects/external/velocean-hero.jpg";
+import inkRedPlumesHome from "../assets/projects/external/ink-red-plumes-home.webp";
+import mydashservSessions from "../assets/projects/external/mydashserv-sessions.webp";
+import beatstudioShot from "../assets/projects/external/beatstudio.webp";
+import veloceanHero from "../assets/projects/external/velocean-hero.webp";
 
 export interface ExternalMedia {
   image: ImageMetadata;

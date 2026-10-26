@@ -45,7 +45,7 @@ import phoneGlbUrl from "../../assets/3d/PhoneFinal.glb?url";
 // PAS supprimée du disque (prompt : "ne pas supprimer l'ancien JPG"),
 // simplement plus référencée ici, seul et unique point d'usage de ce
 // fichier dans le dépôt.
-import belkhirScreenUrl from "../../assets/projects/belkhir-depannage/imagePhoneSite.jpg?url";
+import belkhirScreenUrl from "../../assets/projects/belkhir-depannage/imagePhoneSite.webp?url";
 // Environnement EXR 1K (PROMPT_CLAUDE_CODE_PHONE_ENVIRONMENT_EXR_1K) —
 // remplace `modern_bathroom_4k.webp` : vrai HDR linéaire (pas une image
 // SDR passée par TextureLoader). `?url` (comme le GLB ci-dessus) : un

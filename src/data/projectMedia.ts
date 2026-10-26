@@ -21,24 +21,24 @@
 // n'affichant qu'une seule vignette pour ce projet.
 import type { ImageMetadata } from "astro";
 
-import serenoDashboard from "../assets/projects/sereno/sereno-dashboard.jpg";
-import serenoFacture from "../assets/projects/sereno/sereno-facture.jpg";
-import serenoConformite from "../assets/projects/sereno/sereno-conformite.jpg";
-import serenoCycleVie from "../assets/projects/sereno/sereno-cycle-vie.jpg";
-import serenoTransmission from "../assets/projects/sereno/sereno-transmission.jpg";
-import serenoFacturePdf from "../assets/projects/sereno/sereno-facture-pdf.jpg";
+import serenoDashboard from "../assets/projects/sereno/sereno-dashboard.webp";
+import serenoFacture from "../assets/projects/sereno/sereno-facture.webp";
+import serenoConformite from "../assets/projects/sereno/sereno-conformite.webp";
+import serenoCycleVie from "../assets/projects/sereno/sereno-cycle-vie.webp";
+import serenoTransmission from "../assets/projects/sereno/sereno-transmission.webp";
+import serenoFacturePdf from "../assets/projects/sereno/sereno-facture-pdf.webp";
 
-import agencyosDashboard from "../assets/projects/agencyos/agencyos-dashboard.jpg";
-import agencyosFactures from "../assets/projects/agencyos/agencyos-factures.jpg";
-import agencyosCrm from "../assets/projects/agencyos/agencyos-crm.jpg";
+import agencyosDashboard from "../assets/projects/agencyos/agencyos-dashboard.webp";
+import agencyosFactures from "../assets/projects/agencyos/agencyos-factures.webp";
+import agencyosCrm from "../assets/projects/agencyos/agencyos-crm.webp";
 import agencyosProjets from "../assets/projects/agencyos/agencyos-projets.jpg";
-import agencyosTimesheet from "../assets/projects/agencyos/agencyos-timesheet.jpg";
+import agencyosTimesheet from "../assets/projects/agencyos/agencyos-timesheet.webp";
 
-import belkhirHero from "../assets/projects/belkhir-depannage/belkhir-hero.jpg";
-import belkhirUrgences from "../assets/projects/belkhir-depannage/belkhir-urgences.jpg";
-import belkhirDomaines from "../assets/projects/belkhir-depannage/belkhir-domaines.jpg";
-import belkhirZones from "../assets/projects/belkhir-depannage/belkhir-zones.jpg";
-import belkhirMobile from "../assets/projects/belkhir-depannage/belkhir-mobile.jpg";
+import belkhirHero from "../assets/projects/belkhir-depannage/belkhir-hero.webp";
+import belkhirUrgences from "../assets/projects/belkhir-depannage/belkhir-urgences.webp";
+import belkhirDomaines from "../assets/projects/belkhir-depannage/belkhir-domaines.webp";
+import belkhirZones from "../assets/projects/belkhir-depannage/belkhir-zones.webp";
+import belkhirMobile from "../assets/projects/belkhir-depannage/belkhir-mobile.webp";
 
 export interface GalleryMedia {
   image: ImageMetadata;
