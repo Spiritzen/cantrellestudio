@@ -136,7 +136,7 @@ const creativeWorkSchema = {
   {(slug === "sereno" || slug === "agencyos" || slug === "belkhir-depannage") && <PageFilaments client:media="(min-width: 900px)" />}
   <div class:list={["case-study", `case-study--${slug === "belkhir-depannage" ? "belkhir" : slug}`]}>
     <div class="container">
-      <ServiceBreadcrumb current={title} />
+      <ServiceBreadcrumb current={title} parentLabel="Réalisations" parentHref="/realisations/" />
     </div>
 
     <CaseStudySection>
