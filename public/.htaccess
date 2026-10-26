@@ -1,1 +1,13 @@
 ErrorDocument 404 /404.html
+
+RewriteEngine On
+
+# Canonical host: www -> non-www, toujours en HTTPS
+RewriteCond %{HTTP_HOST} ^www\.cantrelle-studio\.com$ [NC]
+RewriteRule ^ https://cantrelle-studio.com%{REQUEST_URI} [R=301,L,NE]
+
+# Canonical scheme: HTTP -> HTTPS
+# Garde-fou LWS/proxy : ne pas rediriger si X-Forwarded-Proto indique déjà HTTPS
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteRule ^ https://cantrelle-studio.com%{REQUEST_URI} [R=301,L,NE]
