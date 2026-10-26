@@ -7,9 +7,12 @@ import ActionLink from "../components/ui/ActionLink.astro";
 //
 // CS-S13 — audit §18 : la page ne proposait qu'un seul lien ("Retour à
 // l'accueil"), le minimum demandé (Accueil + Réalisations/Services +
-// Contact) n'était pas atteint. Complétée avec `ActionLink` (déjà utilisé
-// partout ailleurs, aucun nouveau composant) — toujours pas de 3D, pas de
-// gag, contenu sobre et honnête inchangé.
+// Contact) n'était pas atteint. Complétée avec `ActionLink`.
+//
+// Micro-sprint 2A — refonte visuelle premium : grand « 404 » typographique
+// (contour fin, décoratif, masqué aux lecteurs d'écran) traversé par une
+// trajectoire orbitale interrompue. CSS pur, aucune dépendance, aucun JS.
+// Le statut HTTP 404 reste géré côté serveur (public/.htaccess).
 ---
 
 <BaseLayout
@@ -17,40 +20,225 @@ import ActionLink from "../components/ui/ActionLink.astro";
   description="La page demandée n'existe pas ou plus."
   noindex={true}
 >
-  <section class="container not-found">
-    <span class="not-found__eyebrow">Erreur 404</span>
-    <h1>Page non trouvée</h1>
-    <p>La page que vous cherchez n'existe pas ou plus.</p>
-    <div class="not-found__actions">
-      <ActionLink href="/" variant="primary">Retour à l'accueil</ActionLink>
-      <ActionLink href="/realisations/" variant="secondary">Voir les réalisations</ActionLink>
-      <ActionLink href="/contact/" variant="secondary">Contact</ActionLink>
+  <section class="not-found">
+    <div class="not-found__decor" aria-hidden="true">
+      <span class="not-found__halo"></span>
+      <span class="not-found__orbit not-found__orbit--outer"></span>
+      <span class="not-found__orbit not-found__orbit--inner"></span>
+      <span class="not-found__trace"></span>
+      <span class="not-found__number">404</span>
+    </div>
+
+    <div class="container not-found__content">
+      <span class="not-found__eyebrow">Erreur 404</span>
+      <h1>Cette trajectoire ne mène nulle part.</h1>
+      <p>
+        La page recherchée a peut-être changé d'adresse ou n'existe plus. Revenez à l'accueil, explorez les
+        réalisations ou parlons de votre projet.
+      </p>
+      <div class="not-found__actions">
+        <ActionLink href="/" variant="primary">Retour à l'accueil</ActionLink>
+        <ActionLink href="/realisations/" variant="secondary">Voir les réalisations</ActionLink>
+        <ActionLink href="/contact/" variant="secondary">Parler de votre projet</ActionLink>
+      </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
   .not-found {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    min-height: min(44rem, 80vh);
+    display: flex;
+    align-items: center;
     padding-block: var(--space-xl);
-    max-width: 40rem;
   }
+
+  .not-found__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+
+  .not-found__content > * {
+    max-width: 38rem;
+    animation: not-found-rise 700ms ease both;
+  }
+
+  .not-found__content > :nth-child(2) { animation-delay: 80ms; }
+  .not-found__content > :nth-child(3) { animation-delay: 160ms; }
+  .not-found__content > :nth-child(4) { animation-delay: 240ms; }
 
   .not-found__eyebrow {
     display: block;
     font-size: 0.8125rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-accent-soft);
     margin: 0 0 var(--space-sm) 0;
+  }
+
+  .not-found h1 {
+    margin: 0 0 var(--space-sm) 0;
+    text-wrap: balance;
   }
 
   .not-found p {
     margin: 0 0 var(--space-lg) 0;
+    color: var(--color-text-secondary);
+  }
+
+  .not-found__content > .not-found__actions {
+    max-width: 46rem;
   }
 
   .not-found__actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
+  }
+
+  /* ---------- Décor (purement décoratif, derrière le contenu) ---------- */
+  .not-found__decor {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .not-found__number {
+    position: absolute;
+    right: 1%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(9rem, 23vw, 22rem);
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-border-strong);
+    background: linear-gradient(180deg, rgba(241, 239, 232, 0.07), rgba(241, 239, 232, 0));
+    -webkit-background-clip: text;
+    background-clip: text;
+    user-select: none;
+  }
+
+  .not-found__halo {
+    position: absolute;
+    right: 8%;
+    top: 50%;
+    width: 38rem;
+    height: 38rem;
+    max-width: 90vw;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(228, 95, 54, 0.14), rgba(228, 95, 54, 0) 65%);
+  }
+
+  .not-found__orbit {
+    position: absolute;
+    right: 6%;
+    top: 50%;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-strong);
+  }
+
+  .not-found__orbit--outer {
+    width: 36rem;
+    height: 15rem;
+    margin-top: -7.5rem;
+    transform: rotate(-18deg);
+    animation: not-found-drift 60s linear infinite;
+  }
+
+  .not-found__orbit--outer::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 18px 2px rgba(228, 95, 54, 0.45);
+  }
+
+  .not-found__orbit--inner {
+    width: 22rem;
+    height: 9rem;
+    right: calc(6% + 7rem);
+    margin-top: -4.5rem;
+    transform: rotate(-18deg);
+    border-style: dashed;
+    border-color: var(--color-border);
+  }
+
+  /* Trajectoire interrompue : un trait qui se dissout. */
+  .not-found__trace {
+    position: absolute;
+    right: 46%;
+    top: 62%;
+    width: 14rem;
+    height: 1px;
+    transform: rotate(-18deg);
+    background: linear-gradient(90deg, rgba(228, 95, 54, 0), rgba(228, 95, 54, 0.6));
+  }
+
+  @keyframes not-found-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes not-found-drift {
+    from { transform: rotate(-18deg); }
+    to { transform: rotate(342deg); }
+  }
+
+  @media (max-width: 899px) {
+    .not-found {
+      min-height: auto;
+      padding-block: var(--space-xl);
+    }
+
+    .not-found__number {
+      right: -2%;
+      top: 14%;
+      font-size: clamp(7rem, 38vw, 12rem);
+    }
+
+    .not-found__halo {
+      right: -20%;
+      top: 22%;
+      width: 24rem;
+      height: 24rem;
+    }
+
+    .not-found__orbit--outer {
+      width: 22rem;
+      height: 9rem;
+      margin-top: -4.5rem;
+      right: -12%;
+      top: 22%;
+    }
+
+    .not-found__orbit--inner,
+    .not-found__trace {
+      display: none;
+    }
+
+    .not-found__actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .not-found__content > *,
+    .not-found__orbit--outer {
+      animation: none;
+    }
   }
 </style>
